@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta · Viveros Jazmín</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<div data-vj-header></div>
+
+<section class="auth-wrap">
+  <aside class="auth-aside">
+    <div>
+      <span class="eyebrow" style="color:var(--blue-deep)" data-i18n="auth.signup">Crear cuenta</span>
+      <h2 data-i18n="auth.aside.title">Tu jardín, a un clic.</h2>
+      <p data-i18n="auth.aside.text">Crea una cuenta para guardar tus direcciones, pedidos y favoritos.</p>
+    </div>
+    <svg class="auth-bg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="#2D4856">
+      <g opacity=".2"><ellipse cx="200" cy="160" rx="100" ry="120"/><rect x="190" y="200" width="20" height="160"/></g>
+    </svg>
+  </aside>
+
+  <div class="auth-form-wrap">
+    <h1 data-i18n="auth.register.title">Crea tu cuenta</h1>
+    <p class="auth-sub" data-i18n="auth.register.sub">Guarda tus pedidos y agiliza la compra la próxima vez.</p>
+
+    <div class="auth-error" id="auth-error"></div>
+
+    <form id="register-form">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label data-i18n="auth.name">Nombre completo</label>
+          <input type="text" name="name" required autocomplete="name">
+        </div>
+        <div class="form-field">
+          <label data-i18n="checkout.emailLbl">Correo electrónico</label>
+          <input type="email" name="email" required autocomplete="email">
+        </div>
+        <div class="form-field">
+          <label data-i18n="checkout.phoneLbl">Teléfono</label>
+          <input type="tel" name="phone" autocomplete="tel">
+        </div>
+        <div class="form-field">
+          <label data-i18n="auth.password">Contraseña</label>
+          <input type="password" name="password" required minlength="6" autocomplete="new-password">
+        </div>
+        <div class="form-field">
+          <label data-i18n="auth.password.confirm">Confirmar contraseña</label>
+          <input type="password" name="password2" required minlength="6" autocomplete="new-password">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-arrow mt-24" data-i18n="auth.signup">Crear cuenta</button>
+    </form>
+
+    <div class="auth-alt">
+      <span data-i18n="auth.alt.tologin">¿Ya tienes cuenta?</span>
+      <a href="entrar.html" data-i18n="auth.alt.tologin.cta">Entrar</a>
+    </div>
+  </div>
+</section>
+
+<div data-vj-footer></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("register-form");
+    const err  = document.getElementById("auth-error");
+    function showErr(code) {
+      const lang = localStorage.getItem("vj.lang") === "va" ? "va" : "es";
+      err.textContent = (I18N[lang]["auth.err." + code]) || (I18N[lang]["auth.err.unknown"]);
+      err.classList.add("is-show");
+    }
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      err.classList.remove("is-show");
+      const fd = new FormData(form);
+      if (fd.get("password") !== fd.get("password2")) {
+        showErr("mismatch"); return;
+      }
+      try {
+        await VJ_AUTH.register({
+          name: fd.get("name"),
+          email: fd.get("email"),
+          phone: fd.get("phone"),
+          password: fd.get("password")
+        });
+        const ret = new URLSearchParams(location.search).get("return");
+        location.href = ret || "cuenta.html";
+      } catch (e) {
+        showErr(e.message || "unknown");
+      }
+    });
+  });
+</script>
+</body>
+</html>

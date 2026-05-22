@@ -1,0 +1,542 @@
+/* =========================================================
+   Viveros Jazmín — Product catalogue + translations
+   Edit this file to add/remove products or change UI strings.
+   Languages: es (Castellano), va (Valencià)
+   ========================================================= */
+
+const SITE_INFO = {
+  name: "Viveros Jazmín",
+  tagline: { es: "Viveros y floristería desde 1992", va: "Viver i floristeria des de 1992" },
+  address: "Cuadra de Los Cubos, 135, 12006 Castelló de la Plana",
+  phone: "636 54 35 66",
+  phoneIntl: "+34636543566",
+  email: "jazminfloristeria@hotmail.com",
+  hours: {
+    es: "Lunes a sábado: 8:30–13:30 y 16:00–20:00 · Domingo y festivos: 9:00–13:00",
+    va: "Dilluns a dissabte: 8:30–13:30 i 16:00–20:00 · Diumenge i festius: 9:00–13:00"
+  },
+  mapsUrl: "https://www.google.com/maps/place/Viveros+JAZM%C3%8DN/@39.9855612,-0.0704806,17z/"
+};
+
+const CATEGORIES = [
+  { id: "interior",  es: "Plantas de interior",   va: "Plantes d'interior" },
+  { id: "exterior",  es: "Plantas de exterior",   va: "Plantes d'exterior" },
+  { id: "arboles",   es: "Árboles y arbustos",    va: "Arbres i arbustos" },
+  { id: "sustratos", es: "Sustratos y abonos",    va: "Substrats i adobs" },
+  { id: "macetas",   es: "Macetas y jardinería",  va: "Testos i jardineria" },
+  { id: "flores",    es: "Flores de temporada",   va: "Flors de temporada" }
+];
+
+/* Product images: themed SVG data-URLs are generated at runtime
+   from product.imgSeed (a hue rotation) so the site is fully
+   self-contained. To use real photos, replace product.img with a URL. */
+
+const PRODUCTS = [
+  // ===== INTERIOR (10) =====
+  { id: "int-01", cat: "interior", price: 24.90, stock: 12, imgSeed: 130,
+    name: { es: "Monstera Deliciosa", va: "Monstera Deliciosa" },
+    desc: {
+      es: "La icónica costilla de Adán. Hojas perforadas espectaculares, perfecta para dar un toque tropical a cualquier estancia luminosa. Riego moderado.",
+      va: "La icònica costella d'Adam. Fulles perforades espectaculars, perfecta per a donar un toc tropical a qualsevol estança lluminosa. Reg moderat."
+    } },
+  { id: "int-02", cat: "interior", price: 39.50, stock: 6, imgSeed: 120,
+    name: { es: "Ficus Lyrata (Pandurata)", va: "Ficus Lyrata (Pandurata)" },
+    desc: {
+      es: "Árbol de hojas grandes en forma de lira. Estiliza cualquier salón. Le encanta la luz indirecta brillante.",
+      va: "Arbre de fulles grans en forma de lira. Estilitza qualsevol saló. Li encanta la llum indirecta brillant."
+    } },
+  { id: "int-03", cat: "interior", price: 8.90, stock: 40, imgSeed: 110,
+    name: { es: "Potos (Pothos)", va: "Potus (Pothos)" },
+    desc: {
+      es: "La planta colgante más agradecida. Purifica el aire y crece rápido con muy pocos cuidados.",
+      va: "La planta penjant més agraïda. Purifica l'aire i creix ràpid amb molt pocs cures."
+    } },
+  { id: "int-04", cat: "interior", price: 14.50, stock: 18, imgSeed: 90,
+    name: { es: "Sansevieria (Lengua de Suegra)", va: "Sanseviera (Llengua de Sogra)" },
+    desc: {
+      es: "Resistente, elegante y casi indestructible. Ideal para principiantes y espacios con poca luz.",
+      va: "Resistent, elegant i quasi indestructible. Ideal per a principiants i espais amb poca llum."
+    } },
+  { id: "int-05", cat: "interior", price: 18.00, stock: 15, imgSeed: 140,
+    name: { es: "Spathiphyllum (Cuna de Moisés)", va: "Spathiphyllum (Bressol de Moisés)" },
+    desc: {
+      es: "Hojas verde brillante y flores blancas elegantes. Excelente purificadora del aire.",
+      va: "Fulles verd brillant i flors blanques elegants. Excel·lent purificadora de l'aire."
+    } },
+  { id: "int-06", cat: "interior", price: 6.50, stock: 50, imgSeed: 60,
+    name: { es: "Cactus surtidos (maceta 10cm)", va: "Cactus assortits (test 10cm)" },
+    desc: {
+      es: "Selección de cactus pequeños en macetas decorativas. Mínimos cuidados, máximo carácter.",
+      va: "Selecció de cactus xicotets en testos decoratius. Mínims cures, màxim caràcter."
+    } },
+  { id: "int-07", cat: "interior", price: 12.00, stock: 22, imgSeed: 100,
+    name: { es: "Aloe Vera", va: "Aloe Vera" },
+    desc: {
+      es: "Suculenta medicinal con múltiples propiedades. Requiere mucha luz y poco riego.",
+      va: "Suculenta medicinal amb múltiples propietats. Requereix molta llum i poc reg."
+    } },
+  { id: "int-08", cat: "interior", price: 22.00, stock: 10, imgSeed: 160,
+    name: { es: "Calathea Orbifolia", va: "Calathea Orbifolia" },
+    desc: {
+      es: "Hojas redondeadas con rayas plateadas. Una joya para amantes del follaje exótico.",
+      va: "Fulles arredonides amb ratlles platejades. Una joia per a amants del fullatge exòtic."
+    } },
+  { id: "int-09", cat: "interior", price: 16.90, stock: 30, imgSeed: 300,
+    name: { es: "Orquídea Phalaenopsis", va: "Orquídia Phalaenopsis" },
+    desc: {
+      es: "La orquídea más elegante y duradera. Floración prolongada en tonos blancos, rosas o lilas.",
+      va: "L'orquídia més elegant i duradora. Floració prolongada en tons blancs, roses o liles."
+    } },
+  { id: "int-10", cat: "interior", price: 11.50, stock: 24, imgSeed: 115,
+    name: { es: "Helecho de Boston", va: "Falguera de Boston" },
+    desc: {
+      es: "Follaje frondoso y aireado. Perfecto para baños y zonas con humedad alta.",
+      va: "Fullatge frondós i airejat. Perfecte per a banys i zones amb humitat alta."
+    } },
+
+  // ===== EXTERIOR (10) =====
+  { id: "ext-01", cat: "exterior", price: 7.50, stock: 60, imgSeed: 270,
+    name: { es: "Lavanda", va: "Espígol" },
+    desc: {
+      es: "Aroma inconfundible y flores moradas. Atrae polinizadores y tolera muy bien la sequía.",
+      va: "Aroma inconfusible i flors morades. Atrau pol·linitzadors i tolera molt bé la sequera."
+    } },
+  { id: "ext-02", cat: "exterior", price: 5.90, stock: 80, imgSeed: 80,
+    name: { es: "Romero", va: "Romer" },
+    desc: {
+      es: "Aromática mediterránea imprescindible. Resistente y útil tanto en jardín como en cocina.",
+      va: "Aromàtica mediterrània imprescindible. Resistent i útil tant al jardí com a la cuina."
+    } },
+  { id: "ext-03", cat: "exterior", price: 4.50, stock: 100, imgSeed: 350,
+    name: { es: "Geranios (variedades)", va: "Geranis (varietats)" },
+    desc: {
+      es: "El clásico de los balcones mediterráneos. Floración abundante de primavera a otoño.",
+      va: "El clàssic dels balcons mediterranis. Floració abundant de primavera a tardor."
+    } },
+  { id: "ext-04", cat: "exterior", price: 13.50, stock: 18, imgSeed: 40,
+    name: { es: "Jazmín blanco", va: "Gessamí blanc" },
+    desc: {
+      es: "Nuestra planta insignia. Flores blancas perfumadas que llenan el jardín de aroma en verano.",
+      va: "La nostra planta insígnia. Flors blanques perfumades que omplen el jardí d'aroma a l'estiu."
+    } },
+  { id: "ext-05", cat: "exterior", price: 19.90, stock: 14, imgSeed: 320,
+    name: { es: "Buganvilla", va: "Bugamvíl·lia" },
+    desc: {
+      es: "Espectaculares brácteas en fucsia, rojo o naranja. Resistente al calor y a la sal marina.",
+      va: "Espectaculars bràctees en fucsia, roig o taronja. Resistent a la calor i a la sal marina."
+    } },
+  { id: "ext-06", cat: "exterior", price: 15.00, stock: 12, imgSeed: 290,
+    name: { es: "Hortensia", va: "Hortènsia" },
+    desc: {
+      es: "Grandes inflorescencias en azul, rosa o blanco. Prefiere semisombra y riego constante.",
+      va: "Grans inflorescències en blau, rosa o blanc. Prefereix semiombra i reg constant."
+    } },
+  { id: "ext-07", cat: "exterior", price: 21.50, stock: 9, imgSeed: 340,
+    name: { es: "Rosal trepador", va: "Roser enfiladís" },
+    desc: {
+      es: "Para pérgolas, vallas y muros. Disponible en múltiples colores y variedades aromáticas.",
+      va: "Per a pèrgoles, tanques i murs. Disponible en múltiples colors i varietats aromàtiques."
+    } },
+  { id: "ext-08", cat: "exterior", price: 12.00, stock: 16, imgSeed: 310,
+    name: { es: "Hibisco", va: "Hibisc" },
+    desc: {
+      es: "Grandes flores tropicales en rojo, rosa o amarillo. Perfecto para zonas soleadas.",
+      va: "Grans flors tropicals en roig, rosa o groc. Perfecte per a zones assolellades."
+    } },
+  { id: "ext-09", cat: "exterior", price: 3.50, stock: 120, imgSeed: 70,
+    name: { es: "Margaritas", va: "Margarides" },
+    desc: {
+      es: "Flores alegres de pétalos blancos y centro amarillo. Las imprescindibles del jardín.",
+      va: "Flors alegres de pètals blancs i centre groc. Les imprescindibles del jardí."
+    } },
+  { id: "ext-10", cat: "exterior", price: 6.90, stock: 70, imgSeed: 330,
+    name: { es: "Petunias colgantes", va: "Petúnies penjants" },
+    desc: {
+      es: "Cascadas de flores en jardineras y balcones. Floración continua todo el verano.",
+      va: "Cascades de flors en jardineres i balcons. Floració contínua tot l'estiu."
+    } },
+
+  // ===== ÁRBOLES (8) =====
+  { id: "arb-01", cat: "arboles", price: 89.00, stock: 5, imgSeed: 95,
+    name: { es: "Olivo decorativo", va: "Olivera decorativa" },
+    desc: {
+      es: "Pieza única de carácter mediterráneo. Ideal como ejemplar central en jardines y patios.",
+      va: "Peça única de caràcter mediterrani. Ideal com a exemplar central en jardins i patis."
+    } },
+  { id: "arb-02", cat: "arboles", price: 45.00, stock: 8, imgSeed: 55,
+    name: { es: "Limonero", va: "Llimera" },
+    desc: {
+      es: "Frutal mediterráneo por excelencia. Produce limones durante gran parte del año.",
+      va: "Fruiter mediterrani per excel·lència. Produeix llimes durant gran part de l'any."
+    } },
+  { id: "arb-03", cat: "arboles", price: 49.00, stock: 7, imgSeed: 30,
+    name: { es: "Naranjo", va: "Taronger" },
+    desc: {
+      es: "Aromáticas flores de azahar y deliciosas naranjas. Un clásico del jardín valenciano.",
+      va: "Aromàtiques flors de tarongina i delicioses taronges. Un clàssic del jardí valencià."
+    } },
+  { id: "arb-04", cat: "arboles", price: 32.00, stock: 12, imgSeed: 145,
+    name: { es: "Ciprés", va: "Xiprer" },
+    desc: {
+      es: "Perfecto para setos y como ejemplar aislado. Crecimiento rápido y porte elegante.",
+      va: "Perfecte per a tanques i com a exemplar aïllat. Creixement ràpid i port elegant."
+    } },
+  { id: "arb-05", cat: "arboles", price: 17.00, stock: 20, imgSeed: 0,
+    name: { es: "Adelfa", va: "Baladre" },
+    desc: {
+      es: "Arbusto mediterráneo muy resistente. Floración espectacular en rojo, rosa o blanco.",
+      va: "Arbust mediterrani molt resistent. Floració espectacular en roig, rosa o blanc."
+    } },
+  { id: "arb-06", cat: "arboles", price: 75.00, stock: 4, imgSeed: 305,
+    name: { es: "Magnolia grandiflora", va: "Magnòlia grandiflora" },
+    desc: {
+      es: "Árbol majestuoso de flores blancas y aromáticas. Ejemplar que marca el paisaje.",
+      va: "Arbre majestuós de flors blanques i aromàtiques. Exemplar que marca el paisatge."
+    } },
+  { id: "arb-07", cat: "arboles", price: 120.00, stock: 3, imgSeed: 75,
+    name: { es: "Palmera Phoenix", va: "Palmera Phoenix" },
+    desc: {
+      es: "Aporta carácter tropical a cualquier jardín. Muy resistente a la salinidad y al calor.",
+      va: "Aporta caràcter tropical a qualsevol jardí. Molt resistent a la salinitat i a la calor."
+    } },
+  { id: "arb-08", cat: "arboles", price: 14.00, stock: 25, imgSeed: 125,
+    name: { es: "Boj", va: "Boix" },
+    desc: {
+      es: "Ideal para setos formales y topiaria. Hoja perenne pequeña y muy compacta.",
+      va: "Ideal per a tanques formals i topiària. Fulla perenne xicoteta i molt compacta."
+    } },
+
+  // ===== SUSTRATOS (5) =====
+  { id: "sus-01", cat: "sustratos", price: 8.50, stock: 50, imgSeed: 25,
+    name: { es: "Sustrato universal 20L", va: "Substrat universal 20L" },
+    desc: {
+      es: "Mezcla equilibrada apta para la mayoría de plantas. Buen drenaje y nutrición.",
+      va: "Mescla equilibrada apta per a la majoria de plantes. Bon drenatge i nutrició."
+    } },
+  { id: "sus-02", cat: "sustratos", price: 4.90, stock: 40, imgSeed: 20,
+    name: { es: "Sustrato para cactus 5L", va: "Substrat per a cactus 5L" },
+    desc: {
+      es: "Mezcla mineral con perlita y arena. Drenaje óptimo para suculentas y cactus.",
+      va: "Mescla mineral amb perlita i arena. Drenatge òptim per a suculentes i cactus."
+    } },
+  { id: "sus-03", cat: "sustratos", price: 18.90, stock: 25, imgSeed: 15,
+    name: { es: "Turba rubia 50L", va: "Torba rossa 50L" },
+    desc: {
+      es: "Turba de calidad profesional para semilleros y plantación. Estructura aireada.",
+      va: "Torba de qualitat professional per a planters i plantació. Estructura airejada."
+    } },
+  { id: "sus-04", cat: "sustratos", price: 12.50, stock: 30, imgSeed: 50,
+    name: { es: "Abono líquido universal 1L", va: "Adob líquid universal 1L" },
+    desc: {
+      es: "Aporta los nutrientes esenciales para un crecimiento sano. Dosificador incluido.",
+      va: "Aporta els nutrients essencials per a un creixement sa. Dosificador inclòs."
+    } },
+  { id: "sus-05", cat: "sustratos", price: 9.90, stock: 35, imgSeed: 35,
+    name: { es: "Humus de lombriz 5kg", va: "Humus de cuc 5kg" },
+    desc: {
+      es: "Abono orgánico 100% natural. Mejora la estructura del suelo y la microbiota.",
+      va: "Adob orgànic 100% natural. Millora l'estructura del sòl i la microbiota."
+    } },
+
+  // ===== MACETAS (5) =====
+  { id: "mac-01", cat: "macetas", price: 9.50, stock: 40, imgSeed: 22,
+    name: { es: "Maceta terracota 25cm", va: "Test terracota 25cm" },
+    desc: {
+      es: "Clásica maceta de barro cocido. Transpirable y de larga duración.",
+      va: "Clàssic test de fang cuit. Transpirable i de llarga durada."
+    } },
+  { id: "mac-02", cat: "macetas", price: 24.90, stock: 18, imgSeed: 200,
+    name: { es: "Maceta cerámica decorativa", va: "Test ceràmic decoratiu" },
+    desc: {
+      es: "Cerámica esmaltada en varios colores. Acabado mate, ideal para interior.",
+      va: "Ceràmica esmaltada en diversos colors. Acabat mat, ideal per a interior."
+    } },
+  { id: "mac-03", cat: "macetas", price: 17.50, stock: 22, imgSeed: 18,
+    name: { es: "Jardinera rectangular 60cm", va: "Jardinera rectangular 60cm" },
+    desc: {
+      es: "Perfecta para balcones y terrazas. Plato recogegotas integrado.",
+      va: "Perfecta per a balcons i terrasses. Plat arreplegagotes integrat."
+    } },
+  { id: "mac-04", cat: "macetas", price: 29.00, stock: 12, imgSeed: 250,
+    name: { es: "Set de herramientas de jardín", va: "Joc d'eines de jardí" },
+    desc: {
+      es: "Pala, transplantador y rastrillo. Mango ergonómico de madera.",
+      va: "Pala, transplantador i rasclet. Mànec ergonòmic de fusta."
+    } },
+  { id: "mac-05", cat: "macetas", price: 22.50, stock: 14, imgSeed: 240,
+    name: { es: "Regadera metálica 5L", va: "Regadora metàl·lica 5L" },
+    desc: {
+      es: "Diseño clásico en zinc. Roseta desmontable para riego suave.",
+      va: "Disseny clàssic en zinc. Roseta desmuntable per a un reg suau."
+    } },
+
+  // ===== FLORES TEMPORADA (5) =====
+  { id: "flo-01", cat: "flores", price: 28.00, stock: 8, imgSeed: 320,
+    name: { es: "Ramo de temporada", va: "Ram de temporada" },
+    desc: {
+      es: "Selección floral fresca de nuestros mejores proveedores. Compuesto a mano por nuestra floristería.",
+      va: "Selecció floral fresca dels nostres millors proveïdors. Compost a mà per la nostra floristeria."
+    } },
+  { id: "flo-02", cat: "flores", price: 3.50, stock: 120, imgSeed: 290,
+    name: { es: "Pensamientos", va: "Pensaments" },
+    desc: {
+      es: "Las flores del invierno. Resisten el frío y aportan color cuando todo descansa.",
+      va: "Les flors de l'hivern. Resistixen el fred i aporten color quan tot descansa."
+    } },
+  { id: "flo-03", cat: "flores", price: 6.90, stock: 40, imgSeed: 330,
+    name: { es: "Ciclamen", va: "Ciclamen" },
+    desc: {
+      es: "Floración invernal espectacular en macetas. Tonos rosados, blancos y rojos.",
+      va: "Floració hivernal espectacular en testos. Tons rosats, blancs i rojos."
+    } },
+  { id: "flo-04", cat: "flores", price: 9.50, stock: 30, imgSeed: 45,
+    name: { es: "Crisantemos", va: "Crisantems" },
+    desc: {
+      es: "Disponibles en gran variedad de colores. La flor del otoño por excelencia.",
+      va: "Disponibles en gran varietat de colors. La flor de la tardor per excel·lència."
+    } },
+  { id: "flo-05", cat: "flores", price: 11.90, stock: 20, imgSeed: 5,
+    name: { es: "Poinsettia (Flor de Pascua)", va: "Poinsettia (Flor de Pasqua)" },
+    desc: {
+      es: "La planta navideña por antonomasia. Sus brácteas rojas alegran cualquier rincón.",
+      va: "La planta nadalenca per antonomàsia. Les seues bràctees roges alegren qualsevol racó."
+    } }
+];
+
+/* ========= UI string translations ========= */
+const I18N = {
+  es: {
+    "nav.home": "Inicio",
+    "nav.shop": "Tienda",
+    "nav.about": "Sobre nosotros",
+    "nav.contact": "Contacto",
+    "nav.cart": "Carrito",
+    "common.viewMore": "Ver más",
+    "common.buy": "Comprar",
+    "common.addToCart": "Añadir al carrito",
+    "common.added": "Añadido al carrito",
+    "common.outOfStock": "Sin stock",
+    "common.inStock": "En stock",
+    "common.units": "unidades",
+    "common.price": "Precio",
+    "common.quantity": "Cantidad",
+    "common.subtotal": "Subtotal",
+    "common.total": "Total",
+    "common.continue": "Continuar comprando",
+    "common.checkout": "Tramitar pedido",
+    "common.remove": "Eliminar",
+    "common.back": "Volver",
+    "common.send": "Enviar",
+    "common.filter": "Filtrar",
+    "common.all": "Todos",
+    "common.search": "Buscar productos…",
+    "common.openMaps": "Abrir en Google Maps",
+    "common.callUs": "Llámanos",
+    "common.email": "Escríbenos",
+    "common.hours": "Horario",
+    "common.address": "Dirección",
+    "common.phone": "Teléfono",
+    "common.related": "También te puede interesar",
+    "home.hero.title": "Tu vivero de confianza en Castellón",
+    "home.hero.subtitle": "Plantas, árboles, sustratos y flores de temporada. Cultivamos con cariño desde 1992.",
+    "home.hero.cta": "Ver la tienda",
+    "home.featured": "Destacados",
+    "home.categories": "Categorías",
+    "home.stats.years": "Años cultivando",
+    "home.stats.species": "Variedades en stock",
+    "home.stats.founded": "Proyecto familiar",
+    "home.stats.region": "Castelló de la Plana",
+    "home.story.title": "Nuestra historia",
+    "home.story.text": "Viveros Jazmín nace en 1992 como un proyecto familiar. Tres décadas después seguimos cuidando cada planta como el primer día.",
+    "home.story.cta": "Conoce más",
+    "home.visit.title": "Visítanos en el vivero",
+    "home.visit.text": "Pásate por nuestras instalaciones en Castelló de la Plana. Te asesoramos sobre la planta perfecta para cada espacio.",
+    "shop.title": "Nuestra tienda",
+    "shop.subtitle": "Más de 40 productos seleccionados. Recoge en tienda o solicita el envío.",
+    "shop.empty": "No hay productos para esta selección.",
+    "cart.title": "Tu carrito",
+    "cart.empty": "Tu carrito está vacío.",
+    "cart.emptyCta": "Ir a la tienda",
+    "checkout.title": "Tramitar pedido",
+    "checkout.details": "Datos de contacto",
+    "checkout.name": "Nombre completo",
+    "checkout.emailLbl": "Correo electrónico",
+    "checkout.phoneLbl": "Teléfono",
+    "checkout.delivery": "Recogida / Envío",
+    "checkout.pickup": "Recoger en tienda (gratis)",
+    "checkout.ship": "Envío a domicilio (Castelló y alrededores)",
+    "checkout.address": "Dirección de envío",
+    "checkout.notes": "Notas para el pedido",
+    "checkout.summary": "Resumen del pedido",
+    "checkout.submit": "Enviar pedido",
+    "checkout.success.title": "¡Pedido recibido!",
+    "checkout.success.text": "Gracias por confiar en Viveros Jazmín. Nos pondremos en contacto contigo en menos de 24 horas para confirmar tu pedido.",
+    "checkout.success.ref": "Referencia",
+    "checkout.success.back": "Volver al inicio",
+    "about.title": "Sobre Jazmín",
+    "about.p1": "Viveros Jazmín nace en el año 1992, momento en el que una joven pareja, ambos trabajadores del sector ornamental, contraen matrimonio y deciden emprender la aventura de crear un proyecto que les permita trabajar juntos poniendo en práctica todos los conocimientos adquiridos hasta entonces.",
+    "about.p2": "Abren una pequeña floristería y comienzan a cultivar plantas en un terreno propiedad de la familia situado en la Cuadra de Los Cubos. Años más tarde la floristería se traslada a un local mucho más amplio y el vivero amplía su oferta de variedades.",
+    "about.p3": "Actualmente, todo el equipo que compone la empresa trabaja con esfuerzo e ilusión para poder ofrecer, tanto a profesionales como a aficionados de la jardinería y floristería, gran variedad de productos.",
+    "about.p4": "A lo largo de estos años hemos creado vínculos afectivos con nuestros clientes con quienes compartimos momentos muy agradables. Gracias a ellos y a sus experiencias y conocimientos sobre las plantas continuamos aprendiendo cada día.",
+    "contact.title": "Contacto",
+    "contact.subtitle": "¿Tienes una pregunta o un encargo especial? Estaremos encantados de ayudarte.",
+    "contact.form.name": "Tu nombre",
+    "contact.form.email": "Tu correo",
+    "contact.form.message": "Mensaje",
+    "contact.form.submit": "Enviar mensaje",
+    "contact.form.success": "¡Gracias! Te responderemos lo antes posible.",
+    "footer.tagline": "Viveros y floristería en Castelló de la Plana desde 1992.",
+    "footer.shop": "Tienda",
+    "footer.info": "Información",
+    "footer.find": "Encuéntranos",
+    "footer.copy": "Todos los derechos reservados.",
+    "auth.signin": "Entrar",
+    "auth.signup": "Crear cuenta",
+    "auth.login.title": "Bienvenido de nuevo",
+    "auth.login.sub": "Accede a tu cuenta para gestionar tus pedidos.",
+    "auth.register.title": "Crea tu cuenta",
+    "auth.register.sub": "Guarda tus pedidos y agiliza la compra la próxima vez.",
+    "auth.aside.title": "Tu jardín, a un clic.",
+    "auth.aside.text": "Crea una cuenta para guardar tus direcciones, tus pedidos y tus plantas favoritas.",
+    "auth.name": "Nombre completo",
+    "auth.password": "Contraseña",
+    "auth.password.confirm": "Confirmar contraseña",
+    "auth.alt.toregister": "¿Aún no tienes cuenta?",
+    "auth.alt.tologin": "¿Ya tienes cuenta?",
+    "auth.alt.toregister.cta": "Crear cuenta",
+    "auth.alt.tologin.cta": "Entrar",
+    "auth.err.missing": "Por favor rellena todos los campos obligatorios.",
+    "auth.err.short": "La contraseña debe tener al menos 6 caracteres.",
+    "auth.err.mismatch": "Las contraseñas no coinciden.",
+    "auth.err.exists": "Ya existe una cuenta con este correo.",
+    "auth.err.nouser": "No encontramos una cuenta con este correo.",
+    "auth.err.badpass": "La contraseña no es correcta.",
+    "auth.err.unknown": "Algo ha fallado. Vuelve a intentarlo.",
+    "account.title": "Mi cuenta",
+    "account.welcome": "Hola",
+    "account.menu.profile": "Perfil",
+    "account.menu.orders": "Mis pedidos",
+    "account.menu.logout": "Cerrar sesión",
+    "account.profile.title": "Tus datos",
+    "account.orders.title": "Tus pedidos",
+    "account.orders.empty": "Aún no has realizado ningún pedido.",
+    "account.member": "Cliente desde"
+  },
+  va: {
+    "nav.home": "Inici",
+    "nav.shop": "Botiga",
+    "nav.about": "Sobre nosaltres",
+    "nav.contact": "Contacte",
+    "nav.cart": "Cistella",
+    "common.viewMore": "Veure més",
+    "common.buy": "Comprar",
+    "common.addToCart": "Afegir a la cistella",
+    "common.added": "Afegit a la cistella",
+    "common.outOfStock": "Sense estoc",
+    "common.inStock": "En estoc",
+    "common.units": "unitats",
+    "common.price": "Preu",
+    "common.quantity": "Quantitat",
+    "common.subtotal": "Subtotal",
+    "common.total": "Total",
+    "common.continue": "Seguir comprant",
+    "common.checkout": "Tramitar comanda",
+    "common.remove": "Eliminar",
+    "common.back": "Tornar",
+    "common.send": "Enviar",
+    "common.filter": "Filtrar",
+    "common.all": "Tots",
+    "common.search": "Cercar productes…",
+    "common.openMaps": "Obrir en Google Maps",
+    "common.callUs": "Crida'ns",
+    "common.email": "Escriu-nos",
+    "common.hours": "Horari",
+    "common.address": "Adreça",
+    "common.phone": "Telèfon",
+    "common.related": "També et pot interessar",
+    "home.hero.title": "El teu viver de confiança a Castelló",
+    "home.hero.subtitle": "Plantes, arbres, substrats i flors de temporada. Cultivem amb cura des de 1992.",
+    "home.hero.cta": "Veure la botiga",
+    "home.featured": "Destacats",
+    "home.categories": "Categories",
+    "home.stats.years": "Anys cultivant",
+    "home.stats.species": "Varietats en estoc",
+    "home.stats.founded": "Projecte familiar",
+    "home.stats.region": "Castelló de la Plana",
+    "home.story.title": "La nostra història",
+    "home.story.text": "Viveros Jazmín naix en 1992 com un projecte familiar. Tres dècades després seguim cuidant cada planta com el primer dia.",
+    "home.story.cta": "Conèixer més",
+    "home.visit.title": "Visita'ns al viver",
+    "home.visit.text": "Passa per les nostres instal·lacions a Castelló de la Plana. T'assessorem sobre la planta perfecta per a cada espai.",
+    "shop.title": "La nostra botiga",
+    "shop.subtitle": "Més de 40 productes seleccionats. Arreplega a la botiga o sol·licita l'enviament.",
+    "shop.empty": "No hi ha productes per a esta selecció.",
+    "cart.title": "La teua cistella",
+    "cart.empty": "La teua cistella està buida.",
+    "cart.emptyCta": "Anar a la botiga",
+    "checkout.title": "Tramitar comanda",
+    "checkout.details": "Dades de contacte",
+    "checkout.name": "Nom complet",
+    "checkout.emailLbl": "Correu electrònic",
+    "checkout.phoneLbl": "Telèfon",
+    "checkout.delivery": "Arreplegada / Enviament",
+    "checkout.pickup": "Arreplegar a la botiga (gratis)",
+    "checkout.ship": "Enviament a domicili (Castelló i voltants)",
+    "checkout.address": "Adreça d'enviament",
+    "checkout.notes": "Notes per a la comanda",
+    "checkout.summary": "Resum de la comanda",
+    "checkout.submit": "Enviar comanda",
+    "checkout.success.title": "Comanda rebuda!",
+    "checkout.success.text": "Gràcies per confiar en Viveros Jazmín. Ens posarem en contacte amb tu en menys de 24 hores per confirmar la teua comanda.",
+    "checkout.success.ref": "Referència",
+    "checkout.success.back": "Tornar a l'inici",
+    "about.title": "Sobre Jazmín",
+    "about.p1": "Viveros Jazmín naix l'any 1992, moment en què una jove parella, ambdós treballadors del sector ornamental, contrauen matrimoni i decideixen emprendre l'aventura de crear un projecte que els permeta treballar junts posant en pràctica tots els coneixements adquirits fins llavors.",
+    "about.p2": "Obrin una xicoteta floristeria i comencen a cultivar plantes en un terreny propietat de la família situat a la Cuadra de Los Cubos. Anys més tard la floristeria es trasllada a un local molt més ampli i el viver amplia la seua oferta de varietats.",
+    "about.p3": "Actualment, tot l'equip que compon l'empresa treballa amb esforç i il·lusió per a poder oferir, tant a professionals com a aficionats de la jardineria i floristeria, gran varietat de productes.",
+    "about.p4": "Al llarg d'estos anys hem creat vincles afectius amb els nostres clients amb qui compartim moments molt agradables. Gràcies a ells i a les seues experiències i coneixements sobre les plantes continuem aprenent cada dia.",
+    "contact.title": "Contacte",
+    "contact.subtitle": "Tens una pregunta o un encàrrec especial? Estarem encantats d'ajudar-te.",
+    "contact.form.name": "El teu nom",
+    "contact.form.email": "El teu correu",
+    "contact.form.message": "Missatge",
+    "contact.form.submit": "Enviar missatge",
+    "contact.form.success": "Gràcies! Et respondrem com més prompte millor.",
+    "footer.tagline": "Viver i floristeria a Castelló de la Plana des de 1992.",
+    "footer.shop": "Botiga",
+    "footer.info": "Informació",
+    "footer.find": "Troba'ns",
+    "footer.copy": "Tots els drets reservats.",
+    "auth.signin": "Entrar",
+    "auth.signup": "Crear compte",
+    "auth.login.title": "Benvingut de nou",
+    "auth.login.sub": "Accedeix al teu compte per gestionar les teues comandes.",
+    "auth.register.title": "Crea el teu compte",
+    "auth.register.sub": "Desa les teues comandes i agilita la compra la pròxima vegada.",
+    "auth.aside.title": "El teu jardí, a un clic.",
+    "auth.aside.text": "Crea un compte per guardar les teues adreces, comandes i plantes preferides.",
+    "auth.name": "Nom complet",
+    "auth.password": "Contrasenya",
+    "auth.password.confirm": "Confirmar contrasenya",
+    "auth.alt.toregister": "Encara no tens compte?",
+    "auth.alt.tologin": "Ja tens compte?",
+    "auth.alt.toregister.cta": "Crear compte",
+    "auth.alt.tologin.cta": "Entrar",
+    "auth.err.missing": "Si us plau, ompli tots els camps obligatoris.",
+    "auth.err.short": "La contrasenya ha de tindre almenys 6 caràcters.",
+    "auth.err.mismatch": "Les contrasenyes no coincideixen.",
+    "auth.err.exists": "Ja existeix un compte amb este correu.",
+    "auth.err.nouser": "No hem trobat un compte amb este correu.",
+    "auth.err.badpass": "La contrasenya no és correcta.",
+    "auth.err.unknown": "Alguna cosa ha fallat. Torna-ho a provar.",
+    "account.title": "El meu compte",
+    "account.welcome": "Hola",
+    "account.menu.profile": "Perfil",
+    "account.menu.orders": "Les meues comandes",
+    "account.menu.logout": "Tancar sessió",
+    "account.profile.title": "Les teues dades",
+    "account.orders.title": "Les teues comandes",
+    "account.orders.empty": "Encara no has fet cap comanda.",
+    "account.member": "Client des de"
+  }
+};

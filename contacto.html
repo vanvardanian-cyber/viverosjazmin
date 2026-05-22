@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contacto · Viveros Jazmín</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<div data-vj-header></div>
+
+<section class="page-head">
+  <div class="container">
+    <span class="eyebrow" data-i18n="contact.title">Contacto</span>
+    <h1><em>Hablemos</em></h1>
+    <p data-i18n="contact.subtitle">¿Tienes una pregunta o un encargo especial?</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <form id="contact-form" class="form-card">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label data-i18n="contact.form.name">Tu nombre</label>
+            <input type="text" name="name" required>
+          </div>
+          <div class="form-field full">
+            <label data-i18n="contact.form.email">Tu correo</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="form-field full">
+            <label data-i18n="contact.form.message">Mensaje</label>
+            <textarea name="message" required></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-arrow mt-24" data-i18n="contact.form.submit">Enviar mensaje</button>
+      </form>
+      <div id="contact-success" class="empty-state" style="display:none;">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 data-i18n="contact.form.success">¡Gracias! Te responderemos lo antes posible.</h3>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow" data-i18n="home.visit.title">Visítanos</span>
+      <h2 style="font-size: 2rem;"><em>Castelló</em><br>de la Plana</h2>
+      <div class="info-list">
+        <div class="info-line">
+          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s-7-7-7-13a7 7 0 1 1 14 0c0 6-7 13-7 13z"/><circle cx="12" cy="9" r="2.5"/></svg></span>
+          <div><strong data-i18n="common.address">Dirección</strong>Cuadra de Los Cubos, 135 · 12006 Castelló de la Plana</div>
+        </div>
+        <div class="info-line">
+          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <div><strong data-i18n="common.hours">Horario</strong><span id="hrs-text"></span></div>
+        </div>
+        <div class="info-line">
+          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg></span>
+          <div><strong data-i18n="common.phone">Teléfono</strong><a href="tel:+34636543566">636 54 35 66</a></div>
+        </div>
+        <div class="info-line">
+          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
+          <div><strong data-i18n="common.email">Email</strong><a href="mailto:jazminfloristeria@hotmail.com">jazminfloristeria@hotmail.com</a></div>
+        </div>
+      </div>
+      <a class="btn btn-outline btn-arrow mt-24" target="_blank" rel="noopener" href="https://www.google.com/maps/place/Viveros+JAZM%C3%8DN/@39.9855612,-0.0704806,17z/" data-i18n="common.openMaps">Abrir en Google Maps</a>
+    </div>
+  </div>
+</section>
+
+<div data-vj-footer></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    function updateHours() {
+      const el = document.getElementById("hrs-text");
+      const lang = localStorage.getItem("vj.lang") === "va" ? "va" : "es";
+      if (el) el.innerHTML = SITE_INFO.hours[lang].replace(" · ", "<br>");
+    }
+    updateHours();
+    document.addEventListener("vj:langchange", updateHours);
+  });
+</script>
+</body>
+</html>
