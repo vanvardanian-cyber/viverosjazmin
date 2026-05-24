@@ -1,0 +1,9 @@
+# Viveros Jazmín
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /cuenta.html
+Disallow: /checkout.html
+Disallow: /gracias.html
+
+Sitemap: https://jazmin-group.com/sitemap.xml
