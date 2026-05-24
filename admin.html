@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin · Viveros Jazmín</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<div data-vj-header></div>
+
+<section class="section section--tight">
+  <div class="container">
+
+    <div class="admin-bar">
+      <div class="left">
+        <h2><em>Gestor</em> de productos</h2>
+        <span class="badge">Borrador local</span>
+      </div>
+      <div class="right">
+        <button class="btn btn-outline" id="btn-reset" type="button">Reiniciar</button>
+        <button class="btn btn-primary btn-arrow" id="btn-export" type="button">Exportar data.js</button>
+      </div>
+    </div>
+
+    <div class="admin-notice">
+      <strong>¿Cómo funciona?</strong> Añade, edita y borra productos en este panel — los cambios se guardan en tu navegador y aparecen al instante en la tienda. Cuando tu catálogo esté listo, pulsa <strong>Exportar data.js</strong> para descargar el archivo, sustitúyelo en <code>js/data.js</code> del repositorio y publica los cambios. Así los verán todos los clientes.
+    </div>
+
+    <div class="admin-layout">
+
+      <!-- LEFT: product list -->
+      <div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
+            Catálogo · <span id="count-total">0</span> productos
+          </h4>
+          <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" style="max-width:240px; padding-top:8px; padding-bottom:8px;">
+        </div>
+        <div class="admin-list" id="admin-list"></div>
+      </div>
+
+      <!-- RIGHT: form -->
+      <aside class="admin-form-wrap">
+        <h3 id="form-title">Añadir producto</h3>
+        <form id="product-form" autocomplete="off">
+          <input type="hidden" name="id">
+          <input type="hidden" name="originalId">
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Categoría</label>
+              <select name="cat" id="f-cat" required></select>
+            </div>
+            <div class="form-field">
+              <label>ID interno</label>
+              <input type="text" name="idDisplay" id="f-idDisplay" disabled placeholder="se genera al guardar">
+            </div>
+
+            <div class="form-field full">
+              <label>Nombre <span class="lang-tag">ES</span></label>
+              <input type="text" name="name_es" required maxlength="80">
+            </div>
+            <div class="form-field full">
+              <label>Nombre <span class="lang-tag">VAL</span></label>
+              <input type="text" name="name_va" required maxlength="80">
+            </div>
+
+            <div class="form-field full">
+              <label>Descripción <span class="lang-tag">ES</span></label>
+              <textarea name="desc_es" required maxlength="280"></textarea>
+            </div>
+            <div class="form-field full">
+              <label>Descripción <span class="lang-tag">VAL</span></label>
+              <textarea name="desc_va" required maxlength="280"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label>Precio (€)</label>
+              <input type="number" name="price" step="0.01" min="0" required>
+            </div>
+            <div class="form-field">
+              <label>Stock</label>
+              <input type="number" name="stock" step="1" min="0" required value="10">
+            </div>
+
+            <div class="form-field full">
+              <label>URL de imagen (opcional)</label>
+              <input type="url" name="img" placeholder="https://…  · vacío = ilustración automática">
+            </div>
+            <div class="form-field full">
+              <label>Color de la ilustración (si no hay foto): <span id="seed-val" style="font-weight:600">0</span></label>
+              <input type="range" name="imgSeed" min="0" max="360" value="0" step="5" id="f-seed">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-light" id="btn-cancel" style="display:none;">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit">Añadir producto</button>
+          </div>
+        </form>
+      </aside>
+    </div>
+
+  </div>
+</section>
+
+<div data-vj-footer></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  (function () {
+    const form = document.getElementById("product-form");
+    const list = document.getElementById("admin-list");
+    const countEl = document.getElementById("count-total");
+    const search = document.getElementById("admin-search");
+    const submitBtn = document.getElementById("btn-submit");
+    const cancelBtn = document.getElementById("btn-cancel");
+    const titleEl = document.getElementById("form-title");
+    const seedSlider = document.getElementById("f-seed");
+    const seedVal = document.getElementById("seed-val");
+    let editingId = null;
+
+    // populate category dropdown
+    const catSel = document.getElementById("f-cat");
+    catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.es}</option>`).join("");
+
+    // tiny inline SVG icons
+    const ICONS = {
+      edit:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+      trash:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
+    };
+
+    function catName(id) {
+      const c = CATEGORIES.find(c => c.id === id);
+      return c ? c.es : id;
+    }
+    function fmtPrice(n) {
+      return new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR" }).format(n);
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+    }
+    function thumbHTML(p) {
+      if (p.img && /^https?:/.test(p.img)) {
+        return `<img src="${escapeHtml(p.img)}" alt="">`;
+      }
+      // Reuse the same SVG generator the site uses
+      return (typeof productSvgPlaceholder === "function") ? "" : "";
+    }
+    function renderList() {
+      const term = (search.value || "").trim().toLowerCase();
+      let items = VJ_CATALOG.list();
+      if (term) {
+        items = items.filter(p =>
+          (p.name.es + " " + p.name.va + " " + p.id).toLowerCase().includes(term)
+        );
+      }
+      countEl.textContent = VJ_CATALOG.list().length;
+      if (items.length === 0) {
+        list.innerHTML = `<div class="muted" style="padding:32px 0; text-align:center;">Sin resultados.</div>`;
+        return;
+      }
+      list.innerHTML = items.map(p => `
+        <div class="admin-row" data-id="${p.id}">
+          <div class="thumb">
+            ${p.img && /^https?:/.test(p.img)
+              ? `<img src="${escapeHtml(p.img)}" alt="">`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--blue-deep);font-family:'Playfair Display',serif;font-style:italic;font-size:1.2rem;">${escapeHtml(p.name.es[0]||'·')}</div>`
+            }
+          </div>
+          <div>
+            <div class="name">${escapeHtml(p.name.es)}</div>
+            <div class="meta">${escapeHtml(p.id)} · ${escapeHtml(p.name.va)}</div>
+          </div>
+          <div class="col-cat">${catName(p.cat)}</div>
+          <div class="col-price">${fmtPrice(p.price)}</div>
+          <div class="actions">
+            <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>
+            <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function clearForm() {
+      form.reset();
+      editingId = null;
+      form.elements.id.value = "";
+      form.elements.originalId.value = "";
+      document.getElementById("f-idDisplay").value = "";
+      titleEl.innerHTML = "Añadir producto";
+      submitBtn.textContent = "Añadir producto";
+      cancelBtn.style.display = "none";
+      seedVal.textContent = "0";
+      seedSlider.value = 0;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function loadForEdit(id) {
+      const p = VJ_CATALOG.list().find(x => x.id === id);
+      if (!p) return;
+      editingId = id;
+      form.elements.id.value = p.id;
+      form.elements.originalId.value = p.id;
+      document.getElementById("f-idDisplay").value = p.id;
+      form.elements.cat.value = p.cat;
+      form.elements.name_es.value = p.name.es;
+      form.elements.name_va.value = p.name.va;
+      form.elements.desc_es.value = p.desc.es;
+      form.elements.desc_va.value = p.desc.va;
+      form.elements.price.value = p.price;
+      form.elements.stock.value = p.stock;
+      form.elements.img.value = p.img || "";
+      const seed = Number(p.imgSeed) || 0;
+      form.elements.imgSeed.value = seed;
+      seedVal.textContent = seed;
+      titleEl.innerHTML = `<em>Editar</em> · ${escapeHtml(p.name.es)}`;
+      submitBtn.textContent = "Guardar cambios";
+      cancelBtn.style.display = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-act]");
+      if (!btn) return;
+      const id = btn.closest(".admin-row").dataset.id;
+      if (btn.dataset.act === "edit") loadForEdit(id);
+      if (btn.dataset.act === "del") {
+        if (confirm(`¿Eliminar "${VJ_CATALOG.list().find(p=>p.id===id)?.name.es}"?`)) {
+          const next = VJ_CATALOG.list().filter(p => p.id !== id);
+          VJ_CATALOG.save(next);
+          renderList();
+          if (editingId === id) clearForm();
+        }
+      }
+    });
+
+    cancelBtn.addEventListener("click", clearForm);
+    search.addEventListener("input", renderList);
+    seedSlider.addEventListener("input", e => seedVal.textContent = e.target.value);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const cat = fd.get("cat");
+      const id = editingId || VJ_CATALOG.nextId(cat);
+      const next = VJ_CATALOG.list().slice();
+      const product = {
+        id,
+        cat,
+        price: parseFloat(fd.get("price")) || 0,
+        stock: parseInt(fd.get("stock")) || 0,
+        imgSeed: parseInt(fd.get("imgSeed")) || 0,
+        img: (fd.get("img") || "").trim() || undefined,
+        name: { es: (fd.get("name_es")||"").trim(), va: (fd.get("name_va")||"").trim() },
+        desc: { es: (fd.get("desc_es")||"").trim(), va: (fd.get("desc_va")||"").trim() }
+      };
+      if (!product.img) delete product.img;
+
+      if (editingId) {
+        const i = next.findIndex(p => p.id === editingId);
+        if (i >= 0) next[i] = product;
+      } else {
+        next.push(product);
+      }
+      VJ_CATALOG.save(next);
+      renderList();
+      clearForm();
+      // tiny inline feedback
+      submitBtn.textContent = "✓ Guardado";
+      setTimeout(() => submitBtn.textContent = "Añadir producto", 1200);
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      if (confirm("Esto descartará todos tus cambios y volverá al catálogo original. ¿Continuar?")) {
+        VJ_CATALOG.reset();
+        clearForm();
+        renderList();
+      }
+    });
+
+    document.getElementById("btn-export").addEventListener("click", () => {
+      const arr = VJ_CATALOG.list();
+      const pretty = JSON.stringify(arr, null, 2);
+
+      // Build a full data.js with the new PRODUCTS array baked in.
+      // Read the original module to preserve SITE_INFO, CATEGORIES, I18N.
+      fetch("js/data.js").then(r => r.text()).then(orig => {
+        // Replace the existing PRODUCTS array literal.
+        const newProductsLiteral = "let PRODUCTS = " + pretty + ";";
+        const updated = orig.replace(
+          /let PRODUCTS = \[[\s\S]*?\n\];/,
+          newProductsLiteral
+        );
+        const blob = new Blob([updated], { type: "application/javascript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "data.js";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }).catch(() => {
+        // Offline / file:// — fall back to just the array
+        const blob = new Blob(["// Replace the PRODUCTS array in js/data.js with:\n\nlet PRODUCTS = " + pretty + ";\n"], { type: "application/javascript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "data.products.js";
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        alert("No pude leer js/data.js directamente (al abrir el archivo desde el escritorio). Te he descargado solo el bloque PRODUCTS — pégalo en data.js sustituyendo el array existente.");
+      });
+    });
+
+    // Initial render
+    renderList();
+    document.addEventListener("vj:catalogchange", renderList);
+  })();
+</script>
+</body>
+</html>

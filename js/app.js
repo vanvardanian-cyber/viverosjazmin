@@ -14,6 +14,56 @@
   const STORAGE_CART    = "vj.cart";
   const STORAGE_USERS   = "vj.users";    // { [email]: {name,email,passwordHash,salt,createdAt,phone,addresses,orders} }
   const STORAGE_SESSION = "vj.session";  // { email, since }
+  const STORAGE_CATALOG = "vj.catalog";  // override product list (admin edits)
+
+  /* ---------------- Catalog (with localStorage override) ---------------- */
+  function loadCatalogFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_CATALOG);
+      if (!raw) return;
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr) || arr.length === 0) return;
+      // Replace contents of the global PRODUCTS in place so all
+      // existing references (PRODUCTS.find, etc.) still work.
+      PRODUCTS.length = 0;
+      arr.forEach(p => PRODUCTS.push(p));
+    } catch (e) { /* ignore */ }
+  }
+  loadCatalogFromStorage();   // run before any renderers
+
+  function saveCatalog(arr) {
+    PRODUCTS.length = 0;
+    arr.forEach(p => PRODUCTS.push(p));
+    localStorage.setItem(STORAGE_CATALOG, JSON.stringify(PRODUCTS));
+    document.dispatchEvent(new CustomEvent("vj:catalogchange"));
+  }
+  function resetCatalog() {
+    PRODUCTS.length = 0;
+    SEED_PRODUCTS.forEach(p => PRODUCTS.push(JSON.parse(JSON.stringify(p))));
+    localStorage.removeItem(STORAGE_CATALOG);
+    document.dispatchEvent(new CustomEvent("vj:catalogchange"));
+  }
+  function exportCatalogAsDataJS() {
+    // Generate a replacement data.js snippet containing the new PRODUCTS array.
+    // Owner replaces the old array in js/data.js with this, commits, deploys.
+    const pretty = JSON.stringify(PRODUCTS, null, 2)
+      // Compact `name`/`desc` bilingual objects onto fewer lines for readability.
+      .replace(/\{\s*"es": (".*?"),\s*"va": (".*?")\s*\}/g, '{ "es": $1, "va": $2 }');
+    return pretty;
+  }
+  window.VJ_CATALOG = {
+    list: () => PRODUCTS.slice(),
+    seed: () => JSON.parse(JSON.stringify(SEED_PRODUCTS)),
+    save: saveCatalog,
+    reset: resetCatalog,
+    exportDataJS: exportCatalogAsDataJS,
+    nextId: (cat) => {
+      const prefix = (CATEGORIES.find(c => c.id === cat) || {}).id?.slice(0,3) || "new";
+      let n = 1;
+      while (PRODUCTS.find(p => p.id === `${prefix}-${String(n).padStart(2,"0")}`)) n++;
+      return `${prefix}-${String(n).padStart(2,"0")}`;
+    }
+  };
 
   /* ---------------- Auth ---------------- */
   // NOTE: client-side mock. Passwords are hashed with SHA-256 + salt
@@ -212,10 +262,18 @@
     toastTimer = setTimeout(() => toast.classList.remove("is-show"), 2200);
   }
 
-  /* ---------------- Product image SVG ---------------- */
+  /* ---------------- Product image (URL or SVG fallback) ---------------- */
+  function productImgSVG(p) {
+    // If admin has set a real image URL, use it.
+    if (p.img && /^(https?:|data:)/.test(p.img)) {
+      const alt = (p.name && (p.name.es || p.name.va)) || "";
+      return `<img src="${p.img}" alt="${alt.replace(/"/g,'&quot;')}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+    }
+    return productSvgPlaceholder(p);
+  }
   // Themed illustrations per category. Background pulled from brand palette,
   // foreground variations indexed by imgSeed for variety.
-  function productImgSVG(p) {
+  function productSvgPlaceholder(p) {
     // Background palette: soft blues, occasional warm cream — keeps a coherent feel
     const bgPalettes = [
       ["#E2EDF2", "#B5D8E8"], // blue
@@ -418,32 +476,44 @@
     return `
       <header class="header">
         <div class="container header-inner">
-          <div class="header-actions">
-            <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
-            <div class="lang-toggle" role="group" aria-label="Language">
+          <div class="header-side header-side--left">
+            <button class="menu-toggle" aria-label="Menu" aria-expanded="false">
+              <span></span><span></span><span></span>
+            </button>
+            <div class="lang-toggle desktop-only" role="group" aria-label="Language">
               <button data-lang="es">ES</button>
               <span class="sep">·</span>
               <button data-lang="va">VAL</button>
             </div>
           </div>
+
           <a class="brand" href="index.html" aria-label="Viveros Jazmín">
             <span class="brand-name">Viveros Jazmín</span>
             <span class="brand-sub">Castelló · Desde 1992</span>
           </a>
-          <nav class="nav" aria-label="primary">
-            <a href="tienda.html"   data-i18n="nav.shop">Tienda</a>
-            <a href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a>
-            <a href="contacto.html" data-i18n="nav.contact">Contacto</a>
-            <a class="user-btn" data-vj-user-link href="entrar.html" aria-label="Cuenta">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-              <span data-vj-user-label data-i18n="auth.signin">Entrar</span>
-            </a>
+
+          <div class="header-side header-side--right">
+            <nav class="nav" aria-label="primary">
+              <a href="tienda.html"   data-i18n="nav.shop">Tienda</a>
+              <a href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a>
+              <a href="contacto.html" data-i18n="nav.contact">Contacto</a>
+              <a class="user-btn" data-vj-user-link href="entrar.html" aria-label="Cuenta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <span data-vj-user-label data-i18n="auth.signin">Entrar</span>
+              </a>
+              <div class="lang-toggle mobile-only" role="group" aria-label="Language">
+                <button data-lang="es">ES</button>
+                <span class="sep">·</span>
+                <button data-lang="va">VAL</button>
+              </div>
+            </nav>
             <a href="carrito.html" class="cart-btn" aria-label="Carrito">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
               <span class="cart-count is-empty">0</span>
             </a>
-          </nav>
+          </div>
         </div>
+        <div class="nav-backdrop" aria-hidden="true"></div>
       </header>
     `;
   }
@@ -511,12 +581,47 @@
 
   /* ---------------- Header / Nav ---------------- */
   function initHeader() {
-    // Mobile toggle
     const tog = document.querySelector(".menu-toggle");
     const nav = document.querySelector(".nav");
-    if (tog && nav) {
-      tog.addEventListener("click", () => nav.classList.toggle("is-open"));
+    const backdrop = document.querySelector(".nav-backdrop");
+
+    function closeNav() {
+      if (!nav) return;
+      nav.classList.remove("is-open");
+      tog && tog.classList.remove("is-open");
+      tog && tog.setAttribute("aria-expanded", "false");
+      backdrop && backdrop.classList.remove("is-show");
+      document.body.classList.remove("nav-locked");
     }
+    function openNav() {
+      if (!nav) return;
+      nav.classList.add("is-open");
+      tog && tog.classList.add("is-open");
+      tog && tog.setAttribute("aria-expanded", "true");
+      backdrop && backdrop.classList.add("is-show");
+      document.body.classList.add("nav-locked");
+    }
+    if (tog && nav) {
+      tog.addEventListener("click", () => {
+        nav.classList.contains("is-open") ? closeNav() : openNav();
+      });
+    }
+    if (backdrop) backdrop.addEventListener("click", closeNav);
+    // Close drawer when clicking a nav link (mobile)
+    if (nav) nav.querySelectorAll("a").forEach(a => {
+      a.addEventListener("click", () => {
+        if (window.matchMedia("(max-width: 980px)").matches) closeNav();
+      });
+    });
+    // Close on Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && nav && nav.classList.contains("is-open")) closeNav();
+    });
+    // Close on resize back to desktop
+    window.addEventListener("resize", () => {
+      if (!window.matchMedia("(max-width: 980px)").matches) closeNav();
+    });
+
     // Lang switches
     document.querySelectorAll(".lang-toggle button").forEach(b => {
       b.addEventListener("click", () => setLang(b.dataset.lang));

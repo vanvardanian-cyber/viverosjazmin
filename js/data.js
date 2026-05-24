@@ -28,10 +28,13 @@ const CATEGORIES = [
 ];
 
 /* Product images: themed SVG data-URLs are generated at runtime
-   from product.imgSeed (a hue rotation) so the site is fully
-   self-contained. To use real photos, replace product.img with a URL. */
+   from product.imgSeed so the site is fully self-contained.
+   To use real photos, set product.img to a URL — the admin page
+   (admin.html) does this automatically. */
 
-const PRODUCTS = [
+// `let` (not const) so the admin can replace the catalog at runtime.
+// SEED_PRODUCTS is kept frozen so we can always restore the original.
+let PRODUCTS = [
   // ===== INTERIOR (10) =====
   { id: "int-01", cat: "interior", price: 24.90, stock: 12, imgSeed: 130,
     name: { es: "Monstera Deliciosa", va: "Monstera Deliciosa" },
@@ -302,6 +305,9 @@ const PRODUCTS = [
       va: "La planta nadalenca per antonomàsia. Les seues bràctees roges alegren qualsevol racó."
     } }
 ];
+
+// Frozen reference copy used by the admin "Reset to defaults" action.
+const SEED_PRODUCTS = JSON.parse(JSON.stringify(PRODUCTS));
 
 /* ========= UI string translations ========= */
 const I18N = {
