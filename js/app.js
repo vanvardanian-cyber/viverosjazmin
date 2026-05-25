@@ -24,6 +24,7 @@
       id: "q-experience", type: "dropdown",
       label: { es: "¿Tienes experiencia previa en viveros o floristería?", va: "Tens experiència prèvia en vivers o floristeria?" },
       required: true,
+      skipIfCv: true,    // hide this question if candidate uploaded a CV
       options: [
         { es: "Ninguna",                          va: "Cap" },
         { es: "Algo (hasta 2 años)",             va: "Alguna (fins a 2 anys)" },

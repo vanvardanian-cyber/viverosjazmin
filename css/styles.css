@@ -1275,6 +1275,10 @@ body.nav-locked { overflow: hidden; }
   font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
   background: #FFE4D6; color: #8B4A23; padding: 1px 6px; border-radius: 3px; font-weight: 600;
 }
+.q-meta .pill-skip {
+  font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
+  background: var(--blue-2); color: var(--blue-deep); padding: 1px 6px; border-radius: 3px; font-weight: 600;
+}
 .checkbox-line { display: flex; align-items: center; gap: 10px; font-size: .9rem; padding: 8px 0; }
 
 /* Question editor modal */
@@ -1324,6 +1328,72 @@ body.nav-locked { overflow: hidden; }
 .img-or {
   font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
   color: var(--ink-soft); text-align: center; margin: 4px 0;
+}
+
+/* ---------- Job landing card ---------- */
+.job-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.job-card-head {
+  padding: 36px 40px 28px;
+  background: var(--blue-3);
+  border-bottom: 1px solid var(--line);
+}
+.job-tag {
+  display: inline-block;
+  background: var(--green-tag); color: #fff;
+  padding: 4px 12px; border-radius: 999px;
+  font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.job-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 500; font-style: normal;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  margin: 0 0 14px;
+  line-height: 1.15;
+}
+.job-title em { font-style: italic; font-weight: 500; }
+.job-meta {
+  display: flex; gap: 18px 24px; flex-wrap: wrap;
+  font-size: .85rem; color: var(--ink-soft);
+}
+.job-body {
+  padding: 32px 40px;
+  display: grid; gap: 28px;
+}
+.job-body h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--blue-deep);
+  margin: 0 0 10px; font-weight: 700;
+}
+.job-body ul {
+  list-style: none; padding: 0; margin: 0;
+}
+.job-body li {
+  position: relative;
+  padding: 4px 0 4px 20px;
+  font-size: .95rem; color: var(--ink); line-height: 1.55;
+}
+.job-body li::before {
+  content: "";
+  position: absolute; left: 0; top: 14px;
+  width: 8px; height: 1px; background: var(--blue-ink);
+}
+.job-card-foot {
+  padding: 24px 40px 32px;
+  border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+}
+@media (max-width: 600px) {
+  .job-card-head, .job-body, .job-card-foot { padding-left: 24px; padding-right: 24px; }
+  .job-card-foot { flex-direction: column; align-items: stretch; }
+  .job-card-foot .btn { width: 100%; justify-content: center; }
 }
 
 /* ---------- Stepper (Jobs form) ---------- */
@@ -1424,46 +1494,75 @@ body.nav-locked { overflow: hidden; }
 .cookie-banner.is-show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .cookie-card {
   pointer-events: auto;
-  max-width: 720px; width: 100%;
+  max-width: 560px; width: 100%;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
-  padding: 24px 28px;
-  box-shadow: 0 20px 60px rgba(31,42,46,.18);
+  padding: 28px 30px 24px;
+  box-shadow: 0 20px 50px rgba(31,42,46,.18);
 }
 .cookie-card h3 {
   font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;
-  font-size: 1.35rem; margin: 0 0 6px;
+  font-size: 1.45rem; margin: 0 0 8px;
 }
 .cookie-card p {
-  font-size: .9rem; color: var(--ink-soft); margin: 0 0 18px; line-height: 1.55;
+  font-size: .88rem; color: var(--ink-soft); margin: 0 0 18px; line-height: 1.6;
 }
 .cookie-card p a { color: var(--blue-ink); text-decoration: underline; }
+/* IMPORTANT: ensure [hidden] beats our display: rules */
+.cookie-summary[hidden],
+.cookie-details[hidden],
+.cookie-actions[hidden] { display: none !important; }
 .cookie-details {
-  display: grid; gap: 10px;
-  padding: 8px 0 16px;
+  display: flex; flex-direction: column; gap: 0;
+  margin-top: 6px;
+  border-top: 1px solid var(--line);
 }
 .cookie-row {
-  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px;
-  padding: 14px 16px;
-  border: 1px solid var(--line); border-radius: var(--r-sm);
-  background: var(--blue-3);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
   font-size: .88rem;
   cursor: pointer;
 }
-.cookie-row strong { display: block; color: var(--ink); margin-bottom: 2px; font-size: .85rem; }
-.cookie-row small { color: var(--ink-soft); font-size: .78rem; line-height: 1.45; }
-.cookie-row input { accent-color: var(--blue-ink); transform: scale(1.2); }
-.cookie-row input:disabled { opacity: .5; }
-.cookie-actions {
-  display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;
+.cookie-row:last-child { border-bottom: 0; }
+.cookie-row-text { display: block; flex: 1; min-width: 0; }
+.cookie-row strong {
+  display: block; color: var(--ink); margin-bottom: 3px;
+  font-size: .82rem; font-weight: 600;
+  letter-spacing: .04em;
 }
-.cookie-actions .btn { padding: 11px 18px; font-size: .72rem; }
+.cookie-row small { color: var(--ink-soft); font-size: .76rem; line-height: 1.5; display: block; }
+.cookie-row input {
+  flex-shrink: 0;
+  appearance: none; -webkit-appearance: none;
+  width: 36px; height: 20px; border-radius: 999px;
+  background: var(--line);
+  position: relative; cursor: pointer;
+  transition: background .2s;
+  margin-top: 2px;
+}
+.cookie-row input::before {
+  content: ""; position: absolute;
+  top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff;
+  transition: transform .2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+.cookie-row input:checked { background: var(--blue-ink); }
+.cookie-row input:checked::before { transform: translateX(16px); }
+.cookie-row input:disabled { opacity: .5; cursor: not-allowed; }
+
+.cookie-actions {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;
+  margin-top: 18px;
+}
+.cookie-actions .btn { padding: 11px 18px; font-size: .68rem; }
 @media (max-width: 600px) {
   .cookie-banner { left: 12px; right: 12px; bottom: 12px; }
-  .cookie-card { padding: 20px; }
-  .cookie-actions { justify-content: stretch; }
-  .cookie-actions .btn { flex: 1; }
+  .cookie-card { padding: 22px 22px 20px; }
+  .cookie-actions { gap: 6px; }
+  .cookie-actions .btn { flex: 1 1 auto; padding: 11px 12px; }
 }
 
 /* ---------- Legal pages ---------- */

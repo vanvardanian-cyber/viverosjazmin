@@ -202,6 +202,13 @@
                 <label class="checkbox-line"><input type="checkbox" name="required"> Sí, debe responderse</label>
               </div>
               <div class="form-field full">
+                <label>Mostrar la pregunta</label>
+                <label class="checkbox-line">
+                  <input type="checkbox" name="skipIfCv">
+                  <span>Saltar si el candidato sube un CV (útil para preguntas que el CV ya responde, como la experiencia)</span>
+                </label>
+              </div>
+              <div class="form-field full">
                 <label>Pregunta <span class="lang-tag">ES</span></label>
                 <input type="text" name="label_es" required maxlength="200">
               </div>
@@ -635,7 +642,7 @@
           </div>
           <div class="q-info">
             <div class="q-label">${escapeHtml(q.label.es)}</div>
-            <div class="q-meta">${Q_TYPE_LABELS[q.type]||q.type} ${q.required ? '· <span class="pill-req">Obligatoria</span>' : ''}${(q.options||[]).length ? ' · ' + (q.options.length) + ' opciones' : ''}</div>
+            <div class="q-meta">${Q_TYPE_LABELS[q.type]||q.type} ${q.required ? '· <span class="pill-req">Obligatoria</span>' : ''}${q.skipIfCv ? ' · <span class="pill-skip">Solo sin CV</span>' : ''}${(q.options||[]).length ? ' · ' + (q.options.length) + ' opciones' : ''}</div>
           </div>
           <div class="actions">
             <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>
@@ -689,6 +696,7 @@
         qForm.elements.label_es.value = q.label.es;
         qForm.elements.label_va.value = q.label.va;
         qForm.elements.required.checked = !!q.required;
+        qForm.elements.skipIfCv.checked = !!q.skipIfCv;
         qForm.elements.options.value = (q.options||[]).map(o => `${o.es} | ${o.va}`).join("\n");
       } else {
         titleEl.textContent = "Nueva pregunta";
@@ -725,6 +733,7 @@
         type,
         label: { es: (fd.get("label_es")||"").trim(), va: (fd.get("label_va")||"").trim() },
         required: !!fd.get("required"),
+        skipIfCv: !!fd.get("skipIfCv"),
         options: (type === "dropdown" || type === "radio" || type === "multiselect") ? options : []
       };
       const qs = VJ_JOBS.questions();
