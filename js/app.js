@@ -15,6 +15,90 @@
   const STORAGE_USERS   = "vj.users";    // { [email]: {name,email,passwordHash,salt,createdAt,phone,addresses,orders} }
   const STORAGE_SESSION = "vj.session";  // { email, since }
   const STORAGE_CATALOG = "vj.catalog";  // override product list (admin edits)
+  const STORAGE_JOBS_Q  = "vj.jobsQuestions";   // custom questions for "without CV" path
+  const STORAGE_JOBS_A  = "vj.applications";    // received applications
+
+  /* ---------------- Jobs (applications + questions) ---------------- */
+  const DEFAULT_JOBS_QUESTIONS = [
+    {
+      id: "q-experience", type: "dropdown",
+      label: { es: "¿Tienes experiencia previa en viveros o floristería?", va: "Tens experiència prèvia en vivers o floristeria?" },
+      required: true,
+      options: [
+        { es: "Ninguna",                          va: "Cap" },
+        { es: "Algo (hasta 2 años)",             va: "Alguna (fins a 2 anys)" },
+        { es: "Sí, más de 2 años",               va: "Sí, més de 2 anys" }
+      ]
+    },
+    {
+      id: "q-startdate", type: "date",
+      label: { es: "¿Cuándo podrías empezar?", va: "Quan podries començar?" },
+      required: false
+    },
+    {
+      id: "q-commitment", type: "radio",
+      label: {
+        es: "¿Estás dispuesto/a a trabajar a veces los domingos y a hacer horas extra cuando el vivero lo necesita?",
+        va: "Estàs disposat/da a treballar de vegades els diumenges i a fer hores extra quan el viver ho necessita?"
+      },
+      required: true,
+      options: [
+        { es: "Sí, sin problema",              va: "Sí, sense problema" },
+        { es: "Algún domingo puntual",         va: "Algun diumenge puntual" },
+        { es: "Prefiero no trabajar domingos", va: "Preferisc no treballar diumenges" }
+      ]
+    }
+  ];
+
+  function getJobsQuestions() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_JOBS_Q));
+      if (Array.isArray(raw) && raw.length) return raw;
+    } catch {}
+    return DEFAULT_JOBS_QUESTIONS.map(q => JSON.parse(JSON.stringify(q)));
+  }
+  function saveJobsQuestions(arr) {
+    localStorage.setItem(STORAGE_JOBS_Q, JSON.stringify(arr));
+    document.dispatchEvent(new CustomEvent("vj:jobsquestionschange"));
+  }
+  function resetJobsQuestions() {
+    localStorage.removeItem(STORAGE_JOBS_Q);
+    document.dispatchEvent(new CustomEvent("vj:jobsquestionschange"));
+  }
+  function getApplications() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_JOBS_A));
+      return Array.isArray(raw) ? raw : [];
+    } catch { return []; }
+  }
+  function saveApplications(arr) {
+    localStorage.setItem(STORAGE_JOBS_A, JSON.stringify(arr));
+    document.dispatchEvent(new CustomEvent("vj:applicationschange"));
+  }
+  function submitApplication(app) {
+    const apps = getApplications();
+    const id   = "AP-" + Date.now().toString(36).toUpperCase();
+    apps.unshift({ id, status: "new", createdAt: new Date().toISOString(), ...app });
+    saveApplications(apps);
+    return id;
+  }
+  function updateApplication(id, patch) {
+    const apps = getApplications();
+    const i = apps.findIndex(a => a.id === id);
+    if (i >= 0) { apps[i] = { ...apps[i], ...patch }; saveApplications(apps); }
+  }
+  function deleteApplication(id) {
+    saveApplications(getApplications().filter(a => a.id !== id));
+  }
+  window.VJ_JOBS = {
+    questions: getJobsQuestions,
+    saveQuestions: saveJobsQuestions,
+    resetQuestions: resetJobsQuestions,
+    apps: getApplications,
+    submit: submitApplication,
+    update: updateApplication,
+    remove: deleteApplication
+  };
 
   /* ---------------- Catalog (with localStorage override) ---------------- */
   function loadCatalogFromStorage() {

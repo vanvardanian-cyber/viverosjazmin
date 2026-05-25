@@ -20,14 +20,32 @@
 
     <div class="admin-bar">
       <div class="left">
-        <h2><em>Gestor</em> de productos</h2>
+        <h2><em>Panel</em> de administración</h2>
         <span class="badge">Borrador local</span>
       </div>
-      <div class="right">
+      <div class="right" id="admin-panel-actions">
         <button class="btn btn-outline" id="btn-reset" type="button">Reiniciar</button>
         <button class="btn btn-primary btn-arrow" id="btn-export" type="button">Exportar data.js</button>
       </div>
     </div>
+
+    <nav class="admin-tabs" role="tablist">
+      <button class="admin-tab is-active" data-tab="products" role="tab">
+        <span>Productos</span>
+        <span class="tab-count" id="tab-products-count">0</span>
+      </button>
+      <button class="admin-tab" data-tab="applications" role="tab">
+        <span>Aplicaciones</span>
+        <span class="tab-count" id="tab-apps-count">0</span>
+      </button>
+      <button class="admin-tab" data-tab="questions" role="tab">
+        <span>Preguntas</span>
+        <span class="tab-count" id="tab-questions-count">0</span>
+      </button>
+    </nav>
+
+    <!-- ===== PANEL: PRODUCTS ===== -->
+    <div class="admin-panel is-active" data-panel="products">
 
     <div class="admin-notice">
       <strong>¿Cómo funciona?</strong> Añade, edita y borra productos en este panel — los cambios se guardan en tu navegador y aparecen al instante en la tienda. Cuando tu catálogo esté listo, pulsa <strong>Exportar data.js</strong> para descargar el archivo, sustitúyelo en <code>js/data.js</code> del repositorio y publica los cambios. Así los verán todos los clientes.
@@ -120,6 +138,89 @@
           </div>
         </form>
       </aside>
+    </div>
+
+    </div><!-- /panel:products -->
+
+    <!-- ===== PANEL: APPLICATIONS ===== -->
+    <div class="admin-panel" data-panel="applications">
+      <div class="admin-notice">
+        <strong>Candidaturas recibidas.</strong> Cuando alguien envía el formulario en <code>/trabajo.html</code>, su candidatura aparece aquí. Por ahora se guarda solo en este navegador; cuando conectemos el backend, todas las candidaturas se centralizarán.
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
+        <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
+          Total · <span id="apps-count">0</span> candidaturas
+        </h4>
+        <div class="apps-filter" id="apps-filter">
+          <button data-status="all" class="is-active">Todas</button>
+          <button data-status="new">Nuevas</button>
+          <button data-status="reviewed">Revisadas</button>
+          <button data-status="contacted">Contactadas</button>
+          <button data-status="discarded">Descartadas</button>
+        </div>
+      </div>
+      <div id="apps-list" class="apps-list"></div>
+    </div>
+
+    <!-- ===== PANEL: QUESTIONS ===== -->
+    <div class="admin-panel" data-panel="questions">
+      <div class="admin-notice">
+        <strong>Preguntas del formulario.</strong> Se muestran a las personas que aplican sin CV. Puedes añadirlas, editarlas o cambiar su orden. Los cambios aparecen al instante en el formulario público.
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+        <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
+          <span id="questions-count">0</span> preguntas
+        </h4>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-light" id="btn-q-reset" type="button" style="padding:8px 14px;font-size:.7rem;">Restaurar predeterminadas</button>
+          <button class="btn btn-primary btn-arrow" id="btn-q-add" type="button" style="padding:8px 14px;font-size:.7rem;">Añadir pregunta</button>
+        </div>
+      </div>
+      <div id="questions-list" class="questions-list"></div>
+
+      <!-- Question editor modal -->
+      <div class="q-editor" id="q-editor" hidden>
+        <div class="q-editor-backdrop"></div>
+        <div class="q-editor-panel">
+          <h3 id="q-editor-title">Nueva pregunta</h3>
+          <form id="q-form">
+            <input type="hidden" name="id">
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Tipo</label>
+                <select name="type" id="q-type">
+                  <option value="text">Texto corto</option>
+                  <option value="textarea">Texto largo</option>
+                  <option value="dropdown">Desplegable</option>
+                  <option value="radio">Selección única</option>
+                  <option value="multiselect">Selección múltiple</option>
+                  <option value="date">Fecha</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>¿Obligatoria?</label>
+                <label class="checkbox-line"><input type="checkbox" name="required"> Sí, debe responderse</label>
+              </div>
+              <div class="form-field full">
+                <label>Pregunta <span class="lang-tag">ES</span></label>
+                <input type="text" name="label_es" required maxlength="200">
+              </div>
+              <div class="form-field full">
+                <label>Pregunta <span class="lang-tag">VAL</span></label>
+                <input type="text" name="label_va" required maxlength="200">
+              </div>
+              <div class="form-field full" id="q-options-wrap" style="display:none;">
+                <label>Opciones (una por línea, formato <code>es | val</code>)</label>
+                <textarea name="options" rows="4" placeholder="Ninguna | Cap&#10;Algo (hasta 2 años) | Alguna (fins a 2 anys)"></textarea>
+              </div>
+            </div>
+            <div class="actions" style="display:flex; gap:8px; margin-top:18px;">
+              <button type="button" class="btn btn-light" id="q-cancel" style="flex:1;">Cancelar</button>
+              <button type="submit" class="btn btn-primary btn-arrow" style="flex:1;">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -386,7 +487,266 @@
 
     // Initial render
     renderList();
-    document.addEventListener("vj:catalogchange", renderList);
+    document.addEventListener("vj:catalogchange", () => { renderList(); updateTabCounts(); });
+
+    /* ============================================================
+       TAB SWITCHING
+       ============================================================ */
+    const tabs   = document.querySelectorAll(".admin-tab");
+    const panels = document.querySelectorAll(".admin-panel");
+    const panelActions = document.getElementById("admin-panel-actions");
+    tabs.forEach(tab => tab.addEventListener("click", () => {
+      const name = tab.dataset.tab;
+      tabs.forEach(t => t.classList.toggle("is-active", t === tab));
+      panels.forEach(p => p.classList.toggle("is-active", p.dataset.panel === name));
+      // Only products panel shows the Reset/Export buttons
+      panelActions.style.display = (name === "products") ? "" : "none";
+      if (name === "applications") renderApps();
+      if (name === "questions")    renderQuestions();
+    }));
+
+    function updateTabCounts() {
+      document.getElementById("tab-products-count").textContent = VJ_CATALOG.list().length;
+      document.getElementById("tab-apps-count").textContent     = VJ_JOBS.apps().length;
+      document.getElementById("tab-questions-count").textContent= VJ_JOBS.questions().length;
+    }
+    updateTabCounts();
+    document.addEventListener("vj:applicationschange", updateTabCounts);
+    document.addEventListener("vj:jobsquestionschange", updateTabCounts);
+
+    /* ============================================================
+       APPLICATIONS PANEL
+       ============================================================ */
+    const appsList   = document.getElementById("apps-list");
+    const appsFilter = document.getElementById("apps-filter");
+    const appsCount  = document.getElementById("apps-count");
+    let appsActiveStatus = "all";
+
+    const STATUS_LABELS = {
+      new:       "Nueva",
+      reviewed:  "Revisada",
+      contacted: "Contactada",
+      discarded: "Descartada"
+    };
+
+    appsFilter.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      appsActiveStatus = b.dataset.status;
+      appsFilter.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
+      renderApps();
+    }));
+
+    function renderApps() {
+      let apps = VJ_JOBS.apps();
+      const total = apps.length;
+      appsCount.textContent = total;
+      if (appsActiveStatus !== "all") apps = apps.filter(a => a.status === appsActiveStatus);
+      if (apps.length === 0) {
+        appsList.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${total === 0 ? "Aún no hay candidaturas." : "Ninguna candidatura con este estado."}</h3></div>`;
+        return;
+      }
+      const qs = VJ_JOBS.questions();
+      const qById = Object.fromEntries(qs.map(q => [q.id, q]));
+      appsList.innerHTML = apps.map(a => {
+        const date = new Date(a.createdAt).toLocaleDateString("es-ES", { day:"numeric", month:"short", year:"numeric" });
+        const time = new Date(a.createdAt).toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
+        const answersHtml = Object.entries(a.answers || {}).map(([qid, val]) => {
+          const q = qById[qid];
+          const label = q ? (q.label.es || qid) : qid;
+          const valStr = Array.isArray(val) ? val.join(", ") : val;
+          return `<div class="app-answer"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(valStr || "—")}</span></div>`;
+        }).join("");
+        const cvLink = a.cv && a.cv.dataUrl
+          ? `<a class="btn btn-light" download="${escapeHtml(a.cv.filename||'cv.pdf')}" href="${a.cv.dataUrl}" style="padding:8px 14px;font-size:.72rem;">↓ Descargar CV (${(a.cv.size/1024).toFixed(0)} KB)</a>`
+          : '';
+        return `
+          <article class="app-card" data-id="${a.id}">
+            <header class="app-card-head">
+              <div>
+                <div class="app-name">${escapeHtml(a.name || "(Sin nombre)")}</div>
+                <div class="app-meta">${escapeHtml(a.email)} · ${escapeHtml(a.phone)} · <span class="ref">${a.id}</span></div>
+              </div>
+              <div class="app-side">
+                <span class="status-pill status-${a.status}">${STATUS_LABELS[a.status]||a.status}</span>
+                <span class="app-date">${date} · ${time}</span>
+              </div>
+            </header>
+            <div class="app-card-body">
+              ${a.cv ? `<div class="app-row cv"><strong>CV adjunto</strong> ${cvLink}</div>` : ""}
+              ${a.message ? `<div class="app-row"><strong>Mensaje</strong><p>${escapeHtml(a.message)}</p></div>` : ""}
+              ${answersHtml ? `<div class="app-answers">${answersHtml}</div>` : ""}
+            </div>
+            <footer class="app-card-foot">
+              <label class="muted" style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;">Estado:</label>
+              <select data-act="status" class="status-select">
+                ${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${k===a.status?'selected':''}>${v}</option>`).join("")}
+              </select>
+              <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+            </footer>
+          </article>
+        `;
+      }).join("");
+    }
+
+    appsList.addEventListener("change", (e) => {
+      if (e.target.dataset.act === "status") {
+        const id = e.target.closest(".app-card").dataset.id;
+        VJ_JOBS.update(id, { status: e.target.value });
+        renderApps();
+      }
+    });
+    appsList.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-act='del']");
+      if (!btn) return;
+      const id = btn.closest(".app-card").dataset.id;
+      if (confirm("¿Eliminar esta candidatura definitivamente?")) {
+        VJ_JOBS.remove(id);
+        renderApps();
+      }
+    });
+
+    /* ============================================================
+       QUESTIONS PANEL (form builder)
+       ============================================================ */
+    const qList = document.getElementById("questions-list");
+    const qCount = document.getElementById("questions-count");
+    const qEditor = document.getElementById("q-editor");
+    const qForm = document.getElementById("q-form");
+    const qOptionsWrap = document.getElementById("q-options-wrap");
+    const qType = document.getElementById("q-type");
+    let qEditingId = null;
+
+    const Q_TYPE_LABELS = {
+      text: "Texto", textarea: "Texto largo", dropdown: "Desplegable",
+      radio: "Selección única", multiselect: "Selección múltiple", date: "Fecha"
+    };
+
+    function renderQuestions() {
+      const qs = VJ_JOBS.questions();
+      qCount.textContent = qs.length;
+      if (qs.length === 0) {
+        qList.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">No hay preguntas configuradas.</h3></div>`;
+        return;
+      }
+      qList.innerHTML = qs.map((q, i) => `
+        <div class="q-row" data-id="${q.id}" data-i="${i}">
+          <div class="q-order">
+            <button data-act="up" title="Subir"  ${i===0?'disabled':''}>↑</button>
+            <button data-act="down" title="Bajar" ${i===qs.length-1?'disabled':''}>↓</button>
+          </div>
+          <div class="q-info">
+            <div class="q-label">${escapeHtml(q.label.es)}</div>
+            <div class="q-meta">${Q_TYPE_LABELS[q.type]||q.type} ${q.required ? '· <span class="pill-req">Obligatoria</span>' : ''}${(q.options||[]).length ? ' · ' + (q.options.length) + ' opciones' : ''}</div>
+          </div>
+          <div class="actions">
+            <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>
+            <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    qList.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-act]");
+      if (!btn) return;
+      const row = btn.closest(".q-row");
+      const id  = row.dataset.id;
+      const i   = Number(row.dataset.i);
+      const act = btn.dataset.act;
+      const qs  = VJ_JOBS.questions();
+      if (act === "edit") openQEditor(id);
+      else if (act === "del") {
+        if (confirm("¿Eliminar esta pregunta?")) {
+          VJ_JOBS.saveQuestions(qs.filter(q => q.id !== id));
+          renderQuestions();
+        }
+      } else if (act === "up" || act === "down") {
+        const j = act === "up" ? i-1 : i+1;
+        if (j < 0 || j >= qs.length) return;
+        const next = qs.slice();
+        [next[i], next[j]] = [next[j], next[i]];
+        VJ_JOBS.saveQuestions(next);
+        renderQuestions();
+      }
+    });
+
+    document.getElementById("btn-q-add").addEventListener("click", () => openQEditor(null));
+    document.getElementById("btn-q-reset").addEventListener("click", () => {
+      if (confirm("Esto restaurará las 3 preguntas predeterminadas. ¿Continuar?")) {
+        VJ_JOBS.resetQuestions(); renderQuestions();
+      }
+    });
+
+    function openQEditor(id) {
+      qEditingId = id;
+      qForm.reset();
+      const titleEl = document.getElementById("q-editor-title");
+      if (id) {
+        const q = VJ_JOBS.questions().find(x => x.id === id);
+        if (!q) return;
+        titleEl.textContent = "Editar pregunta";
+        qForm.elements.id.value = q.id;
+        qForm.elements.type.value = q.type;
+        qForm.elements.label_es.value = q.label.es;
+        qForm.elements.label_va.value = q.label.va;
+        qForm.elements.required.checked = !!q.required;
+        qForm.elements.options.value = (q.options||[]).map(o => `${o.es} | ${o.va}`).join("\n");
+      } else {
+        titleEl.textContent = "Nueva pregunta";
+        qForm.elements.id.value = "";
+      }
+      updateOptionsVisibility();
+      qEditor.hidden = false;
+      requestAnimationFrame(() => qEditor.classList.add("is-show"));
+    }
+    function closeQEditor() {
+      qEditor.classList.remove("is-show");
+      setTimeout(() => qEditor.hidden = true, 200);
+    }
+    document.getElementById("q-cancel").addEventListener("click", closeQEditor);
+    qEditor.querySelector(".q-editor-backdrop").addEventListener("click", closeQEditor);
+
+    function updateOptionsVisibility() {
+      const t = qType.value;
+      qOptionsWrap.style.display = (t === "dropdown" || t === "radio" || t === "multiselect") ? "" : "none";
+    }
+    qType.addEventListener("change", updateOptionsVisibility);
+
+    qForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(qForm);
+      const type = fd.get("type");
+      const optionsRaw = (fd.get("options") || "").trim();
+      const options = optionsRaw ? optionsRaw.split("\n").map(line => {
+        const [es, va] = line.split("|").map(s => s.trim());
+        return { es: es || "", va: va || es || "" };
+      }).filter(o => o.es) : [];
+      const q = {
+        id: qEditingId || ("q-" + Date.now().toString(36)),
+        type,
+        label: { es: (fd.get("label_es")||"").trim(), va: (fd.get("label_va")||"").trim() },
+        required: !!fd.get("required"),
+        options: (type === "dropdown" || type === "radio" || type === "multiselect") ? options : []
+      };
+      const qs = VJ_JOBS.questions();
+      if (qEditingId) {
+        const i = qs.findIndex(x => x.id === qEditingId);
+        if (i >= 0) qs[i] = q; else qs.push(q);
+      } else {
+        qs.push(q);
+      }
+      VJ_JOBS.saveQuestions(qs);
+      closeQEditor();
+      renderQuestions();
+    });
+
+    // Re-render on storage events
+    document.addEventListener("vj:applicationschange", () => {
+      if (document.querySelector('[data-panel="applications"].is-active')) renderApps();
+    });
+    document.addEventListener("vj:jobsquestionschange", () => {
+      if (document.querySelector('[data-panel="questions"].is-active')) renderQuestions();
+    });
+
   })();
 </script>
 </body>

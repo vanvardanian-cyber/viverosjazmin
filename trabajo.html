@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trabaja con nosotros · Viveros Jazmín</title>
+  <meta name="description" content="Únete al equipo de Viveros Jazmín. Envía tu candidatura — con o sin CV.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<div data-vj-header></div>
+
+<section class="page-head">
+  <div class="container">
+    <span class="eyebrow" data-i18n="jobs.title">Trabaja con nosotros</span>
+    <h1><em>Únete</em> al equipo</h1>
+    <p data-i18n="jobs.subtitle">Únete a un equipo familiar que cultiva con cariño desde 1992.</p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container" style="max-width: 780px;">
+    <p class="muted" style="text-align:center; margin-bottom: 36px;" data-i18n="jobs.intro"></p>
+
+    <!-- Stepper -->
+    <div class="stepper" id="jobs-stepper">
+      <div class="step is-current" data-step="1">
+        <span class="step-dot">01</span>
+        <span class="step-label" data-i18n="jobs.step1.title">Tus datos</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="2">
+        <span class="step-dot">02</span>
+        <span class="step-label" data-i18n="jobs.step2.title">Tu candidatura</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="3">
+        <span class="step-dot">03</span>
+        <span class="step-label" data-i18n="jobs.step3.title">Conócete</span>
+      </div>
+    </div>
+
+    <form id="jobs-form" class="form-card" autocomplete="off" style="padding: 36px;">
+
+      <!-- STEP 1 -->
+      <fieldset class="job-step is-show" data-step="1">
+        <h2 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;margin:0 0 6px;" data-i18n="jobs.step1.title">Tus datos de contacto</h2>
+        <p class="muted" style="font-size:.9rem;margin-bottom:20px;">Solo necesitamos tu correo y teléfono para responderte.</p>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label data-i18n="auth.name">Nombre completo</label>
+            <input type="text" name="name" autocomplete="name">
+          </div>
+          <div class="form-field">
+            <label data-i18n="checkout.emailLbl">Correo electrónico</label>
+            <input type="email" name="email" required autocomplete="email">
+          </div>
+          <div class="form-field">
+            <label data-i18n="checkout.phoneLbl">Teléfono</label>
+            <input type="tel" name="phone" required autocomplete="tel">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- STEP 2 -->
+      <fieldset class="job-step" data-step="2">
+        <h2 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;margin:0 0 6px;" data-i18n="jobs.step2.title">Tu candidatura</h2>
+        <p class="muted" style="font-size:.9rem;margin-bottom:20px;" data-i18n="jobs.step2.note"></p>
+
+        <div class="path-cards">
+          <label class="path-card">
+            <input type="radio" name="path" value="cv" required>
+            <div class="path-card-body">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+              <h3 data-i18n="jobs.step2.withCv">Subir CV (PDF)</h3>
+              <small data-i18n="jobs.cvLimit">PDF, hasta 3 MB</small>
+            </div>
+          </label>
+          <label class="path-card">
+            <input type="radio" name="path" value="nocv" required>
+            <div class="path-card-body">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <h3 data-i18n="jobs.step2.withoutCv">Continuar sin CV</h3>
+              <small>Te haremos unas preguntas</small>
+            </div>
+          </label>
+        </div>
+
+        <!-- CV file picker (shown when "cv" path selected) -->
+        <div id="cv-picker" style="display:none;" class="cv-picker mt-24">
+          <label class="btn btn-light" style="cursor:pointer;display:inline-flex;">
+            <input type="file" id="cv-file" accept="application/pdf" style="display:none;">
+            <span>Elegir archivo PDF…</span>
+          </label>
+          <div id="cv-meta" class="muted" style="margin-top:10px;font-size:.85rem;display:none;">
+            <span data-i18n="jobs.cvSelected">CV seleccionado</span>:
+            <strong id="cv-name"></strong> · <span id="cv-size"></span>
+            <button type="button" id="cv-clear" class="remove-btn" style="margin-left:8px;" data-i18n="jobs.cvRemove">Quitar</button>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- STEP 3 -->
+      <fieldset class="job-step" data-step="3">
+        <h2 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;margin:0 0 6px;" data-i18n="jobs.step3.title">Cuéntanos un poco más</h2>
+        <p class="muted" style="font-size:.9rem;margin-bottom:24px;">Estas preguntas nos ayudan a conocerte mejor.</p>
+
+        <div id="custom-questions" class="form-grid"></div>
+
+        <div class="form-field full mt-16">
+          <label data-i18n="jobs.step3.optional">Mensaje (opcional)</label>
+          <textarea name="message" data-i18n-attr="placeholder:jobs.step3.optionalPh" placeholder="Cualquier cosa que quieras compartir…"></textarea>
+        </div>
+
+        <p class="muted" style="font-size:.78rem; margin-top: 12px;">
+          <span data-i18n="jobs.privacy">Al enviar aceptas nuestra</span>
+          <a href="privacidad.html">Política de Privacidad</a>.
+        </p>
+      </fieldset>
+
+      <!-- nav -->
+      <div class="job-actions mt-24">
+        <button type="button" id="job-back" class="btn btn-light" style="display:none;" data-i18n="jobs.back">Atrás</button>
+        <button type="button" id="job-next" class="btn btn-primary btn-arrow" data-i18n="jobs.next">Continuar</button>
+        <button type="submit" id="job-submit" class="btn btn-primary btn-arrow" style="display:none;" data-i18n="jobs.submit">Enviar candidatura</button>
+      </div>
+    </form>
+
+    <!-- Success state -->
+    <div id="jobs-success" class="success-card" style="display:none; margin-top: 24px;">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h1 data-i18n="jobs.success.title">¡Candidatura recibida!</h1>
+      <p class="muted" data-i18n="jobs.success.text"></p>
+      <div class="mt-16">
+        <small class="muted" data-i18n="jobs.success.ref">Referencia</small>
+        <div class="ref-code" id="jobs-ref">—</div>
+      </div>
+      <a href="index.html" class="btn btn-primary mt-32" data-i18n="checkout.success.back">Volver al inicio</a>
+    </div>
+
+  </div>
+</section>
+
+<div data-vj-footer></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  (function () {
+    const form  = document.getElementById("jobs-form");
+    const steps = Array.from(document.querySelectorAll(".job-step"));
+    const stepper = document.getElementById("jobs-stepper");
+    const dots  = stepper.querySelectorAll(".step");
+    const back  = document.getElementById("job-back");
+    const next  = document.getElementById("job-next");
+    const submit= document.getElementById("job-submit");
+    const cvPicker = document.getElementById("cv-picker");
+    const cvFile   = document.getElementById("cv-file");
+    const cvMeta   = document.getElementById("cv-meta");
+    const cvName   = document.getElementById("cv-name");
+    const cvSize   = document.getElementById("cv-size");
+    const cvClear  = document.getElementById("cv-clear");
+    const cqRoot   = document.getElementById("custom-questions");
+    let current = 1;
+    let cvDataUrl = null;
+
+    function showStep(n) {
+      current = n;
+      steps.forEach(s => s.classList.toggle("is-show", Number(s.dataset.step) === n));
+      dots.forEach(d => {
+        const v = Number(d.dataset.step);
+        d.classList.toggle("is-current", v === n);
+        d.classList.toggle("is-done", v < n);
+      });
+      back.style.display = n > 1 ? "" : "none";
+      next.style.display = n < 3 ? "" : "none";
+      submit.style.display = n === 3 ? "" : "none";
+      window.scrollTo({ top: stepper.offsetTop - 80, behavior: "smooth" });
+    }
+
+    // Step 2 path cards toggle CV picker
+    form.querySelectorAll('input[name="path"]').forEach(r => {
+      r.addEventListener("change", () => {
+        document.querySelectorAll(".path-card").forEach(c => c.classList.toggle("is-active", c.querySelector("input").checked));
+        cvPicker.style.display = r.value === "cv" && r.checked ? "" : "none";
+      });
+    });
+
+    cvFile.addEventListener("change", () => {
+      const f = cvFile.files[0];
+      if (!f) return;
+      if (f.type !== "application/pdf") { alert("Solo PDF, por favor."); cvFile.value=""; return; }
+      if (f.size > 3 * 1024 * 1024) { alert("Demasiado grande. Máximo 3 MB."); cvFile.value=""; return; }
+      const r = new FileReader();
+      r.onload = () => {
+        cvDataUrl = r.result;
+        cvName.textContent = f.name;
+        cvSize.textContent = (f.size/1024).toFixed(0) + " KB";
+        cvMeta.style.display = "";
+      };
+      r.readAsDataURL(f);
+    });
+    cvClear.addEventListener("click", () => {
+      cvFile.value = ""; cvDataUrl = null; cvMeta.style.display = "none";
+    });
+
+    // Render custom questions
+    function lang() { return localStorage.getItem("vj.lang") === "va" ? "va" : "es"; }
+    function tStr(en, va) { return lang() === "va" ? va : en; }
+
+    function renderQuestions() {
+      const qs = VJ_JOBS.questions();
+      cqRoot.innerHTML = qs.map(q => {
+        const L = lang();
+        const label = q.label[L] || q.label.es;
+        const req = q.required ? ' <span style="color:#b04a4a;">*</span>' : '';
+        let field = "";
+        switch (q.type) {
+          case "text":
+            field = `<input type="text" name="q-${q.id}" ${q.required?'required':''}>`; break;
+          case "textarea":
+            field = `<textarea name="q-${q.id}" ${q.required?'required':''}></textarea>`; break;
+          case "date":
+            field = `<input type="date" name="q-${q.id}" ${q.required?'required':''}>`; break;
+          case "dropdown":
+            field = `<select name="q-${q.id}" ${q.required?'required':''}>
+              <option value="">${tStr("Selecciona…","Selecciona…")}</option>
+              ${(q.options||[]).map(o => `<option value="${(o[L]||o.es).replace(/"/g,'&quot;')}">${o[L]||o.es}</option>`).join("")}
+            </select>`;
+            break;
+          case "radio":
+            field = `<div class="radio-group">
+              ${(q.options||[]).map((o,i) => `
+                <label class="radio-option">
+                  <input type="radio" name="q-${q.id}" value="${(o[L]||o.es).replace(/"/g,'&quot;')}" ${q.required?'required':''}>
+                  <span>${o[L]||o.es}</span>
+                </label>`).join("")}
+            </div>`;
+            break;
+          case "multiselect":
+            field = `<div class="radio-group">
+              ${(q.options||[]).map((o,i) => `
+                <label class="radio-option">
+                  <input type="checkbox" name="q-${q.id}" value="${(o[L]||o.es).replace(/"/g,'&quot;')}">
+                  <span>${o[L]||o.es}</span>
+                </label>`).join("")}
+            </div>`;
+            break;
+        }
+        return `<div class="form-field full">
+          <label>${label}${req}</label>
+          ${field}
+        </div>`;
+      }).join("");
+
+      // Wire radio-option highlight
+      cqRoot.querySelectorAll(".radio-option input").forEach(input => {
+        input.addEventListener("change", () => {
+          const group = input.name;
+          if (input.type === "radio") {
+            cqRoot.querySelectorAll(`input[name="${group}"]`).forEach(i => i.closest(".radio-option").classList.toggle("is-active", i.checked));
+          } else {
+            input.closest(".radio-option").classList.toggle("is-active", input.checked);
+          }
+        });
+      });
+    }
+    renderQuestions();
+    document.addEventListener("vj:langchange", renderQuestions);
+
+    // Validation per step
+    function validateStep(n) {
+      let ok = true;
+      steps.find(s => Number(s.dataset.step) === n).querySelectorAll("input, textarea, select").forEach(el => {
+        // Only check visible/relevant fields
+        if (el.offsetParent === null && el.type !== "radio") return;
+        if (!el.checkValidity()) { el.reportValidity(); ok = false; }
+      });
+      // step 2: at least one path must be chosen
+      if (n === 2) {
+        const chosen = form.querySelector('input[name="path"]:checked');
+        if (!chosen) { alert("Elige una opción: con CV o sin CV."); ok = false; }
+        if (chosen && chosen.value === "cv" && !cvDataUrl) {
+          alert("Por favor sube tu CV en PDF o elige 'Continuar sin CV'."); ok = false;
+        }
+      }
+      return ok;
+    }
+
+    next.addEventListener("click", () => {
+      if (!validateStep(current)) return;
+      // If user chose CV on step 2, skip step 3 questions (still show optional message)
+      // Decision: keep step 3 always shown — message is optional, custom questions only if "nocv"
+      const path = form.querySelector('input[name="path"]:checked')?.value;
+      if (current === 2 && path === "cv") {
+        // hide custom questions on step 3
+        cqRoot.style.display = "none";
+      } else {
+        cqRoot.style.display = "";
+      }
+      showStep(Math.min(3, current + 1));
+    });
+    back.addEventListener("click", () => showStep(Math.max(1, current - 1)));
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!validateStep(3)) return;
+      const fd = new FormData(form);
+      const path = fd.get("path");
+      // collect custom answers
+      const answers = {};
+      VJ_JOBS.questions().forEach(q => {
+        const name = "q-" + q.id;
+        if (q.type === "multiselect") {
+          answers[q.id] = fd.getAll(name);
+        } else {
+          const v = fd.get(name);
+          if (v !== null && v !== "") answers[q.id] = v;
+        }
+      });
+      const app = {
+        name:  (fd.get("name")||"").trim(),
+        email: (fd.get("email")||"").trim(),
+        phone: (fd.get("phone")||"").trim(),
+        path:  path,
+        cv: cvDataUrl ? { filename: cvFile.files[0]?.name, size: cvFile.files[0]?.size, dataUrl: cvDataUrl } : null,
+        answers,
+        message: (fd.get("message")||"").trim()
+      };
+      const ref = VJ_JOBS.submit(app);
+      // show success
+      form.style.display = "none";
+      stepper.style.display = "none";
+      document.getElementById("jobs-ref").textContent = ref;
+      document.getElementById("jobs-success").style.display = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    showStep(1);
+  })();
+</script>
+</body>
+</html>
