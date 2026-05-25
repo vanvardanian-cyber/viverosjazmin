@@ -101,47 +101,55 @@
     remove: deleteApplication
   };
 
-  /* ---------------- Catalog (with localStorage override) ---------------- */
-  function loadCatalogFromStorage() {
-    try {
-      const raw = localStorage.getItem(STORAGE_CATALOG);
-      if (!raw) return;
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr) || arr.length === 0) return;
-      // Replace contents of the global PRODUCTS in place so all
-      // existing references (PRODUCTS.find, etc.) still work.
-      PRODUCTS.length = 0;
-      arr.forEach(p => PRODUCTS.push(p));
-    } catch (e) { /* ignore */ }
-  }
-  loadCatalogFromStorage();   // run before any renderers
+  /* ---------------- Catalog (now backed by Supabase) ---------------- */
+  // PRODUCTS starts with the seed array from data.js (fallback if Supabase
+  // is unreachable). We then replace its contents with rows from Supabase
+  // as soon as the network call succeeds.
 
-  function saveCatalog(arr) {
+  const supa = window.VJ_SUPA?.client;
+  const rowToProduct = window.VJ_SUPA?.rowToProduct;
+  const productToRow = window.VJ_SUPA?.productToRow;
+
+  async function loadCatalogFromSupabase() {
+    if (!supa) return false;
+    const { data, error } = await supa
+      .from("products")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) { console.error("Supabase products error:", error); return false; }
+    if (!Array.isArray(data)) return false;
     PRODUCTS.length = 0;
-    arr.forEach(p => PRODUCTS.push(p));
-    localStorage.setItem(STORAGE_CATALOG, JSON.stringify(PRODUCTS));
+    data.forEach(r => PRODUCTS.push(rowToProduct(r)));
+    document.dispatchEvent(new CustomEvent("vj:catalogchange"));
+    return true;
+  }
+
+  async function saveProduct(p) {
+    if (!supa) throw new Error("Supabase not initialized");
+    const row = productToRow(p, PRODUCTS.findIndex(x => x.id === p.id));
+    const { error } = await supa.from("products").upsert(row);
+    if (error) throw error;
+    // Update local cache
+    const i = PRODUCTS.findIndex(x => x.id === p.id);
+    if (i >= 0) PRODUCTS[i] = p; else PRODUCTS.push(p);
     document.dispatchEvent(new CustomEvent("vj:catalogchange"));
   }
-  function resetCatalog() {
-    PRODUCTS.length = 0;
-    SEED_PRODUCTS.forEach(p => PRODUCTS.push(JSON.parse(JSON.stringify(p))));
-    localStorage.removeItem(STORAGE_CATALOG);
+
+  async function deleteProductSupa(id) {
+    if (!supa) throw new Error("Supabase not initialized");
+    const { error } = await supa.from("products").delete().eq("id", id);
+    if (error) throw error;
+    const i = PRODUCTS.findIndex(x => x.id === id);
+    if (i >= 0) PRODUCTS.splice(i, 1);
     document.dispatchEvent(new CustomEvent("vj:catalogchange"));
   }
-  function exportCatalogAsDataJS() {
-    // Generate a replacement data.js snippet containing the new PRODUCTS array.
-    // Owner replaces the old array in js/data.js with this, commits, deploys.
-    const pretty = JSON.stringify(PRODUCTS, null, 2)
-      // Compact `name`/`desc` bilingual objects onto fewer lines for readability.
-      .replace(/\{\s*"es": (".*?"),\s*"va": (".*?")\s*\}/g, '{ "es": $1, "va": $2 }');
-    return pretty;
-  }
+
   window.VJ_CATALOG = {
     list: () => PRODUCTS.slice(),
     seed: () => JSON.parse(JSON.stringify(SEED_PRODUCTS)),
-    save: saveCatalog,
-    reset: resetCatalog,
-    exportDataJS: exportCatalogAsDataJS,
+    reload: loadCatalogFromSupabase,
+    saveOne: saveProduct,
+    removeOne: deleteProductSupa,
     nextId: (cat) => {
       const prefix = (CATEGORIES.find(c => c.id === cat) || {}).id?.slice(0,3) || "new";
       let n = 1;
@@ -1412,6 +1420,7 @@
               <a href="#orders">${t("account.menu.orders")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${orders.length}</span></a>
               <a href="#profile">${t("account.menu.profile")}</a>
               <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
+              <button class="logout" id="delete-acct-btn" style="color:#b04a4a;margin-top:6px;">${t("account.menu.delete")} →</button>
             </nav>
           </aside>
           <div>
@@ -1459,6 +1468,24 @@
       `;
       const btn = root.querySelector("#logout-btn");
       if (btn) btn.addEventListener("click", () => { logoutUser(); location.href = "index.html"; });
+      const delBtn = root.querySelector("#delete-acct-btn");
+      if (delBtn) delBtn.addEventListener("click", () => {
+        const lang = getLang();
+        const msg = lang === "va"
+          ? "Açò esborrarà definitivament el teu compte i totes les teues comandes. Esta acció no es pot desfer. Continuar?"
+          : "Esto eliminará tu cuenta y todos tus pedidos de forma permanente. Esta acción no se puede deshacer. ¿Continuar?";
+        if (!confirm(msg)) return;
+        // Remove user from localStorage (Phase 1 — once we wire Supabase Auth
+        // for customers, this calls supa.auth.admin.deleteUser via an Edge Function)
+        try {
+          const users = _readUsers();
+          delete users[u.email];
+          _writeUsers(users);
+          logoutUser();
+        } finally {
+          location.href = "index.html";
+        }
+      });
     }
     render();
     document.addEventListener("vj:langchange", render);
@@ -1501,11 +1528,15 @@
   }
 
   /* ---------------- Boot ---------------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     document.documentElement.lang = getLang() === "va" ? "ca-valencia" : "es";
     mountChrome();
     initHeader();
     applyTranslations();
+
+    // Pull live catalog from Supabase. If it fails, we keep the seed
+    // array as a fallback so the site still renders something.
+    await loadCatalogFromSupabase();
 
     // re-render footer on lang change (category labels & hours)
     document.addEventListener("vj:langchange", () => {

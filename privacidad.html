@@ -79,9 +79,14 @@
       <ul>
         <li><strong>Proveedores de servicio necesarios</strong>: empresa de mensajería para entregar tus pedidos (datos: nombre, teléfono, dirección).</li>
         <li><strong>Obligaciones legales</strong>: a la administración tributaria u otras autoridades competentes cuando la ley lo exija.</li>
-        <li><strong>Proveedores tecnológicos</strong> que actúan como encargados del tratamiento bajo contrato (alojamiento web — Cloudflare, Inc., con cláusulas tipo de la UE para transferencias internacionales).</li>
+        <li><strong>Encargados del tratamiento</strong> (todos bajo contrato con cláusulas tipo de la UE):
+          <ul>
+            <li><strong>Cloudflare, Inc.</strong> — alojamiento web y CDN (región EU).</li>
+            <li><strong>Supabase, Inc.</strong> — base de datos, autenticación y almacenamiento. Datos físicamente almacenados en la UE (región Frankfurt/Irlanda). Más información: <a href="https://supabase.com/legal/dpa" target="_blank" rel="noopener">supabase.com/legal/dpa</a> y <a href="https://supabase.com/legal/subprocessors" target="_blank" rel="noopener">lista de sub-encargados</a>.</li>
+          </ul>
+        </li>
       </ul>
-      <p>No realizamos transferencias internacionales fuera del Espacio Económico Europeo más allá del proveedor de alojamiento, que opera bajo garantías equivalentes (cláusulas contractuales tipo de la Comisión Europea).</p>
+      <p>Aunque Cloudflare y Supabase son empresas con matriz en EE. UU., los datos personales se procesan físicamente en servidores de la Unión Europea bajo garantías equivalentes (cláusulas contractuales tipo de la Comisión Europea — Schrems II).</p>
 
       <h2 id="conservacion">5. ¿Cuánto tiempo conservamos los datos?</h2>
       <ul>
@@ -122,6 +127,8 @@
 
 <div data-vj-footer></div>
 <script src="js/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

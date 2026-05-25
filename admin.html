@@ -21,13 +21,36 @@
     <div class="admin-bar">
       <div class="left">
         <h2><em>Panel</em> de administración</h2>
-        <span class="badge">Borrador local</span>
+        <span class="badge" id="admin-badge" style="display:none;">Conectado</span>
       </div>
-      <div class="right" id="admin-panel-actions">
-        <button class="btn btn-outline" id="btn-reset" type="button">Reiniciar</button>
-        <button class="btn btn-primary btn-arrow" id="btn-export" type="button">Exportar data.js</button>
+      <div class="right" id="admin-panel-actions" style="display:none;">
+        <span class="muted" id="admin-user" style="font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-right:8px;"></span>
+        <button class="btn btn-outline" id="btn-logout" type="button">Cerrar sesión</button>
       </div>
     </div>
+
+    <!-- ===== LOGIN GATE ===== -->
+    <div id="admin-login" class="form-card" style="max-width:440px; margin: 0 auto 40px; padding:36px;">
+      <h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;font-size:1.6rem;margin:0 0 6px;">Acceso administrador</h3>
+      <p class="muted" style="font-size:.9rem; margin-bottom:24px;">Solo el equipo de Viveros Jazmín puede entrar aquí.</p>
+      <div class="auth-error" id="admin-error"></div>
+      <form id="admin-login-form" autocomplete="on">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Correo</label>
+            <input type="email" name="email" required autocomplete="email">
+          </div>
+          <div class="form-field full">
+            <label>Contraseña</label>
+            <input type="password" name="password" required autocomplete="current-password">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-arrow btn-block mt-24">Entrar</button>
+      </form>
+    </div>
+
+    <!-- ===== WRAPPER for everything that requires login ===== -->
+    <div id="admin-content" style="display:none;">
 
     <nav class="admin-tabs" role="tablist">
       <button class="admin-tab is-active" data-tab="products" role="tab">
@@ -48,7 +71,7 @@
     <div class="admin-panel is-active" data-panel="products">
 
     <div class="admin-notice">
-      <strong>¿Cómo funciona?</strong> Añade, edita y borra productos en este panel — los cambios se guardan en tu navegador y aparecen al instante en la tienda. Cuando tu catálogo esté listo, pulsa <strong>Exportar data.js</strong> para descargar el archivo, sustitúyelo en <code>js/data.js</code> del repositorio y publica los cambios. Así los verán todos los clientes.
+      <strong>Cambios en vivo.</strong> Los productos se guardan directamente en la base de datos. Cualquier cambio aquí lo verán los clientes al instante — no hay que exportar nada ni publicar nada.
     </div>
 
     <div class="admin-layout">
@@ -230,14 +253,82 @@
       </div>
     </div>
 
+    </div><!-- /#admin-content -->
+
   </div>
 </section>
 
 <div data-vj-footer></div>
 
 <script src="js/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
 <script src="js/app.js"></script>
 <script>
+  /* ============================================================
+     ADMIN AUTH GATE (runs before everything else)
+     ============================================================ */
+  (function authGate() {
+    const supa = window.VJ_SUPA?.client;
+    const loginCard = document.getElementById("admin-login");
+    const contentEl = document.getElementById("admin-content");
+    const badge    = document.getElementById("admin-badge");
+    const actions  = document.getElementById("admin-panel-actions");
+    const userEl   = document.getElementById("admin-user");
+    const errEl    = document.getElementById("admin-error");
+    const loginForm= document.getElementById("admin-login-form");
+
+    function showLogin() {
+      loginCard.style.display = "";
+      contentEl.style.display = "none";
+      badge.style.display = "none";
+      actions.style.display = "none";
+    }
+    function showPanel(user) {
+      loginCard.style.display = "none";
+      contentEl.style.display = "";
+      badge.style.display = "";
+      actions.style.display = "";
+      userEl.textContent = user.email;
+      // Boot the rest of the admin script (defined below)
+      window.__adminBoot && window.__adminBoot();
+    }
+
+    async function check() {
+      if (!supa) { showLogin(); errEl.textContent = "Supabase no inicializado."; errEl.classList.add("is-show"); return; }
+      const { data } = await supa.auth.getSession();
+      const user = data?.session?.user;
+      if (user) showPanel(user); else showLogin();
+    }
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errEl.classList.remove("is-show");
+      const fd = new FormData(loginForm);
+      const { data, error } = await supa.auth.signInWithPassword({
+        email: fd.get("email").trim(),
+        password: fd.get("password")
+      });
+      if (error) {
+        errEl.textContent = "Credenciales no válidas.";
+        errEl.classList.add("is-show");
+        return;
+      }
+      showPanel(data.user);
+    });
+
+    // Run gate ASAP (after DOM and after VJ_SUPA loaded)
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", check);
+    } else {
+      check();
+    }
+  })();
+
+  /* ============================================================
+     ADMIN PANEL — only runs after auth gate calls __adminBoot()
+     ============================================================ */
+  window.__adminBoot = function () {
   (function () {
     const form = document.getElementById("product-form");
     const list = document.getElementById("admin-list");
@@ -399,17 +490,19 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    list.addEventListener("click", (e) => {
+    list.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-act]");
       if (!btn) return;
       const id = btn.closest(".admin-row").dataset.id;
       if (btn.dataset.act === "edit") loadForEdit(id);
       if (btn.dataset.act === "del") {
-        if (confirm(`¿Eliminar "${VJ_CATALOG.list().find(p=>p.id===id)?.name.es}"?`)) {
-          const next = VJ_CATALOG.list().filter(p => p.id !== id);
-          VJ_CATALOG.save(next);
+        if (!confirm(`¿Eliminar "${VJ_CATALOG.list().find(p=>p.id===id)?.name.es}"?`)) return;
+        try {
+          await VJ_CATALOG.removeOne(id);
           renderList();
           if (editingId === id) clearForm();
+        } catch (err) {
+          alert("No se pudo eliminar: " + (err.message || err));
         }
       }
     });
@@ -418,12 +511,11 @@
     search.addEventListener("input", renderList);
     seedSlider.addEventListener("input", e => seedVal.textContent = e.target.value);
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(form);
       const cat = fd.get("cat");
       const id = editingId || VJ_CATALOG.nextId(cat);
-      const next = VJ_CATALOG.list().slice();
       const product = {
         id,
         cat,
@@ -436,61 +528,29 @@
       };
       if (!product.img) delete product.img;
 
-      if (editingId) {
-        const i = next.findIndex(p => p.id === editingId);
-        if (i >= 0) next[i] = product;
-      } else {
-        next.push(product);
-      }
-      VJ_CATALOG.save(next);
-      renderList();
-      clearForm();
-      // tiny inline feedback
-      submitBtn.textContent = "✓ Guardado";
-      setTimeout(() => submitBtn.textContent = "Añadir producto", 1200);
-    });
-
-    document.getElementById("btn-reset").addEventListener("click", () => {
-      if (confirm("Esto descartará todos tus cambios y volverá al catálogo original. ¿Continuar?")) {
-        VJ_CATALOG.reset();
-        clearForm();
+      const original = submitBtn.textContent;
+      submitBtn.disabled = true; submitBtn.textContent = "Guardando…";
+      try {
+        await VJ_CATALOG.saveOne(product);
         renderList();
+        clearForm();
+        submitBtn.textContent = "✓ Guardado";
+        setTimeout(() => { submitBtn.textContent = original; submitBtn.disabled = false; }, 1200);
+      } catch (err) {
+        submitBtn.disabled = false; submitBtn.textContent = original;
+        alert("No se pudo guardar: " + (err.message || err));
       }
     });
 
-    document.getElementById("btn-export").addEventListener("click", () => {
-      const arr = VJ_CATALOG.list();
-      const pretty = JSON.stringify(arr, null, 2);
-
-      // Build a full data.js with the new PRODUCTS array baked in.
-      // Read the original module to preserve SITE_INFO, CATEGORIES, I18N.
-      fetch("js/data.js").then(r => r.text()).then(orig => {
-        // Replace the existing PRODUCTS array literal.
-        const newProductsLiteral = "let PRODUCTS = " + pretty + ";";
-        const updated = orig.replace(
-          /let PRODUCTS = \[[\s\S]*?\n\];/,
-          newProductsLiteral
-        );
-        const blob = new Blob([updated], { type: "application/javascript" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "data.js";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      }).catch(() => {
-        // Offline / file:// — fall back to just the array
-        const blob = new Blob(["// Replace the PRODUCTS array in js/data.js with:\n\nlet PRODUCTS = " + pretty + ";\n"], { type: "application/javascript" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url; a.download = "data.products.js";
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-        alert("No pude leer js/data.js directamente (al abrir el archivo desde el escritorio). Te he descargado solo el bloque PRODUCTS — pégalo en data.js sustituyendo el array existente.");
-      });
+    // Note: the old "Reiniciar / Exportar data.js" buttons were removed.
+    // The catalog now lives in Supabase, so there's no draft/published split.
+    // Logout button takes their place.
+    const btnLogout = document.getElementById("btn-logout");
+    if (btnLogout) btnLogout.addEventListener("click", async () => {
+      await window.VJ_SUPA.client.auth.signOut();
+      location.reload();
     });
+    /* removed export handler — Supabase IS the source of truth now */
 
     // Initial render
     renderList();
@@ -757,6 +817,7 @@
     });
 
   })();
+  }; /* end window.__adminBoot */
 </script>
 </body>
 </html>
