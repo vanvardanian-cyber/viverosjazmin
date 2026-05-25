@@ -1137,7 +1137,28 @@ body.nav-locked { overflow: hidden; }
   background: var(--blue-3);
   border-radius: var(--r-sm);
   padding: 28px;
-  position: sticky; top: calc(var(--header-h) + 24px);
+  position: sticky;
+  top: calc(var(--header-h) + 24px);
+  /* When the form is taller than the viewport, scroll inside instead
+     of hijacking the page scroll */
+  max-height: calc(100vh - var(--header-h) - 48px);
+  overflow-y: auto;
+  /* Soften the scroll edges so content fades nicely */
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue-deep) transparent;
+}
+.admin-form-wrap::-webkit-scrollbar { width: 6px; }
+.admin-form-wrap::-webkit-scrollbar-track { background: transparent; }
+.admin-form-wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+.admin-form-wrap::-webkit-scrollbar-thumb:hover { background: var(--ink-soft); }
+
+/* On smaller screens, sticky stops being useful — let the form flow normally */
+@media (max-width: 1080px) {
+  .admin-form-wrap {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 .admin-form-wrap h3 {
   font-family: 'Playfair Display', serif;
