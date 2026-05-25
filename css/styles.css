@@ -1164,6 +1164,38 @@ body.nav-locked { overflow: hidden; }
 }
 .admin-notice strong { color: #5e4f2e; }
 
+/* Image picker (admin form) */
+.img-picker {
+  display: grid; gap: 10px;
+}
+.img-preview {
+  aspect-ratio: 1/1;
+  background: #fff;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  max-width: 220px;
+}
+.img-preview img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.img-empty {
+  font-size: .72rem; color: var(--ink-soft);
+  letter-spacing: .18em; text-transform: uppercase;
+}
+.img-controls {
+  display: flex; align-items: center; gap: 8px;
+}
+.img-upload-btn {
+  padding: 8px 14px !important;
+  font-size: .7rem !important;
+}
+.img-or {
+  font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink-soft); text-align: center; margin: 4px 0;
+}
+
 /* small util */
 .mt-8  { margin-top: 8px; }
 .mt-16 { margin-top: 16px; }

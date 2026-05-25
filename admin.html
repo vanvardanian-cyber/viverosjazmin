@@ -91,8 +91,22 @@
             </div>
 
             <div class="form-field full">
-              <label>URL de imagen (opcional)</label>
-              <input type="url" name="img" placeholder="https://…  · vacío = ilustración automática">
+              <label>Imagen del producto (opcional)</label>
+              <div class="img-picker">
+                <div class="img-preview" id="img-preview">
+                  <span class="img-empty">Sin imagen</span>
+                </div>
+                <div class="img-controls">
+                  <label class="btn btn-light img-upload-btn" style="cursor:pointer;">
+                    Subir foto…
+                    <input type="file" id="f-imgfile" accept="image/*" style="display:none;">
+                  </label>
+                  <button type="button" class="btn btn-ghost" id="img-clear" style="display:none;padding:8px 12px;font-size:.7rem;">Quitar</button>
+                </div>
+                <div class="img-or">— o —</div>
+                <input type="url" name="img" id="f-img" placeholder="Pega una URL de imagen (https://…)">
+                <small style="color:var(--ink-soft);font-size:.72rem;">Recomendado: hasta 500 KB. Para fotos grandes, usa una URL externa.</small>
+              </div>
             </div>
             <div class="form-field full">
               <label>Color de la ilustración (si no hay foto): <span id="seed-val" style="font-weight:600">0</span></label>
@@ -128,9 +142,54 @@
     const seedVal = document.getElementById("seed-val");
     let editingId = null;
 
+    // image picker elements
+    const imgPreview = document.getElementById("img-preview");
+    const imgFile    = document.getElementById("f-imgfile");
+    const imgUrl     = document.getElementById("f-img");
+    const imgClear   = document.getElementById("img-clear");
+
     // populate category dropdown
     const catSel = document.getElementById("f-cat");
     catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.es}</option>`).join("");
+
+    function updateImgPreview() {
+      const v = (imgUrl.value || "").trim();
+      if (v && /^(https?:|data:)/.test(v)) {
+        imgPreview.innerHTML = `<img src="${v}" alt="">`;
+        imgClear.style.display = "";
+      } else {
+        imgPreview.innerHTML = `<span class="img-empty">Sin imagen</span>`;
+        imgClear.style.display = "none";
+      }
+    }
+    imgUrl.addEventListener("input", updateImgPreview);
+    imgClear.addEventListener("click", () => { imgUrl.value = ""; imgFile.value = ""; updateImgPreview(); });
+    imgFile.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        alert("Por favor selecciona un archivo de imagen.");
+        return;
+      }
+      // Warn but allow up to 1MB; reject above 2MB
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Imagen demasiado grande (más de 2 MB). Reduce el tamaño o usa una URL externa.");
+        imgFile.value = "";
+        return;
+      }
+      if (file.size > 512 * 1024) {
+        if (!confirm(`Esta imagen pesa ${(file.size/1024).toFixed(0)} KB. Se recomienda bajo 500 KB para no saturar el almacenamiento. ¿Continuar?`)) {
+          imgFile.value = "";
+          return;
+        }
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        imgUrl.value = reader.result;   // data:image/...;base64,...
+        updateImgPreview();
+      };
+      reader.readAsDataURL(file);
+    });
 
     // tiny inline SVG icons
     const ICONS = {
@@ -171,7 +230,7 @@
       list.innerHTML = items.map(p => `
         <div class="admin-row" data-id="${p.id}">
           <div class="thumb">
-            ${p.img && /^https?:/.test(p.img)
+            ${p.img && /^(https?:|data:)/.test(p.img)
               ? `<img src="${escapeHtml(p.img)}" alt="">`
               : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--blue-deep);font-family:'Playfair Display',serif;font-style:italic;font-size:1.2rem;">${escapeHtml(p.name.es[0]||'·')}</div>`
             }
@@ -201,6 +260,8 @@
       cancelBtn.style.display = "none";
       seedVal.textContent = "0";
       seedSlider.value = 0;
+      imgFile.value = "";
+      updateImgPreview();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -219,6 +280,8 @@
       form.elements.price.value = p.price;
       form.elements.stock.value = p.stock;
       form.elements.img.value = p.img || "";
+      imgFile.value = "";
+      updateImgPreview();
       const seed = Number(p.imgSeed) || 0;
       form.elements.imgSeed.value = seed;
       seedVal.textContent = seed;
