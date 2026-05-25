@@ -150,6 +150,185 @@
     onChange: (cb) => document.addEventListener("vj:authchange", cb)
   };
 
+  /* ---------------- Cookies (AEPD-compliant) ---------------- */
+  const STORAGE_COOKIES = "vj.cookies";
+  const COOKIE_EXPIRY_DAYS = 365; // re-ask once a year
+
+  function getCookieConsent() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_COOKIES));
+      if (!raw || !raw.decidedAt) return null;
+      const ageDays = (Date.now() - new Date(raw.decidedAt).getTime()) / 86400000;
+      if (ageDays > COOKIE_EXPIRY_DAYS) return null;
+      return raw;
+    } catch { return null; }
+  }
+  function saveCookieConsent(prefs) {
+    const data = {
+      essential: true,                 // always
+      analytics: !!prefs.analytics,
+      marketing: !!prefs.marketing,
+      decidedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_COOKIES, JSON.stringify(data));
+    document.dispatchEvent(new CustomEvent("vj:cookieschange", { detail: data }));
+    // Apply consent immediately
+    applyCookieConsent(data);
+  }
+  function applyCookieConsent(prefs) {
+    // Analytics (placeholder — when you add Google Analytics or Plausible,
+    // load the script here only if prefs.analytics is true).
+    // Marketing pixels (same).
+    if (prefs && prefs.analytics) {
+      // Example placeholder for Plausible: not loaded by default.
+      // const s = document.createElement("script");
+      // s.defer = true; s.src = "https://plausible.io/js/script.js";
+      // s.setAttribute("data-domain", "jazmin-group.com");
+      // document.head.appendChild(s);
+    }
+  }
+
+  function cookieTexts() {
+    const lang = getLang();
+    return lang === "va" ? {
+      title: "Galetes",
+      body:  "Utilitzem galetes essencials per a la cistella, l'idioma i la teua sessió. No fem rastreig publicitari. Pots acceptar les opcionals (anàlisi) o rebutjar-les en qualsevol moment.",
+      accept: "Acceptar tot",
+      reject: "Rebutjar tot",
+      config: "Configurar",
+      save:   "Guardar selecció",
+      essential: "Essencials (sempre actives)",
+      essentialDesc: "Sense estes galetes la cistella i l'inici de sessió no funcionarien.",
+      analytics: "Anàlisi (anònim)",
+      analyticsDesc: "Ens ajuden a entendre quines pàgines són útils. Estadístiques agregades, sense identificar-te.",
+      marketing: "Màrqueting",
+      marketingDesc: "Personalització i publicitat de tercers. Actualment no s'utilitzen.",
+      more: "Més informació",
+      changeLink: "Configurar galetes"
+    } : {
+      title: "Cookies",
+      body:  "Utilizamos cookies esenciales para el carrito, el idioma y tu sesión. No realizamos seguimiento publicitario. Puedes aceptar las opcionales (análisis) o rechazarlas en cualquier momento.",
+      accept: "Aceptar todo",
+      reject: "Rechazar todo",
+      config: "Configurar",
+      save:   "Guardar selección",
+      essential: "Esenciales (siempre activas)",
+      essentialDesc: "Sin estas cookies el carrito y la sesión no funcionarían.",
+      analytics: "Análisis (anónimo)",
+      analyticsDesc: "Nos ayudan a entender qué páginas son útiles. Estadísticas agregadas, sin identificarte.",
+      marketing: "Marketing",
+      marketingDesc: "Personalización y publicidad de terceros. Actualmente no se utilizan.",
+      more: "Más información",
+      changeLink: "Configurar cookies"
+    };
+  }
+
+  function ensureBannerDOM() {
+    if (document.getElementById("vj-cookie-banner")) return document.getElementById("vj-cookie-banner");
+    const t = cookieTexts();
+    const wrap = document.createElement("div");
+    wrap.id = "vj-cookie-banner";
+    wrap.className = "cookie-banner";
+    wrap.setAttribute("role", "dialog");
+    wrap.setAttribute("aria-labelledby", "vj-cookie-title");
+    wrap.innerHTML = `
+      <div class="cookie-card">
+        <div class="cookie-summary">
+          <h3 id="vj-cookie-title">${t.title}</h3>
+          <p>${t.body} <a href="cookies.html">${t.more} →</a></p>
+        </div>
+        <div class="cookie-details" hidden>
+          <label class="cookie-row">
+            <span class="cookie-row-text">
+              <strong>${t.essential}</strong>
+              <small>${t.essentialDesc}</small>
+            </span>
+            <input type="checkbox" checked disabled>
+          </label>
+          <label class="cookie-row">
+            <span class="cookie-row-text">
+              <strong>${t.analytics}</strong>
+              <small>${t.analyticsDesc}</small>
+            </span>
+            <input type="checkbox" data-pref="analytics">
+          </label>
+          <label class="cookie-row">
+            <span class="cookie-row-text">
+              <strong>${t.marketing}</strong>
+              <small>${t.marketingDesc}</small>
+            </span>
+            <input type="checkbox" data-pref="marketing">
+          </label>
+        </div>
+        <div class="cookie-actions" data-stage="summary">
+          <button type="button" class="btn btn-light cookie-config">${t.config}</button>
+          <button type="button" class="btn btn-outline cookie-reject">${t.reject}</button>
+          <button type="button" class="btn btn-primary cookie-accept">${t.accept}</button>
+        </div>
+        <div class="cookie-actions" data-stage="details" hidden>
+          <button type="button" class="btn btn-outline cookie-reject">${t.reject}</button>
+          <button type="button" class="btn btn-primary cookie-save">${t.save}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(wrap);
+
+    const summary  = wrap.querySelector(".cookie-summary");
+    const details  = wrap.querySelector(".cookie-details");
+    const actsSum  = wrap.querySelector('[data-stage="summary"]');
+    const actsDet  = wrap.querySelector('[data-stage="details"]');
+    const analyticsCb = wrap.querySelector('input[data-pref="analytics"]');
+    const marketingCb = wrap.querySelector('input[data-pref="marketing"]');
+
+    wrap.querySelectorAll(".cookie-config").forEach(b => b.addEventListener("click", () => {
+      summary.hidden = true; details.hidden = false; actsSum.hidden = true; actsDet.hidden = false;
+    }));
+    wrap.querySelectorAll(".cookie-accept").forEach(b => b.addEventListener("click", () => {
+      saveCookieConsent({ analytics: true, marketing: true }); hideBanner();
+    }));
+    wrap.querySelectorAll(".cookie-reject").forEach(b => b.addEventListener("click", () => {
+      saveCookieConsent({ analytics: false, marketing: false }); hideBanner();
+    }));
+    wrap.querySelector(".cookie-save").addEventListener("click", () => {
+      saveCookieConsent({ analytics: analyticsCb.checked, marketing: marketingCb.checked }); hideBanner();
+    });
+    return wrap;
+  }
+  function showBanner(prefilled) {
+    const el = ensureBannerDOM();
+    if (prefilled) {
+      el.querySelector('input[data-pref="analytics"]').checked = !!prefilled.analytics;
+      el.querySelector('input[data-pref="marketing"]').checked = !!prefilled.marketing;
+    }
+    requestAnimationFrame(() => el.classList.add("is-show"));
+  }
+  function hideBanner() {
+    const el = document.getElementById("vj-cookie-banner");
+    if (el) el.classList.remove("is-show");
+  }
+  function initCookieBanner() {
+    const consent = getCookieConsent();
+    if (consent) {
+      applyCookieConsent(consent);
+    } else {
+      // Show after slight delay for less abrupt UX
+      setTimeout(() => showBanner(), 600);
+    }
+    // Footer link "Configurar cookies"
+    document.querySelectorAll("[data-vj-cookies]").forEach(a => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        showBanner(consent || {});
+      });
+    });
+  }
+
+  window.VJ_COOKIES = {
+    get: getCookieConsent,
+    show: showBanner,
+    reset: () => { localStorage.removeItem(STORAGE_COOKIES); }
+  };
+
   /* ---------------- i18n ---------------- */
 
   function getLang() {
@@ -543,12 +722,13 @@
                 <li><a href="sobre.html" data-i18n="nav.about"></a></li>
                 <li><a href="contacto.html" data-i18n="nav.contact"></a></li>
                 <li><a href="carrito.html" data-i18n="nav.cart"></a></li>
+                <li><a href="trabajo.html">${lang === "va" ? "Treballa amb nosaltres" : "Trabaja con nosotros"}</a></li>
               </ul>
             </div>
             <div>
               <h4 data-i18n="footer.find"></h4>
               <ul>
-                <li>Cuadra de Los Cubos, 135<br>12006 Castelló de la Plana</li>
+                <li>Calle Río Anna 135<br>12006 Castelló de la Plana</li>
                 <li><a href="tel:+34${SITE_INFO.phone.replace(/\\s+/g,'')}">${SITE_INFO.phone}</a></li>
                 <li><a href="mailto:${SITE_INFO.email}">${SITE_INFO.email}</a></li>
                 <li class="mt-16" style="font-size:.82rem;line-height:1.6;opacity:.75;">${hours}</li>
@@ -557,7 +737,13 @@
           </div>
           <div class="footer-bottom">
             <div>© 1992–2026 Viveros Jazmín · <span data-i18n="footer.copy"></span></div>
-            <div>Castelló de la Plana · España</div>
+            <div class="footer-legal">
+              <a href="aviso-legal.html">Aviso Legal</a> ·
+              <a href="privacidad.html">Privacidad</a> ·
+              <a href="cookies.html">Cookies</a> ·
+              <a href="condiciones.html">Condiciones</a> ·
+              <a href="#" data-vj-cookies>Configurar cookies</a>
+            </div>
           </div>
         </div>
       </footer>
@@ -1266,5 +1452,6 @@
     renderContactForm();
     renderAccountPage();
     attachAddButtons();
+    initCookieBanner();
   });
 })();

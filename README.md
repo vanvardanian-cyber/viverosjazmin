@@ -68,7 +68,7 @@ dentro de `app.js`.
 Editables en `js/data.js → SITE_INFO`:
 
 ```js
-address:   Cuadra de Los Cubos, 135, 12006 Castelló de la Plana
+address:   Calle Río Anna 135, 12006 Castelló de la Plana
 phone:     636 54 35 66
 email:     jazminfloristeria@hotmail.com
 hours ES:  Lunes a sábado: 8:30–13:30 y 16:00–20:00 · Domingo y festivos: 9:00–13:00

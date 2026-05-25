@@ -7,7 +7,7 @@
 const SITE_INFO = {
   name: "Viveros Jazmín",
   tagline: { es: "Viveros y floristería desde 1992", va: "Viver i floristeria des de 1992" },
-  address: "Cuadra de Los Cubos, 135, 12006 Castelló de la Plana",
+  address: "Calle Río Anna 135, 12006 Castelló de la Plana",
   phone: "636 54 35 66",
   phoneIntl: "+34636543566",
   email: "jazminfloristeria@hotmail.com",
