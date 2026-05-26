@@ -1255,6 +1255,12 @@ body.nav-locked { overflow: hidden; }
 .status-reviewed  { background: var(--blue-2); color: var(--blue-deep); }
 .status-contacted { background: #DDEFE2; color: #36673E; }
 .status-discarded { background: #EDE3DC; color: #7A6353; }
+.status-pending   { background: #FFF4D6; color: #87691A; }
+.status-confirmed { background: var(--blue-2); color: var(--blue-deep); }
+.status-paid      { background: #DDEFE2; color: #36673E; }
+.status-shipped   { background: #E3DCEF; color: #4A3673; }
+.status-delivered { background: #DDEFE2; color: #36673E; }
+.status-cancelled { background: #FBEAEA; color: #8B3A3A; }
 
 .app-card-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px;}
 .app-row { font-size: .9rem; color: var(--ink-soft); }

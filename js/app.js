@@ -1376,21 +1376,61 @@
         });
       });
 
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const ref = "JZ-" + Date.now().toString(36).toUpperCase();
-        const order = {
-          ref,
-          items: getCart(),
-          total: cartTotal(),
-          details: Object.fromEntries(new FormData(form)),
-          createdAt: new Date().toISOString()
+        const details = Object.fromEntries(new FormData(form));
+        const items = getCart();
+        const total = cartTotal();
+        const subtotal = total;
+        const order = { ref, items, total, details, createdAt: new Date().toISOString() };
+
+        // Build the Supabase row
+        const rowItems = items.map(it => {
+          const p = PRODUCTS.find(x => x.id === it.id);
+          return {
+            id: it.id,
+            qty: it.qty,
+            name: p ? p.name : { es: it.id, va: it.id },
+            price: p ? p.price : 0,
+            cat: p ? p.cat : null
+          };
+        });
+        const orderRow = {
+          id: ref,
+          customer_name:    (details.name  || "").trim(),
+          customer_email:   (details.email || "").trim(),
+          customer_phone:   (details.phone || "").trim(),
+          delivery_method:  details.delivery === "ship" ? "ship" : "pickup",
+          delivery_address: (details.address || "").trim() || null,
+          notes:            (details.notes   || "").trim() || null,
+          items:            rowItems,
+          subtotal:         Number(subtotal.toFixed(2)),
+          total:            Number(total.toFixed(2)),
+          status:           "pending"
         };
-        localStorage.setItem("vj.lastOrder", JSON.stringify(order));
-        // If logged in, append to user's order history
-        appendOrderToUser(order);
-        setCart([]);
-        location.href = "gracias.html?ref=" + ref;
+
+        // Disable button while saving
+        const btn = form.querySelector('button[type="submit"]');
+        const orig = btn.textContent;
+        btn.disabled = true; btn.textContent = "Enviando…";
+
+        try {
+          const supa = window.VJ_SUPA?.client;
+          if (supa) {
+            const { error } = await supa.from("orders").insert(orderRow);
+            if (error) throw error;
+          }
+          // Local fallbacks (so the gracias page + user history still work)
+          localStorage.setItem("vj.lastOrder", JSON.stringify(order));
+          appendOrderToUser(order);
+          setCart([]);
+          location.href = "gracias.html?ref=" + ref;
+        } catch (err) {
+          btn.disabled = false; btn.textContent = orig;
+          console.error("Order save failed:", err);
+          alert("No se pudo enviar el pedido: " + (err.message || err));
+        }
       });
     }
 

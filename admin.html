@@ -57,8 +57,12 @@
         <span>Productos</span>
         <span class="tab-count" id="tab-products-count">0</span>
       </button>
+      <button class="admin-tab" data-tab="orders" role="tab">
+        <span>Pedidos</span>
+        <span class="tab-count" id="tab-orders-count">0</span>
+      </button>
       <button class="admin-tab" data-tab="applications" role="tab">
-        <span>Aplicaciones</span>
+        <span>Candidaturas</span>
         <span class="tab-count" id="tab-apps-count">0</span>
       </button>
       <button class="admin-tab" data-tab="questions" role="tab">
@@ -164,6 +168,28 @@
     </div>
 
     </div><!-- /panel:products -->
+
+    <!-- ===== PANEL: ORDERS ===== -->
+    <div class="admin-panel" data-panel="orders">
+      <div class="admin-notice">
+        <strong>Pedidos recibidos.</strong> Cada vez que un cliente tramita su cesta, el pedido aparece aquí en tiempo real.
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
+        <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
+          Total · <span id="orders-count">0</span> pedidos
+        </h4>
+        <div class="apps-filter" id="orders-filter">
+          <button data-status="all" class="is-active">Todos</button>
+          <button data-status="pending">Pendientes</button>
+          <button data-status="confirmed">Confirmados</button>
+          <button data-status="paid">Pagados</button>
+          <button data-status="shipped">Enviados</button>
+          <button data-status="delivered">Entregados</button>
+          <button data-status="cancelled">Cancelados</button>
+        </div>
+      </div>
+      <div id="orders-list" class="apps-list"></div>
+    </div>
 
     <!-- ===== PANEL: APPLICATIONS ===== -->
     <div class="admin-panel" data-panel="applications">
@@ -570,16 +596,135 @@
       panelActions.style.display = (name === "products") ? "" : "none";
       if (name === "applications") renderApps();
       if (name === "questions")    renderQuestions();
+      if (name === "orders")       renderOrders();
     }));
 
+    let ordersCache = [];   // declared early so updateTabCounts can read it
     function updateTabCounts() {
       document.getElementById("tab-products-count").textContent = VJ_CATALOG.list().length;
       document.getElementById("tab-apps-count").textContent     = VJ_JOBS.apps().length;
       document.getElementById("tab-questions-count").textContent= VJ_JOBS.questions().length;
+      document.getElementById("tab-orders-count").textContent   = ordersCache.length;
     }
     updateTabCounts();
     document.addEventListener("vj:applicationschange", updateTabCounts);
     document.addEventListener("vj:jobsquestionschange", updateTabCounts);
+
+    /* ============================================================
+       ORDERS PANEL (Supabase)
+       ============================================================ */
+    const ordersListEl   = document.getElementById("orders-list");
+    const ordersFilterEl = document.getElementById("orders-filter");
+    const ordersCountEl  = document.getElementById("orders-count");
+    let ordersActiveStatus = "all";
+
+    const ORDER_STATUS = {
+      pending:    "Pendiente",
+      confirmed:  "Confirmado",
+      paid:       "Pagado",
+      shipped:    "Enviado",
+      delivered:  "Entregado",
+      cancelled:  "Cancelado"
+    };
+
+    ordersFilterEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      ordersActiveStatus = b.dataset.status;
+      ordersFilterEl.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
+      renderOrders();
+    }));
+
+    async function loadOrders() {
+      const supa = window.VJ_SUPA?.client;
+      if (!supa) return;
+      const { data, error } = await supa
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) { console.error("Orders fetch error:", error); return; }
+      ordersCache = data || [];
+      updateTabCounts();
+    }
+
+    function renderOrders() {
+      let list = ordersCache;
+      ordersCountEl.textContent = list.length;
+      if (ordersActiveStatus !== "all") list = list.filter(o => o.status === ordersActiveStatus);
+
+      if (list.length === 0) {
+        ordersListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${ordersCache.length === 0 ? "Aún no hay pedidos." : "Ningún pedido con este estado."}</h3></div>`;
+        return;
+      }
+
+      ordersListEl.innerHTML = list.map(o => {
+        const date  = new Date(o.created_at).toLocaleDateString("es-ES", { day:"numeric", month:"short", year:"numeric" });
+        const time  = new Date(o.created_at).toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
+        const total = new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR" }).format(o.total);
+        const items = Array.isArray(o.items) ? o.items : [];
+        const itemsHtml = items.map(it => {
+          const name = it.name?.es || it.id;
+          const line = (it.qty * (it.price || 0));
+          return `<div class="app-answer">
+            <strong>${escapeHtml(name)} × ${it.qty}</strong>
+            <span>${new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(line)}</span>
+          </div>`;
+        }).join("");
+        const deliveryLabel = o.delivery_method === "ship" ? "Envío a domicilio" : "Recogida en tienda";
+        return `
+          <article class="app-card" data-id="${o.id}">
+            <header class="app-card-head">
+              <div>
+                <div class="app-name">${escapeHtml(o.customer_name || "(Sin nombre)")} · ${total}</div>
+                <div class="app-meta">${escapeHtml(o.customer_email)} · ${escapeHtml(o.customer_phone || "—")} · <span class="ref">${o.id}</span></div>
+              </div>
+              <div class="app-side">
+                <span class="status-pill status-${o.status}">${ORDER_STATUS[o.status]||o.status}</span>
+                <span class="app-date">${date} · ${time}</span>
+              </div>
+            </header>
+            <div class="app-card-body">
+              <div class="app-row"><strong>Entrega</strong> ${escapeHtml(deliveryLabel)}${o.delivery_address ? " · " + escapeHtml(o.delivery_address) : ""}</div>
+              ${o.notes ? `<div class="app-row"><strong>Notas</strong><p>${escapeHtml(o.notes)}</p></div>` : ""}
+              <div class="app-answers">${itemsHtml}</div>
+            </div>
+            <footer class="app-card-foot">
+              <label class="muted" style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;">Estado:</label>
+              <select data-act="status" class="status-select">
+                ${Object.entries(ORDER_STATUS).map(([k,v]) => `<option value="${k}" ${k===o.status?'selected':''}>${v}</option>`).join("")}
+              </select>
+              <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+            </footer>
+          </article>
+        `;
+      }).join("");
+    }
+
+    ordersListEl.addEventListener("change", async (e) => {
+      if (e.target.dataset.act !== "status") return;
+      const card = e.target.closest(".app-card");
+      const id = card.dataset.id;
+      const supa = window.VJ_SUPA.client;
+      const { error } = await supa.from("orders").update({ status: e.target.value }).eq("id", id);
+      if (error) { alert("Error: " + error.message); return; }
+      const i = ordersCache.findIndex(o => o.id === id);
+      if (i >= 0) ordersCache[i].status = e.target.value;
+      renderOrders();
+    });
+    ordersListEl.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-act='del']");
+      if (!btn) return;
+      const id = btn.closest(".app-card").dataset.id;
+      if (!confirm("¿Eliminar este pedido definitivamente?")) return;
+      const supa = window.VJ_SUPA.client;
+      const { error } = await supa.from("orders").delete().eq("id", id);
+      if (error) { alert("Error: " + error.message); return; }
+      ordersCache = ordersCache.filter(o => o.id !== id);
+      renderOrders();
+    });
+
+    // Initial load + count
+    loadOrders().then(() => {
+      updateTabCounts();
+    });
 
     /* ============================================================
        APPLICATIONS PANEL
