@@ -1308,10 +1308,15 @@
 
       const u = currentUser();
       const authNote = u
-        ? `<div class="muted" style="font-size:.85rem; margin-bottom: 16px;">✓ ${t("account.welcome")}, <strong>${u.name}</strong></div>`
-        : `<div class="muted" style="font-size:.85rem; margin-bottom: 16px;">
-             <a href="entrar.html?return=checkout.html">${t("auth.signin")}</a> ·
-             <a href="registro.html?return=checkout.html">${t("auth.signup")}</a>
+        ? `<div class="checkout-userbar is-logged">
+             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+             <span>${t("account.welcome")}, <strong>${u.name}</strong></span>
+           </div>`
+        : `<div class="checkout-userbar">
+             <span class="guest-tag">Comprando como invitado</span>
+             <span class="guest-or">·</span>
+             <a href="entrar.html?return=checkout.html">${t("auth.signin")}</a>
+             <span class="guest-or">para rellenar más rápido</span>
            </div>`;
 
       root.innerHTML = `
@@ -1537,6 +1542,23 @@
     if (!root) return;
     const ref = new URLSearchParams(location.search).get("ref") || "—";
     function render() {
+      const u = currentUser();
+      // Try to recover the email used in the last order, so we can pre-fill register
+      let lastEmail = "";
+      try { lastEmail = (JSON.parse(localStorage.getItem("vj.lastOrder")) || {}).details?.email || ""; } catch {}
+
+      const registerPrompt = (!u && lastEmail) ? `
+        <div class="post-purchase-cta">
+          <div class="ppc-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11v6M19 14h6"/></svg>
+          </div>
+          <div class="ppc-text">
+            <strong>¿Quieres seguir el pedido?</strong>
+            <p>Crea una cuenta gratis con <strong>${escapeHtmlSafe(lastEmail)}</strong> — guardas la dirección y el historial para futuras compras. Tarda 10 segundos.</p>
+          </div>
+          <a href="registro.html?email=${encodeURIComponent(lastEmail)}" class="btn btn-primary btn-arrow">Crear cuenta</a>
+        </div>` : "";
+
       root.innerHTML = `
         <div class="success-card">
           <div class="success-icon">
@@ -1550,10 +1572,14 @@
           </div>
           <a href="index.html" class="btn btn-primary mt-32">${t("checkout.success.back")}</a>
         </div>
+        ${registerPrompt}
       `;
     }
     render();
     document.addEventListener("vj:langchange", render);
+  }
+  function escapeHtmlSafe(s) {
+    return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
   }
 
   function renderContactForm() {
