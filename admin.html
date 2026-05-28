@@ -136,6 +136,12 @@
             </div>
 
             <div class="form-field full">
+              <label>Origen / Procedencia</label>
+              <input type="text" name="origin" maxlength="80" placeholder="p. ej. Países Bajos · Valencia · Vivero propio">
+              <small style="color:var(--ink-soft);font-size:.72rem;">Opcional. Se muestra en la ficha del producto bajo "Origen".</small>
+            </div>
+
+            <div class="form-field full">
               <label>Imagen del producto (opcional)</label>
               <div class="img-picker">
                 <div class="img-preview" id="img-preview">
@@ -504,6 +510,7 @@
       form.elements.desc_va.value = p.desc.va;
       form.elements.price.value = p.price;
       form.elements.stock.value = p.stock;
+      form.elements.origin.value = p.origin || "";
       form.elements.img.value = p.img || "";
       imgFile.value = "";
       updateImgPreview();
@@ -549,6 +556,7 @@
         stock: parseInt(fd.get("stock")) || 0,
         imgSeed: parseInt(fd.get("imgSeed")) || 0,
         img: (fd.get("img") || "").trim() || undefined,
+        origin: (fd.get("origin") || "").trim(),
         name: { es: (fd.get("name_es")||"").trim(), va: (fd.get("name_va")||"").trim() },
         desc: { es: (fd.get("desc_es")||"").trim(), va: (fd.get("desc_va")||"").trim() }
       };

@@ -745,6 +745,96 @@ body.nav-locked { overflow: hidden; }
 }
 .favs-empty p { margin-bottom: 24px; }
 
+/* Compact product grid for the account page favs section */
+.product-grid--compact { gap: 24px; }
+@media (min-width: 800px) {
+  .product-grid--compact { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1200px) {
+  .product-grid--compact { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Product detail — Origin / meta block */
+.detail-meta {
+  margin: 18px 0 4px;
+  padding: 12px 14px;
+  background: var(--blue-3);
+  border-left: 3px solid var(--blue-deep);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+.detail-meta-row {
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.detail-meta-icon {
+  color: var(--blue-deep);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex-shrink: 0;
+}
+.detail-meta-label {
+  display: block;
+  font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+  margin-bottom: 2px;
+}
+.detail-meta-value {
+  display: block;
+  font-family: 'Lora', Georgia, serif; font-style: italic;
+  font-size: 1rem; color: var(--ink);
+}
+
+/* Register-prompt toast for guest likers */
+.like-toast {
+  position: fixed; bottom: 24px; right: 24px; left: 24px;
+  max-width: 420px; margin-left: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  padding: 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+  z-index: 1000;
+  transform: translateY(120%); opacity: 0;
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+}
+.like-toast.is-show { transform: translateY(0); opacity: 1; }
+.like-toast-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: rgba(201,59,88,.08);
+  color: #c93b58;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.like-toast-body { flex: 1; min-width: 0; }
+.like-toast-title {
+  font-weight: 600; font-size: .95rem; color: var(--ink);
+  margin-bottom: 2px;
+}
+.like-toast-text {
+  font-size: .82rem; color: var(--ink-soft); line-height: 1.45;
+}
+.like-toast-actions {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+}
+.like-toast-actions .btn-sm {
+  padding: 8px 14px; font-size: .78rem; letter-spacing: .04em;
+}
+.like-toast-close {
+  background: none; border: 0; cursor: pointer;
+  font-size: 1.4rem; line-height: 1; color: var(--ink-soft);
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: background .15s;
+}
+.like-toast-close:hover { background: var(--blue-3); color: var(--ink); }
+@media (max-width: 540px) {
+  .like-toast {
+    flex-wrap: wrap;
+    bottom: 12px; right: 12px; left: 12px;
+  }
+  .like-toast-actions { width: 100%; justify-content: space-between; }
+}
+
 .product-body { padding: 16px 2px 0; display: flex; flex-direction: column; gap: 4px;}
 .product-cat {
   font-size: .65rem; color: var(--ink-soft);

@@ -35,7 +35,8 @@ function rowToProduct(row) {
     desc: { es: row.desc_es, va: row.desc_va },
     availableOnline: row.available_online !== false,
     delivery: row.delivery || "standard",
-    ivaRate: row.iva_rate != null ? Number(row.iva_rate) : 10
+    ivaRate: row.iva_rate != null ? Number(row.iva_rate) : 10,
+    origin: row.origin || ""
   };
 }
 function productToRow(p, sortOrder) {
@@ -53,6 +54,7 @@ function productToRow(p, sortOrder) {
     available_online: p.availableOnline !== false,
     delivery: p.delivery || "standard",
     iva_rate: p.ivaRate != null ? p.ivaRate : 10,
+    origin: (p.origin || "").trim() || null,
     updated_at: new Date().toISOString()
   };
   if (sortOrder != null) row.sort_order = sortOrder;

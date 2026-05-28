@@ -856,8 +856,54 @@
         // Force reflow so the animation restarts on rapid clicks
         void btn.offsetWidth;
         btn.classList.add("just-liked");
+        // If a guest just added a like, gently suggest signing up
+        if (nowLiked && !currentUser()) maybeShowRegisterToast();
       });
     });
+  }
+
+  /* Guest "save your favorites" toast — non-intrusive nudge to register.
+     Shown once per session, after the first like. Survives until the user
+     dismisses it, registers, or logs in. */
+  let _toastShown = false;
+  function maybeShowRegisterToast() {
+    if (_toastShown) return;
+    if (sessionStorage.getItem("vj.likes.toastDismissed") === "1") return;
+    _toastShown = true;
+    showRegisterToast();
+  }
+  function showRegisterToast() {
+    if (document.getElementById("vj-like-toast")) return;
+    const toast = document.createElement("div");
+    toast.id = "vj-like-toast";
+    toast.className = "like-toast";
+    toast.innerHTML = `
+      <div class="like-toast-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <div class="like-toast-body">
+        <div class="like-toast-title">${t("likes.toast.title")}</div>
+        <div class="like-toast-text">${t("likes.toast.text")}</div>
+      </div>
+      <div class="like-toast-actions">
+        <a href="registro.html" class="btn btn-primary btn-sm">${t("likes.toast.cta")}</a>
+        <button type="button" class="like-toast-close" aria-label="Cerrar">×</button>
+      </div>`;
+    document.body.appendChild(toast);
+    // Slide in
+    requestAnimationFrame(() => toast.classList.add("is-show"));
+    // Close handler
+    toast.querySelector(".like-toast-close").addEventListener("click", () => {
+      sessionStorage.setItem("vj.likes.toastDismissed", "1");
+      toast.classList.remove("is-show");
+      setTimeout(() => toast.remove(), 250);
+    });
+    // Auto-dismiss after 10 sec
+    setTimeout(() => {
+      if (!toast.parentNode) return;
+      toast.classList.remove("is-show");
+      setTimeout(() => toast.remove(), 250);
+    }, 10000);
   }
 
   /* ---------------- Header / Footer templates ---------------- */
@@ -1281,6 +1327,18 @@
                 : t("common.outOfStock")}
             </span>
             <p class="detail-desc">${productDesc(p)}</p>
+            ${p.origin ? `
+              <div class="detail-meta">
+                <div class="detail-meta-row">
+                  <span class="detail-meta-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  <div>
+                    <span class="detail-meta-label">${t("product.origin")}</span>
+                    <span class="detail-meta-value">${escapeHtmlSafe(p.origin)}</span>
+                  </div>
+                </div>
+              </div>` : ""}
             <div class="qty-row">
               <div class="qty-stepper">
                 <button class="js-dec" aria-label="-">−</button>
@@ -1599,6 +1657,7 @@
       if (!u) { location.href = "entrar.html"; return; }
 
       const orders = u.orders || [];
+      const favs = likeList();
       const created = new Date(u.createdAt);
       const memberSince = created.toLocaleDateString(getLang() === "va" ? "ca-ES" : "es-ES", { year: "numeric", month: "long" });
 
@@ -1610,6 +1669,7 @@
             <h4>${t("account.title")}</h4>
             <nav class="account-menu">
               <a href="#orders">${t("account.menu.orders")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${orders.length}</span></a>
+              <a href="#favs">${t("account.menu.favs")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${favs.length}</span></a>
               <a href="#profile">${t("account.menu.profile")}</a>
               <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
               <button class="logout" id="delete-acct-btn" style="color:#b04a4a;margin-top:6px;">${t("account.menu.delete")} →</button>
@@ -1630,6 +1690,16 @@
                       <div class="order-items">${o.items.length} ${t("common.units")}</div>
                       <div class="order-total">${formatPrice(o.total)}</div>
                     </div>`).join("")}</div>`
+              }
+            </div>
+            <div class="account-section" id="favs">
+              <h3>${t("account.favs.title")}</h3>
+              ${favs.length === 0
+                ? `<div class="empty-state" style="padding:32px 16px;">
+                     <p style="color:var(--ink-soft);margin-bottom:16px;">${t("account.favs.empty")}</p>
+                     <a href="tienda.html" class="btn btn-primary btn-arrow">${t("favs.empty.cta")}</a>
+                   </div>`
+                : `<div class="product-grid product-grid--compact">${favs.map(productCardHTML).join("")}</div>`
               }
             </div>
             <div class="account-section" id="profile">
@@ -1678,10 +1748,13 @@
           location.href = "index.html";
         }
       });
+      // Wire like buttons / add-to-cart inside the favorites grid
+      attachAddButtons(root);
     }
     render();
     document.addEventListener("vj:langchange", render);
     document.addEventListener("vj:authchange", render);
+    document.addEventListener("vj:likeschange", render);
   }
 
   function renderThanksPage() {
