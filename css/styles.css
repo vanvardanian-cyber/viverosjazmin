@@ -222,27 +222,72 @@ body.nav-locked { overflow: hidden; }
 }
 .lang-toggle .sep { color: var(--line); font-size: .8rem; }
 
-.cart-btn {
-  position: relative;
-  background: transparent; border: 0; cursor: pointer;
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink);
+/* Header action group — favoritos, cart, account, all aligned on the right */
+.header-actions {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: 8px;
 }
+.icon-btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--ink);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: background .2s, color .2s;
+}
+.icon-btn:hover { background: var(--blue-3); }
+.icon-btn svg { width: 20px; height: 20px; display: block; }
+
 .cart-btn:hover { color: var(--accent); }
+.fav-btn:hover { color: #c93b58; }
 .cart-btn svg { width: 22px; height: 22px; }
 
-.user-btn {
-  display: inline-flex; align-items: center; gap: 8px;
+/* Account "pill" — circular icon when guest, name chip when logged in */
+.user-pill {
+  width: auto; min-height: 40px;
+  padding: 0 4px 0 4px;
+  gap: 8px;
   color: var(--ink);
   font-family: 'Inter', sans-serif;
+}
+.user-pill .user-pill-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--blue-3);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink);
+  font-size: .72rem; font-weight: 600; letter-spacing: .04em;
+  transition: background .2s, color .2s;
+  flex-shrink: 0;
+}
+.user-pill .user-pill-label {
   font-size: .74rem; letter-spacing: .14em; text-transform: uppercase;
   font-weight: 500;
-  padding: 6px 4px;
+  padding-right: 6px;
 }
-.user-btn svg { width: 20px; height: 20px; }
-.user-btn:hover { color: var(--accent); }
-@media (max-width: 980px) { .user-btn span { display: none; } }
+.user-pill:hover { background: transparent; }
+.user-pill:hover .user-pill-avatar { background: var(--blue-deep); color: #fff; }
+.user-pill.is-logged-in {
+  background: var(--blue-3);
+  padding: 0 12px 0 4px;
+  border-radius: 999px;
+}
+.user-pill.is-logged-in .user-pill-avatar {
+  background: var(--blue-deep); color: #fff;
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: .85rem; letter-spacing: 0;
+}
+.user-pill.is-logged-in:hover { background: var(--blue-2); }
+.user-pill.is-logged-in .user-pill-label {
+  color: var(--ink); text-transform: none; letter-spacing: .02em;
+  font-size: .85rem; font-weight: 500;
+}
+@media (max-width: 980px) {
+  .user-pill .user-pill-label { display: none; }
+  .user-pill.is-logged-in { padding: 0; background: transparent; }
+}
 
 /* ---------- Auth pages ---------- */
 .auth-wrap {
@@ -421,6 +466,92 @@ body.nav-locked { overflow: hidden; }
 }
 .account-menu .logout:hover { color: var(--accent); }
 
+/* Big avatar circle in the sidebar */
+.account-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--blue-deep); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 1.4rem; font-weight: 500; letter-spacing: 0;
+  margin-bottom: 16px;
+}
+
+/* Greeting block at the top of the right column */
+.account-hero {
+  background: var(--blue-3);
+  border-radius: var(--r-md);
+  padding: 28px 32px;
+  margin-bottom: 40px;
+}
+.account-hero-eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-size: .68rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+  display: block; margin-bottom: 4px;
+}
+.account-hero-name {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 2.2rem; font-weight: 500;
+  color: var(--ink); line-height: 1.1; margin: 0;
+}
+
+/* Cart preview inside account */
+.account-cart {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--r-sm); overflow: hidden;
+}
+.account-cart-row {
+  display: grid; grid-template-columns: 64px 1fr auto;
+  gap: 16px; align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.account-cart-row:last-of-type { border-bottom: 0; }
+.account-cart-img {
+  width: 64px; height: 64px; border-radius: var(--r-sm);
+  background: var(--blue-3); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.account-cart-img svg { width: 100%; height: 100%; display: block; }
+.account-cart-name {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 1.05rem; color: var(--ink);
+}
+.account-cart-meta { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+.account-cart-line { font-weight: 600; font-feature-settings: 'tnum'; }
+.account-cart-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--blue-3);
+  gap: 16px; flex-wrap: wrap;
+}
+.account-cart-foot-lbl {
+  font-size: .68rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600; margin-right: 10px;
+}
+.account-cart-foot-val {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 1.4rem; color: var(--ink);
+}
+.btn-sm { padding: 8px 16px; font-size: .78rem; letter-spacing: .04em; }
+
+/* Status pill on order rows */
+.order-status {
+  display: inline-block;
+  font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
+  font-weight: 600;
+  padding: 3px 10px; border-radius: 999px;
+  margin-top: 6px;
+  background: var(--blue-3); color: var(--ink-soft);
+}
+.order-status--pending   { background: #fff3d6; color: #8c6a14; }
+.order-status--confirmed { background: var(--blue-3); color: var(--blue-ink); }
+.order-status--paid      { background: #dfeed5; color: #4a6b30; }
+.order-status--shipped   { background: #d6eaf8; color: #1c5a82; }
+.order-status--delivered { background: #d5e7d2; color: #2e6b3a; }
+.order-status--cancelled { background: #f3d6d6; color: #8c2a2a; }
+
 .account-section { margin-bottom: 56px; }
 .account-section h3 {
   font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;
@@ -492,7 +623,7 @@ body.nav-locked { overflow: hidden; }
   .menu-toggle { display: block; }
 
   /* User-name label gets hidden on small headers — keep the icon only */
-  .header-side--right .user-btn { display: none; }
+  .header-side--right .user-pill .user-pill-label { display: none; }
 
   /* Slide-out drawer */
   .nav {
@@ -525,14 +656,6 @@ body.nav-locked { overflow: hidden; }
     border-bottom: 1px solid var(--line);
   }
   .nav a::after { display: none; }
-  .nav .user-btn {
-    display: inline-flex; align-items: center; gap: 12px;
-    font-family: 'Inter', sans-serif;
-    font-style: normal; font-size: .9rem;
-    letter-spacing: .12em; text-transform: uppercase;
-    margin-top: 12px;
-    border: 0; padding: 8px 0;
-  }
   .nav .lang-toggle.mobile-only {
     margin-top: auto; padding-top: 24px;
     border-top: 1px solid var(--line);
@@ -714,16 +837,7 @@ body.nav-locked { overflow: hidden; }
 }
 .like-btn.just-liked { animation: vj-like-pop .35s ease; }
 
-/* Header wishlist link (heart icon in the header next to cart) */
-.fav-btn {
-  position: relative;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px;
-  color: var(--ink);
-  border-radius: 50%;
-  transition: background .2s, color .2s;
-}
-.fav-btn:hover { background: var(--blue-3); color: #c93b58; }
+/* Header wishlist link counts badge (button styles live on .icon-btn) */
 .fav-btn .fav-count {
   position: absolute; top: -2px; right: -2px;
   min-width: 18px; height: 18px; padding: 0 5px;
@@ -753,6 +867,20 @@ body.nav-locked { overflow: hidden; }
 @media (min-width: 1200px) {
   .product-grid--compact { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Product detail — like button (next to add-to-cart) */
+.detail-like {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--ink);
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.detail-like svg { flex-shrink: 0; }
+.detail-like:hover { color: #c93b58; border-color: #c93b58; }
+.detail-like.is-liked {
+  color: #c93b58; border-color: #c93b58;
+  background: rgba(201,59,88,.06);
+}
+.detail-like.is-liked svg { fill: currentColor; }
 
 /* Product detail — Origin / meta block */
 .detail-meta {

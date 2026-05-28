@@ -932,24 +932,28 @@
               <a href="tienda.html"   data-i18n="nav.shop">Tienda</a>
               <a href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a>
               <a href="contacto.html" data-i18n="nav.contact">Contacto</a>
-              <a class="user-btn" data-vj-user-link href="entrar.html" aria-label="Cuenta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                <span data-vj-user-label data-i18n="auth.signin">Entrar</span>
-              </a>
               <div class="lang-toggle mobile-only" role="group" aria-label="Language">
                 <button data-lang="es">ES</button>
                 <span class="sep">·</span>
                 <button data-lang="va">VAL</button>
               </div>
             </nav>
-            <a href="favoritos.html" class="fav-btn" aria-label="Favoritos">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <span class="fav-count is-empty">0</span>
-            </a>
-            <a href="carrito.html" class="cart-btn" aria-label="Carrito">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
-              <span class="cart-count is-empty">0</span>
-            </a>
+            <div class="header-actions">
+              <a href="favoritos.html" class="icon-btn fav-btn" aria-label="Favoritos">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="fav-count is-empty">0</span>
+              </a>
+              <a href="carrito.html" class="icon-btn cart-btn" aria-label="Carrito">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+                <span class="cart-count is-empty">0</span>
+              </a>
+              <a class="icon-btn user-pill" data-vj-user-link href="entrar.html" aria-label="Cuenta">
+                <span class="user-pill-avatar" data-vj-user-avatar aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                </span>
+                <span class="user-pill-label" data-vj-user-label data-i18n="auth.signin">Entrar</span>
+              </a>
+            </div>
           </div>
         </div>
         <div class="nav-backdrop" aria-hidden="true"></div>
@@ -1079,9 +1083,22 @@
     const u = currentUser();
     document.querySelectorAll("[data-vj-user-link]").forEach(a => {
       a.href = u ? "cuenta.html" : "entrar.html";
+      a.classList.toggle("is-logged-in", !!u);
     });
     document.querySelectorAll("[data-vj-user-label]").forEach(s => {
       s.textContent = u ? u.name.split(" ")[0] : t("auth.signin");
+    });
+    // Swap the icon for initials when logged in
+    document.querySelectorAll("[data-vj-user-avatar]").forEach(av => {
+      if (u) {
+        const parts = (u.name || u.email || "?").trim().split(/\s+/);
+        const initials = (parts[0]?.[0] || "") + (parts[1]?.[0] || "");
+        av.textContent = initials.toUpperCase() || (u.email || "?")[0].toUpperCase();
+        av.classList.add("has-initials");
+      } else {
+        av.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`;
+        av.classList.remove("has-initials");
+      }
     });
   }
 
@@ -1350,7 +1367,11 @@
               <button class="btn btn-primary" id="add-detail" ${inStock ? "" : "disabled"}>
                 ${t("common.addToCart")}
               </button>
-              <a class="btn btn-outline" href="tienda.html">${t("common.continue")}</a>
+              <button class="btn btn-outline detail-like ${likeHas(p.id) ? "is-liked" : ""}" id="detail-like" type="button" aria-pressed="${likeHas(p.id)}" aria-label="${t("common.favorite")}">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="${likeHas(p.id) ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="detail-like-label">${likeHas(p.id) ? t("product.liked") : t("product.like")}</span>
+              </button>
+              <a class="btn btn-ghost" href="tienda.html">${t("common.continue")}</a>
             </div>
           </div>
         </div>
@@ -1366,6 +1387,17 @@
       });
       root.querySelector("#add-detail").addEventListener("click", () => {
         addToCart(p.id, parseInt(qty.value) || 1);
+      });
+      const likeBtn = root.querySelector("#detail-like");
+      if (likeBtn) likeBtn.addEventListener("click", () => {
+        const nowLiked = likeToggle(p.id);
+        likeBtn.classList.toggle("is-liked", nowLiked);
+        likeBtn.setAttribute("aria-pressed", String(nowLiked));
+        const svg = likeBtn.querySelector("svg");
+        if (svg) svg.setAttribute("fill", nowLiked ? "currentColor" : "none");
+        const lbl = likeBtn.querySelector(".detail-like-label");
+        if (lbl) lbl.textContent = nowLiked ? t("product.liked") : t("product.like");
+        if (nowLiked && !currentUser()) maybeShowRegisterToast();
       });
 
       // related
@@ -1652,23 +1684,93 @@
     const root = document.getElementById("account-root");
     if (!root) return;
 
+    // Render rows from a merged list of orders (local + Supabase)
+    function ordersHTML(orders) {
+      if (!orders.length) {
+        return `<div class="empty-state" style="padding:32px 16px;">
+                  <p style="color:var(--ink-soft);margin-bottom:16px;">${t("account.orders.empty")}</p>
+                  <a href="tienda.html" class="btn btn-primary btn-arrow">${t("cart.emptyCta")}</a>
+                </div>`;
+      }
+      const lang = getLang() === "va" ? "ca-ES" : "es-ES";
+      return `<div class="order-list">${orders.map(o => {
+        const items = o.items || [];
+        const itemCount = items.reduce((s, it) => s + (it.qty || 1), 0);
+        const statusKey = o.status ? "order.status." + o.status : null;
+        const statusTxt = statusKey && I18N[getLang()][statusKey] ? I18N[getLang()][statusKey] : (o.status || "");
+        return `
+          <div class="order-row">
+            <div class="order-meta">
+              <div class="ref">${o.ref}</div>
+              <div class="date">${new Date(o.createdAt).toLocaleDateString(lang, { year:"numeric", month:"short", day:"numeric" })}</div>
+              ${statusTxt ? `<span class="order-status order-status--${o.status || "pending"}">${statusTxt}</span>` : ""}
+            </div>
+            <div class="order-items">${itemCount} ${t("common.units")}</div>
+            <div class="order-total">${formatPrice(o.total)}</div>
+          </div>`;
+      }).join("")}</div>`;
+    }
+
+    // Render the cart section (current basket, with checkout CTA)
+    function cartHTML() {
+      const items = getCart();
+      if (!items.length) {
+        return `<div class="empty-state" style="padding:32px 16px;">
+                  <p style="color:var(--ink-soft);margin-bottom:16px;">${t("cart.empty")}</p>
+                  <a href="tienda.html" class="btn btn-light btn-arrow">${t("cart.emptyCta")}</a>
+                </div>`;
+      }
+      const total = cartTotal();
+      const rows = items.map(it => {
+        const p = PRODUCTS.find(x => x.id === it.id);
+        if (!p) return "";
+        return `
+          <div class="account-cart-row">
+            <div class="account-cart-img">${productImgSVG(p)}</div>
+            <div class="account-cart-body">
+              <div class="account-cart-name">${productName(p)}</div>
+              <div class="account-cart-meta">${it.qty} × ${formatPrice(p.price)}</div>
+            </div>
+            <div class="account-cart-line">${formatPrice(p.price * it.qty)}</div>
+          </div>`;
+      }).join("");
+      return `
+        <div class="account-cart">
+          ${rows}
+          <div class="account-cart-foot">
+            <div>
+              <span class="account-cart-foot-lbl">${t("cart.total")}</span>
+              <span class="account-cart-foot-val">${formatPrice(total)}</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <a href="carrito.html" class="btn btn-light btn-sm">${t("account.cart.view")}</a>
+              <a href="checkout.html" class="btn btn-primary btn-sm btn-arrow">${t("cart.checkout")}</a>
+            </div>
+          </div>
+        </div>`;
+    }
+
     function render() {
       const u = currentUser();
       if (!u) { location.href = "entrar.html"; return; }
 
-      const orders = u.orders || [];
+      const localOrders = u.orders || [];
       const favs = likeList();
+      const cartItems = getCart();
       const created = new Date(u.createdAt);
       const memberSince = created.toLocaleDateString(getLang() === "va" ? "ca-ES" : "es-ES", { year: "numeric", month: "long" });
+      const initials = ((u.name || u.email).trim().split(/\s+/).map(s => s[0]).slice(0,2).join("") || "?").toUpperCase();
 
       root.innerHTML = `
         <div class="account-layout">
           <aside class="account-side">
+            <div class="account-avatar">${initials}</div>
             <div class="account-name">${u.name}</div>
             <div class="account-email">${u.email}</div>
             <h4>${t("account.title")}</h4>
             <nav class="account-menu">
-              <a href="#orders">${t("account.menu.orders")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${orders.length}</span></a>
+              <a href="#cart">${t("account.menu.cart")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${cartItems.length}</span></a>
+              <a href="#orders">${t("account.menu.orders")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;" id="orders-count">${localOrders.length}</span></a>
               <a href="#favs">${t("account.menu.favs")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${favs.length}</span></a>
               <a href="#profile">${t("account.menu.profile")}</a>
               <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
@@ -1676,21 +1778,17 @@
             </nav>
           </aside>
           <div>
+            <div class="account-hero">
+              <span class="account-hero-eyebrow">${t("account.welcome")}</span>
+              <h2 class="account-hero-name">${u.name.split(" ")[0]}</h2>
+            </div>
+            <div class="account-section" id="cart">
+              <h3>${t("account.cart.title")}</h3>
+              ${cartHTML()}
+            </div>
             <div class="account-section" id="orders">
               <h3>${t("account.orders.title")}</h3>
-              ${orders.length === 0
-                ? `<div class="empty-state"><h3>${t("account.orders.empty")}</h3>
-                     <a href="tienda.html" class="btn btn-primary btn-arrow mt-16">${t("cart.emptyCta")}</a></div>`
-                : `<div class="order-list">${orders.map(o => `
-                    <div class="order-row">
-                      <div class="order-meta">
-                        <div class="ref">${o.ref}</div>
-                        <div class="date">${new Date(o.createdAt).toLocaleDateString(getLang() === "va" ? "ca-ES" : "es-ES", { year:"numeric", month:"short", day:"numeric" })}</div>
-                      </div>
-                      <div class="order-items">${o.items.length} ${t("common.units")}</div>
-                      <div class="order-total">${formatPrice(o.total)}</div>
-                    </div>`).join("")}</div>`
-              }
+              <div id="orders-pane">${ordersHTML(localOrders)}</div>
             </div>
             <div class="account-section" id="favs">
               <h3>${t("account.favs.title")}</h3>
@@ -1750,11 +1848,57 @@
       });
       // Wire like buttons / add-to-cart inside the favorites grid
       attachAddButtons(root);
+
+      // Fetch past orders from Supabase (by email) and merge with local ones.
+      // This way customers who ordered as a guest before registering still
+      // see their order history once they log in with the same email.
+      (async () => {
+        const supa = window.VJ_SUPA?.client;
+        if (!supa) return;
+        try {
+          const { data, error } = await supa
+            .from("orders")
+            .select("*")
+            .eq("customer_email", u.email)
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          if (!data) return;
+          const remote = data.map(r => ({
+            ref: r.id,
+            total: Number(r.total),
+            items: r.items || [],
+            createdAt: r.created_at,
+            status: r.status,
+            details: {
+              name: r.customer_name,
+              email: r.customer_email,
+              phone: r.customer_phone,
+              delivery: r.delivery_method,
+              address: r.delivery_address,
+              notes: r.notes
+            }
+          }));
+          // Merge: prefer remote (canonical), dedupe by ref, then local
+          const byRef = new Map(remote.map(o => [o.ref, o]));
+          (localOrders || []).forEach(o => { if (!byRef.has(o.ref)) byRef.set(o.ref, o); });
+          const merged = Array.from(byRef.values()).sort((a, b) =>
+            new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          const pane = root.querySelector("#orders-pane");
+          if (pane) pane.innerHTML = ordersHTML(merged);
+          const cnt = root.querySelector("#orders-count");
+          if (cnt) cnt.textContent = String(merged.length);
+        } catch (err) {
+          // Silent — local list is still shown
+          console.warn("Could not load remote orders:", err);
+        }
+      })();
     }
     render();
     document.addEventListener("vj:langchange", render);
     document.addEventListener("vj:authchange", render);
     document.addEventListener("vj:likeschange", render);
+    document.addEventListener("vj:cartchange", render);
   }
 
   function renderThanksPage() {
