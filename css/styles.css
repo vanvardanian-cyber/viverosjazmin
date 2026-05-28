@@ -146,10 +146,10 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
   gap: 24px;
   height: var(--header-h);
 }
-.header-side { display: flex; align-items: center; gap: 18px; }
+.header-side { display: flex; align-items: center; gap: 18px; flex-wrap: nowrap; }
 .header-side--left { justify-self: start; }
-.header-side--right { justify-self: end; gap: 24px; }
-.mobile-only { display: none; }
+.header-side--right { justify-self: end; gap: 24px; flex-wrap: nowrap; }
+.mobile-only { display: none !important; }
 .brand {
   display: flex; flex-direction: column; align-items: center;
   text-decoration: none; color: var(--ink);
@@ -226,6 +226,7 @@ body.nav-locked { overflow: hidden; }
 .header-actions {
   display: inline-flex; align-items: center; gap: 4px;
   margin-left: 8px;
+  flex-wrap: nowrap;
 }
 .icon-btn {
   position: relative;
@@ -257,6 +258,9 @@ body.nav-locked { overflow: hidden; }
   font-family: 'Inter', sans-serif;
   background: transparent;
   transition: background .2s, color .2s;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 .user-pill .user-pill-avatar {
   width: 28px; height: 28px;
@@ -694,7 +698,7 @@ body.nav-locked { overflow: hidden; }
   }
   .brand { align-items: center; }
   .desktop-only { display: none !important; }
-  .mobile-only { display: flex; }
+  .mobile-only { display: flex !important; }
   .menu-toggle { display: block; }
 
   /* User-name label gets hidden on small headers — keep the icon only */

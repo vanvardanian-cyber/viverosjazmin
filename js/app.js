@@ -951,7 +951,7 @@
                 <span class="user-pill-avatar" data-vj-user-avatar aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                 </span>
-                <span class="user-pill-label" data-vj-user-label data-i18n="auth.signin">Entrar</span>
+                <span class="user-pill-label" data-vj-user-label>Entrar</span>
               </a>
             </div>
           </div>
@@ -1416,6 +1416,9 @@
     const root = document.getElementById("favs-root");
     if (!root) return;
     function render() {
+      // Wrap with account sidebar if user is logged in
+      wrapWithAccountSidebar("favs", "favs-root", t("favs.title"), t("favs.sub"));
+
       const items = likeList();
       if (items.length === 0) {
         root.innerHTML = `
@@ -1436,6 +1439,8 @@
     render();
     document.addEventListener("vj:likeschange", render);
     document.addEventListener("vj:langchange", render);
+    document.addEventListener("vj:authchange", render);
+    document.addEventListener("vj:cartchange", render);
   }
 
   function renderCartPage() {
@@ -1443,6 +1448,9 @@
     if (!root) return;
 
     function render() {
+      // Wrap with account sidebar if user is logged in
+      wrapWithAccountSidebar("cart", "cart-root", t("cart.title"), t("account.cart.sub"));
+
       const items = getCart();
       if (items.length === 0) {
         root.innerHTML = `
@@ -1517,6 +1525,8 @@
     render();
     document.addEventListener("vj:langchange", render);
     document.addEventListener("vj:cartchange", render);
+    document.addEventListener("vj:authchange", render);
+    document.addEventListener("vj:likeschange", render);
   }
 
   function renderCheckoutPage() {
@@ -1681,67 +1691,163 @@
   }
 
   /* =========================================================
+     Account shell — shared sidebar used on every authed page
+     ========================================================= */
+  function accountSidebarHTML(u, activePage, ordersCount) {
+    const initials = ((u.name || u.email).trim().split(/\s+/)
+      .map(s => s[0]).slice(0,2).join("") || "?").toUpperCase();
+    const cartCt = getCart().length;
+    const favCt = likeCount();
+    const itemAttrs = (key, href) =>
+      `href="${href}" class="${activePage === key ? "is-active" : ""}"`;
+    return `
+      <aside class="account-side">
+        <div class="account-side-head">
+          <div class="account-avatar">${initials}</div>
+          <div>
+            <div class="account-name">${escapeHtmlSafe(u.name || "—")}</div>
+            <div class="account-email">${escapeHtmlSafe(u.email || "")}</div>
+          </div>
+        </div>
+        <h4>${t("account.title")}</h4>
+        <nav class="account-menu">
+          <a ${itemAttrs("orders", "cuenta.html")}>
+            <span class="acct-menu-ico">${ICON_PACKAGE}</span>
+            <span class="acct-menu-lbl">${t("account.menu.orders")}</span>
+            <span class="acct-menu-ct" id="orders-count">${ordersCount}</span>
+          </a>
+          <a ${itemAttrs("cart", "carrito.html")}>
+            <span class="acct-menu-ico">${ICON_BAG}</span>
+            <span class="acct-menu-lbl">${t("account.menu.cart")}</span>
+            <span class="acct-menu-ct">${cartCt}</span>
+          </a>
+          <a ${itemAttrs("favs", "favoritos.html")}>
+            <span class="acct-menu-ico">${ICON_HEART}</span>
+            <span class="acct-menu-lbl">${t("account.menu.favs")}</span>
+            <span class="acct-menu-ct">${favCt}</span>
+          </a>
+          <a ${itemAttrs("profile", "cuenta-perfil.html")}>
+            <span class="acct-menu-ico">${ICON_USER}</span>
+            <span class="acct-menu-lbl">${t("account.menu.profile")}</span>
+          </a>
+        </nav>
+        <div class="account-menu-foot">
+          <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
+          <button class="logout danger" id="delete-acct-btn">${t("account.menu.delete")} →</button>
+        </div>
+      </aside>`;
+  }
+
+  /* Wire logout / delete account buttons inside any rendered sidebar */
+  function wireAccountSidebar(scope, u) {
+    const lb = scope.querySelector("#logout-btn");
+    if (lb) lb.addEventListener("click", async () => {
+      await logoutUser(); location.href = "index.html";
+    });
+    const db = scope.querySelector("#delete-acct-btn");
+    if (db) db.addEventListener("click", async () => {
+      const lang = getLang();
+      const msg = lang === "va"
+        ? "Açò esborrarà definitivament el teu compte i totes les teues comandes. Esta acció no es pot desfer. Continuar?"
+        : "Esto eliminará tu cuenta y todos tus pedidos de forma permanente. Esta acción no se puede deshacer. ¿Continuar?";
+      if (!confirm(msg)) return;
+      try {
+        const users = _readUsers();
+        delete users[u.email];
+        _writeUsers(users);
+        await logoutUser();
+      } finally {
+        location.href = "index.html";
+      }
+    });
+  }
+
+  /* Wrap a chunk of page HTML with the account shell, but only when logged in.
+     For guests, returns the contentHTML unchanged. */
+  function accountShellHTML(activePage, contentHTML) {
+    const u = currentUser();
+    if (!u) return contentHTML;
+    return `
+      <div class="account-layout">
+        ${accountSidebarHTML(u, activePage, (u.orders || []).length)}
+        <div class="account-main">${contentHTML}</div>
+      </div>`;
+  }
+
+  /* Wraps an existing on-page element with the account shell layout
+     (and shows a styled page-head with title/sub) when the user is
+     logged in. Idempotent: safe to call on every render.
+     - rootId: id of the existing content container
+     - activePage: "cart" | "favs" | "orders" | "profile"
+     - titleText / subText: strings shown at the top of the account-main
+  */
+  function wrapWithAccountSidebar(activePage, rootId, titleText, subText) {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    const u = currentUser();
+    const guestHead = document.querySelector("[data-vj-guest-head]");
+    let wrap = root.closest("[data-vj-account-wrap]");
+
+    if (u) {
+      if (!wrap) {
+        // First-time wrap: build the shell DOM
+        wrap = document.createElement("div");
+        wrap.className = "account-layout";
+        wrap.dataset.vjAccountWrap = "1";
+
+        const sideMount = document.createElement("div");
+        sideMount.dataset.vjAccountSideMount = "1";
+
+        const main = document.createElement("div");
+        main.className = "account-main";
+
+        const titleDiv = document.createElement("div");
+        titleDiv.className = "account-page-head";
+        titleDiv.dataset.vjAccountTitle = "1";
+
+        const rootParent = root.parentNode;
+        rootParent.insertBefore(wrap, root);
+        main.appendChild(titleDiv);
+        main.appendChild(root);
+        wrap.appendChild(sideMount);
+        wrap.appendChild(main);
+      }
+      // Update sidebar mount
+      const sideMount = wrap.querySelector("[data-vj-account-side-mount]");
+      if (sideMount) {
+        sideMount.innerHTML = accountSidebarHTML(u, activePage, (u.orders || []).length);
+      }
+      // Update title
+      const titleDiv = wrap.querySelector("[data-vj-account-title]");
+      if (titleDiv) {
+        titleDiv.innerHTML = `<h1>${escapeHtmlSafe(titleText)}</h1>` +
+          (subText ? `<p class="account-page-sub">${escapeHtmlSafe(subText)}</p>` : "");
+      }
+      // Hide the public page head when logged in
+      if (guestHead) guestHead.style.display = "none";
+      // Wire logout/delete inside our shell
+      wireAccountSidebar(wrap, u);
+    } else {
+      // Not logged in: unwrap if we previously wrapped
+      if (wrap) {
+        const rootParent = wrap.parentNode;
+        rootParent.insertBefore(root, wrap);
+        wrap.remove();
+      }
+      if (guestHead) guestHead.style.display = "";
+    }
+  }
+
+  /* =========================================================
      Account router
      Each cuenta-*.html declares its section via `data-account-page`
      on the #account-root element. The router renders a consistent
      sidebar plus the right main panel.
-
-     Pages:
-       cuenta.html         → data-account-page="orders"   (default)
-       cuenta-perfil.html  → data-account-page="profile"
-     Sidebar items for cart / favorites link to the existing
-     public pages (carrito.html, favoritos.html).
      ========================================================= */
   function renderAccountPage() {
     const root = document.getElementById("account-root");
     if (!root) return;
     const page = (root.dataset.accountPage || "orders").toLowerCase();
-
-    /* ----- Shared sidebar ----- */
-    function sidebarHTML(u, activePage, ordersCount) {
-      const initials = ((u.name || u.email).trim().split(/\s+/)
-        .map(s => s[0]).slice(0,2).join("") || "?").toUpperCase();
-      const cartCt = getCart().length;
-      const favCt = likeCount();
-      const itemAttrs = (key, href) =>
-        `href="${href}" class="${activePage === key ? "is-active" : ""}"`;
-      return `
-        <aside class="account-side">
-          <div class="account-side-head">
-            <div class="account-avatar">${initials}</div>
-            <div>
-              <div class="account-name">${escapeHtmlSafe(u.name || "—")}</div>
-              <div class="account-email">${escapeHtmlSafe(u.email || "")}</div>
-            </div>
-          </div>
-          <h4>${t("account.title")}</h4>
-          <nav class="account-menu">
-            <a ${itemAttrs("orders", "cuenta.html")}>
-              <span class="acct-menu-ico">${ICON_PACKAGE}</span>
-              <span class="acct-menu-lbl">${t("account.menu.orders")}</span>
-              <span class="acct-menu-ct" id="orders-count">${ordersCount}</span>
-            </a>
-            <a ${itemAttrs("cart", "carrito.html")}>
-              <span class="acct-menu-ico">${ICON_BAG}</span>
-              <span class="acct-menu-lbl">${t("account.menu.cart")}</span>
-              <span class="acct-menu-ct">${cartCt}</span>
-            </a>
-            <a ${itemAttrs("favs", "favoritos.html")}>
-              <span class="acct-menu-ico">${ICON_HEART}</span>
-              <span class="acct-menu-lbl">${t("account.menu.favs")}</span>
-              <span class="acct-menu-ct">${favCt}</span>
-            </a>
-            <a ${itemAttrs("profile", "cuenta-perfil.html")}>
-              <span class="acct-menu-ico">${ICON_USER}</span>
-              <span class="acct-menu-lbl">${t("account.menu.profile")}</span>
-            </a>
-          </nav>
-          <div class="account-menu-foot">
-            <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
-            <button class="logout danger" id="delete-acct-btn">${t("account.menu.delete")} →</button>
-          </div>
-        </aside>`;
-    }
 
     /* ----- Section: orders ----- */
     function ordersHTML(orders) {
@@ -1819,27 +1925,6 @@
     }
 
     /* ----- Wiring ----- */
-    function wireLogoutDelete(u) {
-      const lb = root.querySelector("#logout-btn");
-      if (lb) lb.addEventListener("click", async () => { await logoutUser(); location.href = "index.html"; });
-      const db = root.querySelector("#delete-acct-btn");
-      if (db) db.addEventListener("click", async () => {
-        const lang = getLang();
-        const msg = lang === "va"
-          ? "Açò esborrarà definitivament el teu compte i totes les teues comandes. Esta acció no es pot desfer. Continuar?"
-          : "Esto eliminará tu cuenta y todos tus pedidos de forma permanente. Esta acción no se puede deshacer. ¿Continuar?";
-        if (!confirm(msg)) return;
-        try {
-          const users = _readUsers();
-          delete users[u.email];
-          _writeUsers(users);
-          await logoutUser();
-        } finally {
-          location.href = "index.html";
-        }
-      });
-    }
-
     function wireProfileForm(u) {
       const form = root.querySelector("#profile-form");
       if (!form) return;
@@ -1911,11 +1996,11 @@
 
       root.innerHTML = `
         <div class="account-layout">
-          ${sidebarHTML(u, page, localOrders.length)}
+          ${accountSidebarHTML(u, page, localOrders.length)}
           <div class="account-main">${mainHTML}</div>
         </div>`;
 
-      wireLogoutDelete(u);
+      wireAccountSidebar(root, u);
       if (page === "profile") wireProfileForm(u);
       if (page === "orders")  fetchRemoteOrders(u, localOrders);
     }
