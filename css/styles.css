@@ -244,49 +244,58 @@ body.nav-locked { overflow: hidden; }
 .fav-btn:hover { color: #c93b58; }
 .cart-btn svg { width: 22px; height: 22px; }
 
-/* Account "pill" — circular icon when guest, name chip when logged in */
+/* Account button — a single pill that morphs based on auth state.
+   Guest: avatar + uppercase "Entrar" label, no background.
+   Logged-in: filled pastel pill, italic initials avatar + first name. */
 .user-pill {
-  width: auto; min-height: 40px;
-  padding: 0 4px 0 4px;
-  gap: 8px;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 14px 0 6px;
+  border-radius: 999px;
   color: var(--ink);
+  text-decoration: none;
   font-family: 'Inter', sans-serif;
+  background: transparent;
+  transition: background .2s, color .2s;
 }
 .user-pill .user-pill-avatar {
-  width: 32px; height: 32px;
+  width: 28px; height: 28px;
   border-radius: 50%;
   background: var(--blue-3);
   display: inline-flex; align-items: center; justify-content: center;
   color: var(--ink);
-  font-size: .72rem; font-weight: 600; letter-spacing: .04em;
+  font-size: .68rem; font-weight: 600; letter-spacing: .04em;
   transition: background .2s, color .2s;
   flex-shrink: 0;
 }
+.user-pill .user-pill-avatar svg { width: 16px; height: 16px; display: block; }
 .user-pill .user-pill-label {
-  font-size: .74rem; letter-spacing: .14em; text-transform: uppercase;
-  font-weight: 500;
-  padding-right: 6px;
+  font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
 }
-.user-pill:hover { background: transparent; }
+.user-pill:hover { background: var(--blue-3); }
 .user-pill:hover .user-pill-avatar { background: var(--blue-deep); color: #fff; }
+
+/* Logged-in state: filled pastel pill with name */
 .user-pill.is-logged-in {
   background: var(--blue-3);
-  padding: 0 12px 0 4px;
-  border-radius: 999px;
 }
 .user-pill.is-logged-in .user-pill-avatar {
   background: var(--blue-deep); color: #fff;
   font-family: 'Playfair Display', serif; font-style: italic;
-  font-size: .85rem; letter-spacing: 0;
+  font-size: .82rem; letter-spacing: 0; font-weight: 500;
 }
-.user-pill.is-logged-in:hover { background: var(--blue-2); }
 .user-pill.is-logged-in .user-pill-label {
   color: var(--ink); text-transform: none; letter-spacing: .02em;
-  font-size: .85rem; font-weight: 500;
+  font-size: .9rem; font-weight: 500;
+  font-family: 'Playfair Display', serif; font-style: italic;
 }
+.user-pill.is-logged-in:hover { background: var(--blue-2); }
+
 @media (max-width: 980px) {
+  .user-pill { padding: 0 4px; }
   .user-pill .user-pill-label { display: none; }
-  .user-pill.is-logged-in { padding: 0; background: transparent; }
 }
 
 /* ---------- Auth pages ---------- */
@@ -432,68 +441,134 @@ body.nav-locked { overflow: hidden; }
 
 /* ---------- Account dashboard ---------- */
 .account-layout {
-  display: grid; grid-template-columns: 240px 1fr;
+  display: grid; grid-template-columns: 260px 1fr;
   gap: 56px;
   align-items: flex-start;
 }
-@media (max-width: 880px) { .account-layout { grid-template-columns: 1fr; } }
+@media (max-width: 880px) {
+  .account-layout { grid-template-columns: 1fr; gap: 28px; }
+}
 
-.account-side h4 {
-  font-family: 'Inter', sans-serif;
-  font-size: .68rem; letter-spacing: .22em; text-transform: uppercase;
-  color: var(--ink-soft); margin-bottom: 14px; font-weight: 600;
+/* Sidebar */
+.account-side {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 24px 20px;
+  position: sticky; top: calc(var(--header-h) + 16px);
 }
-.account-name {
-  font-family: 'Playfair Display', serif;
-  font-style: italic; font-size: 1.5rem;
-  margin-bottom: 4px;
-}
-.account-email { font-size: .85rem; color: var(--ink-soft); margin-bottom: 24px; }
-.account-menu { display: flex; flex-direction: column; gap: 2px; }
-.account-menu a {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 0; color: var(--ink);
-  font-size: .92rem;
+@media (max-width: 880px) { .account-side { position: static; } }
+
+.account-side-head {
+  display: flex; align-items: center; gap: 12px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
 }
-.account-menu a:hover { color: var(--accent); }
-.account-menu .logout {
-  color: var(--ink-soft);
-  font-size: .82rem; letter-spacing: .14em; text-transform: uppercase;
-  font-weight: 600; margin-top: 18px;
-  background: none; border: 0; cursor: pointer; text-align: left;
-  padding: 0;
-}
-.account-menu .logout:hover { color: var(--accent); }
-
-/* Big avatar circle in the sidebar */
 .account-avatar {
-  width: 64px; height: 64px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   background: var(--blue-deep); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Playfair Display', serif; font-style: italic;
-  font-size: 1.4rem; font-weight: 500; letter-spacing: 0;
-  margin-bottom: 16px;
+  font-size: 1rem; font-weight: 500; letter-spacing: 0;
+  flex-shrink: 0;
+}
+.account-name {
+  font-family: 'Playfair Display', serif;
+  font-style: italic; font-size: 1.1rem;
+  line-height: 1.2;
+  margin: 0;
+}
+.account-email {
+  font-size: .78rem; color: var(--ink-soft);
+  line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.account-side h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 0 0 10px; font-weight: 600;
 }
 
-/* Greeting block at the top of the right column */
-.account-hero {
+/* Menu items */
+.account-menu { display: flex; flex-direction: column; gap: 2px; }
+.account-menu a {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center; gap: 12px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: .92rem;
+  text-decoration: none;
+  border-radius: var(--r-sm);
+  transition: background .15s, color .15s;
+}
+.account-menu a:hover { background: var(--blue-3); color: var(--ink); }
+.account-menu a.is-active {
   background: var(--blue-3);
-  border-radius: var(--r-md);
-  padding: 28px 32px;
-  margin-bottom: 40px;
+  color: var(--blue-ink);
+  font-weight: 600;
 }
-.account-hero-eyebrow {
-  font-family: 'Inter', sans-serif;
-  font-size: .68rem; letter-spacing: .22em; text-transform: uppercase;
-  color: var(--ink-soft); font-weight: 600;
-  display: block; margin-bottom: 4px;
+.account-menu a.is-active .acct-menu-ico { color: var(--blue-ink); }
+.acct-menu-ico { color: var(--ink-soft); display: flex; }
+.acct-menu-lbl { line-height: 1; }
+.acct-menu-ct {
+  font-size: .72rem;
+  color: var(--ink-soft);
+  background: var(--blue-3);
+  padding: 2px 8px; border-radius: 999px;
+  min-width: 22px; text-align: center;
 }
-.account-hero-name {
-  font-family: 'Playfair Display', serif; font-style: italic;
-  font-size: 2.2rem; font-weight: 500;
-  color: var(--ink); line-height: 1.1; margin: 0;
+.account-menu a.is-active .acct-menu-ct {
+  background: var(--blue-deep); color: #fff;
+}
+
+.account-menu-foot {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.account-menu-foot .logout {
+  color: var(--ink-soft);
+  font-size: .8rem; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600;
+  background: none; border: 0; cursor: pointer; text-align: left;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  transition: background .15s, color .15s;
+}
+.account-menu-foot .logout:hover { background: var(--blue-3); color: var(--ink); }
+.account-menu-foot .logout.danger { color: #b04a4a; }
+.account-menu-foot .logout.danger:hover { background: #fbe9e9; color: #8c2a2a; }
+
+/* Main content area */
+.account-main { min-width: 0; }
+.account-page-head {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.account-page-head h1 {
+  font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;
+  font-size: 2.2rem; color: var(--ink);
+  margin: 0 0 6px; line-height: 1.1;
+}
+.account-page-sub {
+  font-size: .95rem; color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Profile form: saved indicator */
+.profile-saved {
+  display: inline-flex; align-items: center;
+  font-size: .85rem; color: #2e6b3a; font-weight: 500;
+  margin-left: 12px;
+}
+.profile-saved::before {
+  content: ""; display: inline-block;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #4a8c5a; margin-right: 8px;
 }
 
 /* Cart preview inside account */

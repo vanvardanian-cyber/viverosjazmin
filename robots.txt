@@ -3,6 +3,8 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /cuenta.html
+Disallow: /cuenta-perfil.html
+Disallow: /favoritos.html
 Disallow: /checkout.html
 Disallow: /gracias.html
 

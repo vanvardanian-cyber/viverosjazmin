@@ -947,9 +947,9 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
                 <span class="cart-count is-empty">0</span>
               </a>
-              <a class="icon-btn user-pill" data-vj-user-link href="entrar.html" aria-label="Cuenta">
+              <a class="user-pill" data-vj-user-link href="entrar.html" aria-label="Cuenta">
                 <span class="user-pill-avatar" data-vj-user-avatar aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                 </span>
                 <span class="user-pill-label" data-vj-user-label data-i18n="auth.signin">Entrar</span>
               </a>
@@ -1680,16 +1680,75 @@
     document.addEventListener("vj:langchange", render);
   }
 
+  /* =========================================================
+     Account router
+     Each cuenta-*.html declares its section via `data-account-page`
+     on the #account-root element. The router renders a consistent
+     sidebar plus the right main panel.
+
+     Pages:
+       cuenta.html         → data-account-page="orders"   (default)
+       cuenta-perfil.html  → data-account-page="profile"
+     Sidebar items for cart / favorites link to the existing
+     public pages (carrito.html, favoritos.html).
+     ========================================================= */
   function renderAccountPage() {
     const root = document.getElementById("account-root");
     if (!root) return;
+    const page = (root.dataset.accountPage || "orders").toLowerCase();
 
-    // Render rows from a merged list of orders (local + Supabase)
+    /* ----- Shared sidebar ----- */
+    function sidebarHTML(u, activePage, ordersCount) {
+      const initials = ((u.name || u.email).trim().split(/\s+/)
+        .map(s => s[0]).slice(0,2).join("") || "?").toUpperCase();
+      const cartCt = getCart().length;
+      const favCt = likeCount();
+      const itemAttrs = (key, href) =>
+        `href="${href}" class="${activePage === key ? "is-active" : ""}"`;
+      return `
+        <aside class="account-side">
+          <div class="account-side-head">
+            <div class="account-avatar">${initials}</div>
+            <div>
+              <div class="account-name">${escapeHtmlSafe(u.name || "—")}</div>
+              <div class="account-email">${escapeHtmlSafe(u.email || "")}</div>
+            </div>
+          </div>
+          <h4>${t("account.title")}</h4>
+          <nav class="account-menu">
+            <a ${itemAttrs("orders", "cuenta.html")}>
+              <span class="acct-menu-ico">${ICON_PACKAGE}</span>
+              <span class="acct-menu-lbl">${t("account.menu.orders")}</span>
+              <span class="acct-menu-ct" id="orders-count">${ordersCount}</span>
+            </a>
+            <a ${itemAttrs("cart", "carrito.html")}>
+              <span class="acct-menu-ico">${ICON_BAG}</span>
+              <span class="acct-menu-lbl">${t("account.menu.cart")}</span>
+              <span class="acct-menu-ct">${cartCt}</span>
+            </a>
+            <a ${itemAttrs("favs", "favoritos.html")}>
+              <span class="acct-menu-ico">${ICON_HEART}</span>
+              <span class="acct-menu-lbl">${t("account.menu.favs")}</span>
+              <span class="acct-menu-ct">${favCt}</span>
+            </a>
+            <a ${itemAttrs("profile", "cuenta-perfil.html")}>
+              <span class="acct-menu-ico">${ICON_USER}</span>
+              <span class="acct-menu-lbl">${t("account.menu.profile")}</span>
+            </a>
+          </nav>
+          <div class="account-menu-foot">
+            <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
+            <button class="logout danger" id="delete-acct-btn">${t("account.menu.delete")} →</button>
+          </div>
+        </aside>`;
+    }
+
+    /* ----- Section: orders ----- */
     function ordersHTML(orders) {
       if (!orders.length) {
-        return `<div class="empty-state" style="padding:32px 16px;">
-                  <p style="color:var(--ink-soft);margin-bottom:16px;">${t("account.orders.empty")}</p>
-                  <a href="tienda.html" class="btn btn-primary btn-arrow">${t("cart.emptyCta")}</a>
+        return `<div class="empty-state" style="padding:48px 24px;">
+                  <h3>${t("account.orders.empty")}</h3>
+                  <a href="tienda.html" class="btn btn-primary btn-arrow mt-16">${t("cart.emptyCta")}</a>
                 </div>`;
       }
       const lang = getLang() === "va" ? "ca-ES" : "es-ES";
@@ -1701,9 +1760,9 @@
         return `
           <div class="order-row">
             <div class="order-meta">
-              <div class="ref">${o.ref}</div>
+              <div class="ref">${escapeHtmlSafe(o.ref)}</div>
               <div class="date">${new Date(o.createdAt).toLocaleDateString(lang, { year:"numeric", month:"short", day:"numeric" })}</div>
-              ${statusTxt ? `<span class="order-status order-status--${o.status || "pending"}">${statusTxt}</span>` : ""}
+              ${statusTxt ? `<span class="order-status order-status--${o.status || "pending"}">${escapeHtmlSafe(statusTxt)}</span>` : ""}
             </div>
             <div class="order-items">${itemCount} ${t("common.units")}</div>
             <div class="order-total">${formatPrice(o.total)}</div>
@@ -1711,150 +1770,102 @@
       }).join("")}</div>`;
     }
 
-    // Render the cart section (current basket, with checkout CTA)
-    function cartHTML() {
-      const items = getCart();
-      if (!items.length) {
-        return `<div class="empty-state" style="padding:32px 16px;">
-                  <p style="color:var(--ink-soft);margin-bottom:16px;">${t("cart.empty")}</p>
-                  <a href="tienda.html" class="btn btn-light btn-arrow">${t("cart.emptyCta")}</a>
-                </div>`;
-      }
-      const total = cartTotal();
-      const rows = items.map(it => {
-        const p = PRODUCTS.find(x => x.id === it.id);
-        if (!p) return "";
-        return `
-          <div class="account-cart-row">
-            <div class="account-cart-img">${productImgSVG(p)}</div>
-            <div class="account-cart-body">
-              <div class="account-cart-name">${productName(p)}</div>
-              <div class="account-cart-meta">${it.qty} × ${formatPrice(p.price)}</div>
-            </div>
-            <div class="account-cart-line">${formatPrice(p.price * it.qty)}</div>
-          </div>`;
-      }).join("");
+    function ordersPaneHTML(localOrders) {
       return `
-        <div class="account-cart">
-          ${rows}
-          <div class="account-cart-foot">
-            <div>
-              <span class="account-cart-foot-lbl">${t("cart.total")}</span>
-              <span class="account-cart-foot-val">${formatPrice(total)}</span>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="carrito.html" class="btn btn-light btn-sm">${t("account.cart.view")}</a>
-              <a href="checkout.html" class="btn btn-primary btn-sm btn-arrow">${t("cart.checkout")}</a>
-            </div>
-          </div>
-        </div>`;
+        <div class="account-page-head">
+          <h1>${t("account.orders.title")}</h1>
+          <p class="account-page-sub">${t("account.orders.sub")}</p>
+        </div>
+        <div id="orders-pane">${ordersHTML(localOrders)}</div>
+      `;
     }
 
-    function render() {
-      const u = currentUser();
-      if (!u) { location.href = "entrar.html"; return; }
-
-      const localOrders = u.orders || [];
-      const favs = likeList();
-      const cartItems = getCart();
+    /* ----- Section: profile ----- */
+    function profilePaneHTML(u) {
       const created = new Date(u.createdAt);
-      const memberSince = created.toLocaleDateString(getLang() === "va" ? "ca-ES" : "es-ES", { year: "numeric", month: "long" });
-      const initials = ((u.name || u.email).trim().split(/\s+/).map(s => s[0]).slice(0,2).join("") || "?").toUpperCase();
-
-      root.innerHTML = `
-        <div class="account-layout">
-          <aside class="account-side">
-            <div class="account-avatar">${initials}</div>
-            <div class="account-name">${u.name}</div>
-            <div class="account-email">${u.email}</div>
-            <h4>${t("account.title")}</h4>
-            <nav class="account-menu">
-              <a href="#cart">${t("account.menu.cart")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${cartItems.length}</span></a>
-              <a href="#orders">${t("account.menu.orders")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;" id="orders-count">${localOrders.length}</span></a>
-              <a href="#favs">${t("account.menu.favs")} <span style="margin-left:auto; color:var(--ink-soft); font-size:.8rem;">${favs.length}</span></a>
-              <a href="#profile">${t("account.menu.profile")}</a>
-              <button class="logout" id="logout-btn">${t("account.menu.logout")} →</button>
-              <button class="logout" id="delete-acct-btn" style="color:#b04a4a;margin-top:6px;">${t("account.menu.delete")} →</button>
-            </nav>
-          </aside>
-          <div>
-            <div class="account-hero">
-              <span class="account-hero-eyebrow">${t("account.welcome")}</span>
-              <h2 class="account-hero-name">${u.name.split(" ")[0]}</h2>
+      const memberSince = created.toLocaleDateString(
+        getLang() === "va" ? "ca-ES" : "es-ES",
+        { year: "numeric", month: "long" });
+      return `
+        <div class="account-page-head">
+          <h1>${t("account.profile.title")}</h1>
+          <p class="account-page-sub">${t("account.profile.sub")}</p>
+        </div>
+        <form class="form-card" id="profile-form" autocomplete="off">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>${t("checkout.name")}</label>
+              <input type="text" name="name" value="${escapeHtmlSafe(u.name || "")}" required>
             </div>
-            <div class="account-section" id="cart">
-              <h3>${t("account.cart.title")}</h3>
-              ${cartHTML()}
+            <div class="form-field">
+              <label>${t("checkout.emailLbl")}</label>
+              <input type="email" name="email" value="${escapeHtmlSafe(u.email || "")}" disabled>
+              <small style="color:var(--ink-soft);font-size:.72rem;">${t("account.profile.emailHint")}</small>
             </div>
-            <div class="account-section" id="orders">
-              <h3>${t("account.orders.title")}</h3>
-              <div id="orders-pane">${ordersHTML(localOrders)}</div>
+            <div class="form-field">
+              <label>${t("checkout.phoneLbl")}</label>
+              <input type="tel" name="phone" value="${escapeHtmlSafe(u.phone || "")}" placeholder="+34 …">
             </div>
-            <div class="account-section" id="favs">
-              <h3>${t("account.favs.title")}</h3>
-              ${favs.length === 0
-                ? `<div class="empty-state" style="padding:32px 16px;">
-                     <p style="color:var(--ink-soft);margin-bottom:16px;">${t("account.favs.empty")}</p>
-                     <a href="tienda.html" class="btn btn-primary btn-arrow">${t("favs.empty.cta")}</a>
-                   </div>`
-                : `<div class="product-grid product-grid--compact">${favs.map(productCardHTML).join("")}</div>`
-              }
-            </div>
-            <div class="account-section" id="profile">
-              <h3>${t("account.profile.title")}</h3>
-              <div class="form-card">
-                <div class="form-grid">
-                  <div class="form-field">
-                    <label>${t("checkout.name")}</label>
-                    <input type="text" value="${u.name}" disabled>
-                  </div>
-                  <div class="form-field">
-                    <label>${t("checkout.emailLbl")}</label>
-                    <input type="email" value="${u.email}" disabled>
-                  </div>
-                  <div class="form-field">
-                    <label>${t("checkout.phoneLbl")}</label>
-                    <input type="tel" value="${u.phone || ""}" disabled>
-                  </div>
-                  <div class="form-field">
-                    <label>${t("account.member")}</label>
-                    <input type="text" value="${memberSince}" disabled>
-                  </div>
-                </div>
-              </div>
+            <div class="form-field">
+              <label>${t("account.member")}</label>
+              <input type="text" value="${escapeHtmlSafe(memberSince)}" disabled>
             </div>
           </div>
-        </div>
-      `;
-      const btn = root.querySelector("#logout-btn");
-      if (btn) btn.addEventListener("click", () => { logoutUser(); location.href = "index.html"; });
-      const delBtn = root.querySelector("#delete-acct-btn");
-      if (delBtn) delBtn.addEventListener("click", () => {
+          <div class="actions">
+            <button type="submit" class="btn btn-primary btn-arrow">${t("account.profile.save")}</button>
+            <span class="profile-saved" id="profile-saved" hidden>${t("account.profile.saved")}</span>
+          </div>
+        </form>`;
+    }
+
+    /* ----- Wiring ----- */
+    function wireLogoutDelete(u) {
+      const lb = root.querySelector("#logout-btn");
+      if (lb) lb.addEventListener("click", async () => { await logoutUser(); location.href = "index.html"; });
+      const db = root.querySelector("#delete-acct-btn");
+      if (db) db.addEventListener("click", async () => {
         const lang = getLang();
         const msg = lang === "va"
           ? "Açò esborrarà definitivament el teu compte i totes les teues comandes. Esta acció no es pot desfer. Continuar?"
           : "Esto eliminará tu cuenta y todos tus pedidos de forma permanente. Esta acción no se puede deshacer. ¿Continuar?";
         if (!confirm(msg)) return;
-        // Remove user from localStorage (Phase 1 — once we wire Supabase Auth
-        // for customers, this calls supa.auth.admin.deleteUser via an Edge Function)
         try {
           const users = _readUsers();
           delete users[u.email];
           _writeUsers(users);
-          logoutUser();
+          await logoutUser();
         } finally {
           location.href = "index.html";
         }
       });
-      // Wire like buttons / add-to-cart inside the favorites grid
-      attachAddButtons(root);
+    }
 
-      // Fetch past orders from Supabase (by email) and merge with local ones.
-      // This way customers who ordered as a guest before registering still
-      // see their order history once they log in with the same email.
+    function wireProfileForm(u) {
+      const form = root.querySelector("#profile-form");
+      if (!form) return;
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const users = _readUsers();
+        const stored = users[u.email];
+        if (!stored) return;
+        stored.name  = (fd.get("name")  || "").trim() || stored.name;
+        stored.phone = (fd.get("phone") || "").trim();
+        users[u.email] = stored;
+        _writeUsers(users);
+        document.dispatchEvent(new CustomEvent("vj:authchange"));
+        const ok = root.querySelector("#profile-saved");
+        if (ok) {
+          ok.hidden = false;
+          setTimeout(() => { ok.hidden = true; }, 2500);
+        }
+      });
+    }
+
+    function fetchRemoteOrders(u, localOrders) {
+      const supa = window.VJ_SUPA?.client;
+      if (!supa) return;
       (async () => {
-        const supa = window.VJ_SUPA?.client;
-        if (!supa) return;
         try {
           const { data, error } = await supa
             .from("orders")
@@ -1870,29 +1881,43 @@
             createdAt: r.created_at,
             status: r.status,
             details: {
-              name: r.customer_name,
-              email: r.customer_email,
-              phone: r.customer_phone,
-              delivery: r.delivery_method,
-              address: r.delivery_address,
-              notes: r.notes
+              name: r.customer_name, email: r.customer_email,
+              phone: r.customer_phone, delivery: r.delivery_method,
+              address: r.delivery_address, notes: r.notes
             }
           }));
-          // Merge: prefer remote (canonical), dedupe by ref, then local
           const byRef = new Map(remote.map(o => [o.ref, o]));
           (localOrders || []).forEach(o => { if (!byRef.has(o.ref)) byRef.set(o.ref, o); });
           const merged = Array.from(byRef.values()).sort((a, b) =>
-            new Date(b.createdAt) - new Date(a.createdAt)
-          );
+            new Date(b.createdAt) - new Date(a.createdAt));
           const pane = root.querySelector("#orders-pane");
           if (pane) pane.innerHTML = ordersHTML(merged);
           const cnt = root.querySelector("#orders-count");
           if (cnt) cnt.textContent = String(merged.length);
         } catch (err) {
-          // Silent — local list is still shown
           console.warn("Could not load remote orders:", err);
         }
       })();
+    }
+
+    /* ----- Master render ----- */
+    function render() {
+      const u = currentUser();
+      if (!u) { location.href = "entrar.html?return=" + encodeURIComponent(location.pathname.replace(/^\//,"")); return; }
+      const localOrders = u.orders || [];
+      let mainHTML = "";
+      if (page === "profile") mainHTML = profilePaneHTML(u);
+      else                    mainHTML = ordersPaneHTML(localOrders);
+
+      root.innerHTML = `
+        <div class="account-layout">
+          ${sidebarHTML(u, page, localOrders.length)}
+          <div class="account-main">${mainHTML}</div>
+        </div>`;
+
+      wireLogoutDelete(u);
+      if (page === "profile") wireProfileForm(u);
+      if (page === "orders")  fetchRemoteOrders(u, localOrders);
     }
     render();
     document.addEventListener("vj:langchange", render);
@@ -1900,6 +1925,12 @@
     document.addEventListener("vj:likeschange", render);
     document.addEventListener("vj:cartchange", render);
   }
+
+  // Tiny inline icons used by the account sidebar
+  const ICON_PACKAGE = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+  const ICON_BAG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>`;
+  const ICON_HEART = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  const ICON_USER = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`;
 
   function renderThanksPage() {
     const root = document.getElementById("thanks-root");
