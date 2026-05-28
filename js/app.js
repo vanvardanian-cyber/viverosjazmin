@@ -222,9 +222,59 @@
     document.dispatchEvent(new CustomEvent("vj:authchange"));
     return u;
   }
-  function logoutUser() {
+  async function logoutUser() {
+    // If this is a Supabase OAuth session, sign out of Supabase too
+    const supa = window.VJ_SUPA?.client;
+    if (supa) {
+      try { await supa.auth.signOut(); } catch {}
+    }
     localStorage.removeItem(STORAGE_SESSION);
     document.dispatchEvent(new CustomEvent("vj:authchange"));
+  }
+
+  /* Bridge a Supabase Auth session (e.g. Google OAuth) into VJ_AUTH so the
+     rest of the app — which still reads localStorage — sees the user as
+     logged in. Creates a local profile from the OAuth identity on first login. */
+  function _syncSupabaseSession(session) {
+    if (!session || !session.user) return;
+    const u = session.user;
+    const email = (u.email || "").toLowerCase();
+    if (!email) return;
+    const users = _readUsers();
+    if (!users[email]) {
+      const meta = u.user_metadata || {};
+      users[email] = {
+        name: meta.full_name || meta.name || email.split("@")[0],
+        email,
+        phone: meta.phone || "",
+        createdAt: new Date().toISOString(),
+        oauth: true,
+        addresses: [],
+        orders: []
+      };
+      _writeUsers(users);
+    }
+    localStorage.setItem(STORAGE_SESSION, JSON.stringify({ email, since: Date.now(), oauth: true }));
+    document.dispatchEvent(new CustomEvent("vj:authchange"));
+  }
+  async function initSupabaseAuthBridge() {
+    const supa = window.VJ_SUPA?.client;
+    if (!supa) return;
+    try {
+      const { data } = await supa.auth.getSession();
+      if (data && data.session) _syncSupabaseSession(data.session);
+    } catch {}
+    supa.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+        _syncSupabaseSession(session);
+      } else if (event === "SIGNED_OUT") {
+        const s = getSession();
+        if (s && s.oauth) {
+          localStorage.removeItem(STORAGE_SESSION);
+          document.dispatchEvent(new CustomEvent("vj:authchange"));
+        }
+      }
+    });
   }
   function appendOrderToUser(order) {
     const u = currentUser();
@@ -241,6 +291,40 @@
     logout: logoutUser,
     current: currentUser,
     onChange: (cb) => document.addEventListener("vj:authchange", cb)
+  };
+
+  /* ---------------- Wishlist / Favoritos ---------------- */
+  const STORAGE_LIKES = "vj.likes";
+  function _readLikes() {
+    try {
+      const v = JSON.parse(localStorage.getItem(STORAGE_LIKES));
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  }
+  function _writeLikes(arr) {
+    localStorage.setItem(STORAGE_LIKES, JSON.stringify(arr));
+    document.dispatchEvent(new CustomEvent("vj:likeschange"));
+  }
+  function likeHas(id) { return _readLikes().indexOf(id) >= 0; }
+  function likeToggle(id) {
+    const arr = _readLikes();
+    const i = arr.indexOf(id);
+    if (i >= 0) arr.splice(i, 1); else arr.unshift(id);
+    _writeLikes(arr);
+    return arr.indexOf(id) >= 0;
+  }
+  function likeCount() { return _readLikes().length; }
+  function likeList() {
+    // Return product objects (in like order) that still exist in PRODUCTS
+    const ids = _readLikes();
+    return ids.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  }
+  window.VJ_LIKES = {
+    has: likeHas,
+    toggle: likeToggle,
+    count: likeCount,
+    list: likeList,
+    onChange: (cb) => document.addEventListener("vj:likeschange", cb)
   };
 
   /* ---------------- Cookies (AEPD-compliant) ---------------- */
@@ -512,6 +596,14 @@
       b.classList.toggle("is-empty", n === 0);
     });
   }
+  function updateFavBadge() {
+    const badges = document.querySelectorAll(".fav-count");
+    const n = likeCount();
+    badges.forEach(b => {
+      b.textContent = n;
+      b.classList.toggle("is-empty", n === 0);
+    });
+  }
   function formatPrice(n) {
     return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
   }
@@ -710,12 +802,16 @@
   /* ---------------- Card / Grid renderers ---------------- */
   function productCardHTML(p) {
     const stockTag = p.stock > 0 ? "" : `<span class="product-tag">${t("common.outOfStock")}</span>`;
+    const liked = likeHas(p.id);
     return `
       <article class="product-card">
         <a href="producto.html?id=${p.id}" class="product-img" aria-label="${productName(p)}">
           ${productImgSVG(p)}
           ${stockTag}
         </a>
+        <button class="like-btn js-like ${liked ? "is-liked" : ""}" data-id="${p.id}" aria-label="${t("common.favorite")}" aria-pressed="${liked}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="${liked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
         <div class="product-body">
           <div class="product-cat">${catName(p.cat)}</div>
           <h3 class="product-name"><a href="producto.html?id=${p.id}">${productName(p)}</a></h3>
@@ -739,6 +835,27 @@
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         addToCart(btn.dataset.id, 1);
+      });
+    });
+    attachLikeButtons(scope);
+  }
+  function attachLikeButtons(scope = document) {
+    scope.querySelectorAll(".js-like").forEach(btn => {
+      if (btn._wired) return;
+      btn._wired = true;
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const nowLiked = likeToggle(id);
+        btn.classList.toggle("is-liked", nowLiked);
+        btn.setAttribute("aria-pressed", String(nowLiked));
+        const svg = btn.querySelector("svg");
+        if (svg) svg.setAttribute("fill", nowLiked ? "currentColor" : "none");
+        btn.classList.remove("just-liked");
+        // Force reflow so the animation restarts on rapid clicks
+        void btn.offsetWidth;
+        btn.classList.add("just-liked");
       });
     });
   }
@@ -779,6 +896,10 @@
                 <button data-lang="va">VAL</button>
               </div>
             </nav>
+            <a href="favoritos.html" class="fav-btn" aria-label="Favoritos">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="fav-count is-empty">0</span>
+            </a>
             <a href="carrito.html" class="cart-btn" aria-label="Carrito">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
               <span class="cart-count is-empty">0</span>
@@ -1201,6 +1322,32 @@
     document.addEventListener("vj:langchange", render);
   }
 
+  function renderFavoritosPage() {
+    const root = document.getElementById("favs-root");
+    if (!root) return;
+    function render() {
+      const items = likeList();
+      if (items.length === 0) {
+        root.innerHTML = `
+          <div class="favs-empty">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5;margin-bottom:16px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <h2>${t("favs.empty.title")}</h2>
+            <p>${t("favs.empty.text")}</p>
+            <a href="tienda.html" class="btn btn-primary">${t("favs.empty.cta")}</a>
+          </div>`;
+        return;
+      }
+      root.innerHTML = `
+        <div class="product-grid">
+          ${items.map(productCardHTML).join("")}
+        </div>`;
+      attachAddButtons(root);
+    }
+    render();
+    document.addEventListener("vj:likeschange", render);
+    document.addEventListener("vj:langchange", render);
+  }
+
   function renderCartPage() {
     const root = document.getElementById("cart-root");
     if (!root) return;
@@ -1604,6 +1751,10 @@
     // array as a fallback so the site still renders something.
     await loadCatalogFromSupabase();
 
+    // Sync Supabase Auth session (Google OAuth) into local VJ_AUTH state.
+    // Must happen BEFORE renderAccountPage() so cuenta.html sees the user.
+    await initSupabaseAuthBridge();
+
     // re-render footer on lang change (category labels & hours)
     document.addEventListener("vj:langchange", () => {
       rerenderFooter();
@@ -1618,6 +1769,8 @@
       });
     });
     document.addEventListener("vj:authchange", updateAuthLink);
+    document.addEventListener("vj:likeschange", updateFavBadge);
+    updateFavBadge();
 
     // mark active nav link
     const path = location.pathname.split("/").pop() || "index.html";
@@ -1629,6 +1782,7 @@
     renderShop();
     renderProductPage();
     renderCartPage();
+    renderFavoritosPage();
     renderCheckoutPage();
     renderThanksPage();
     renderContactForm();
