@@ -3,27 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Jazmín · Viver i floristeria a Castelló de la Plana</title>
+  <title>Jazmín · Plantas y Flores en Castelló de la Plana</title>
   <meta name="description" content="Jazmín — vivero y floristería en Castelló de la Plana. Plantas para tu casa y flores para tu día desde 1992.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preload" as="image" href="img/floristeria-vivero-jazmin-castellon-ramos-plantas-decoracion.webp">
 </head>
 <body>
 
 <div data-vj-header></div>
 
-<!-- ============== HERO ============== -->
-<section class="hero">
-  <div class="container hero-grid">
-    <div class="hero-text">
+<!-- ============== HERO (editorial, full-bleed) ============== -->
+<section class="hero hero--editorial">
+  <div class="hero-photo-wrap" data-reveal="fade">
+    <img class="hero-photo"
+         src="img/floristeria-vivero-jazmin-castellon-ramos-plantas-decoracion.webp"
+         alt="Floristería y vivero Jazmín en Castelló de la Plana — ramos de temporada con hortensias, rosas y plantas en jarrones."
+         loading="eager" fetchpriority="high" width="1600" height="900">
+  </div>
+  <div class="container hero-editorial-content">
+    <div class="hero-text" data-reveal="up">
       <span class="eyebrow" data-i18n="home.hero.eyebrow">Plantas &amp; Flores · Castelló · 1992</span>
       <h1 data-i18n-html="home.hero.title">
         <em>Plantas</em> para tu casa,<br>
         <em>flores</em> para tu día.
       </h1>
+      <span class="hero-rule" aria-hidden="true"></span>
       <p class="lead" data-i18n="home.hero.lead">
         Vivero y floristería en el corazón de Castelló de la Plana. Macetas, ramos, flores de temporada y la planta perfecta para cada rincón.
       </p>
@@ -32,21 +40,48 @@
         <a href="sobre.html"  class="btn btn-ghost btn-arrow" data-i18n="home.story.cta">Conoce más</a>
       </div>
     </div>
-    <div class="hero-visual">
-      <img class="hero-photo"
-           src="img/floristeria-vivero-jazmin-castellon-ramos-plantas-decoracion.webp"
-           alt="Floristería y vivero Jazmín en Castelló de la Plana — ramos de temporada con hortensias, rosas y plantas en jarrones."
-           loading="eager" fetchpriority="high" width="1600" height="900">
-      <div class="hero-meta">
-        <span>Castelló de la Plana</span>
-        <span>Es · 39.98°N</span>
-      </div>
+    <div class="hero-foot">
+      <span class="hero-foot-meta">Castelló · 39.98°N</span>
+      <a href="#cat-section" class="hero-scroll" aria-label="Descubrir más">
+        <span>Descubre</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- ============== EDITORIAL NUMBERS ============== -->
-<section class="numbers">
+<!-- ============== MARQUEE: in season ============== -->
+<section class="marquee" aria-label="En flor ahora mismo">
+  <div class="marquee-track">
+    <div class="marquee-content" aria-hidden="true">
+      <span><em>En flor</em> ahora</span><span class="marquee-dot">·</span>
+      <span>Hortensias</span><span class="marquee-dot">·</span>
+      <span>Lavanda</span><span class="marquee-dot">·</span>
+      <span>Jazmín blanco</span><span class="marquee-dot">·</span>
+      <span>Rosas de temporada</span><span class="marquee-dot">·</span>
+      <span>Geranios</span><span class="marquee-dot">·</span>
+      <span>Lirios</span><span class="marquee-dot">·</span>
+      <span>Romero en flor</span><span class="marquee-dot">·</span>
+      <span>Margaritas</span><span class="marquee-dot">·</span>
+      <span><em>Castelló</em></span><span class="marquee-dot">·</span>
+    </div>
+    <div class="marquee-content" aria-hidden="true">
+      <span><em>En flor</em> ahora</span><span class="marquee-dot">·</span>
+      <span>Hortensias</span><span class="marquee-dot">·</span>
+      <span>Lavanda</span><span class="marquee-dot">·</span>
+      <span>Jazmín blanco</span><span class="marquee-dot">·</span>
+      <span>Rosas de temporada</span><span class="marquee-dot">·</span>
+      <span>Geranios</span><span class="marquee-dot">·</span>
+      <span>Lirios</span><span class="marquee-dot">·</span>
+      <span>Romero en flor</span><span class="marquee-dot">·</span>
+      <span>Margaritas</span><span class="marquee-dot">·</span>
+      <span><em>Castelló</em></span><span class="marquee-dot">·</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== NUMBERS (editorial) ============== -->
+<section class="numbers numbers--editorial" data-reveal="up">
   <div class="container">
     <div class="stat">
       <div class="num">33</div>
@@ -68,24 +103,26 @@
 </section>
 
 <!-- ============== CATEGORIES BENTO ============== -->
-<section class="section">
+<section class="section" id="cat-section">
   <div class="container">
-    <div class="section-head">
-      <span class="eyebrow" data-i18n="home.categories">Categorías</span>
-      <h2><em>Encuentra</em> lo que cuidas</h2>
-      <p data-i18n="shop.subtitle">Explora todo nuestro catálogo organizado por familias.</p>
+    <div class="section-head section-head--split" data-reveal="up">
+      <div>
+        <span class="eyebrow" data-i18n="home.categories">Categorías</span>
+        <h2 class="display-heading"><em>Encuentra</em><br>lo que cuidas</h2>
+      </div>
+      <p class="section-head-lead" data-i18n="shop.subtitle">Explora todo nuestro catálogo organizado por familias.</p>
     </div>
-    <div class="cat-bento" id="cat-grid"></div>
+    <div class="cat-bento" id="cat-grid" data-reveal="up"></div>
   </div>
 </section>
 
 <!-- ============== FEATURED (horizontal rail) ============== -->
 <section class="section section--paper" style="border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden;">
   <div class="container">
-    <div class="section-head flex-between" style="display:flex; align-items:flex-end; justify-content:space-between; max-width: none;">
+    <div class="section-head flex-between" data-reveal="up" style="display:flex; align-items:flex-end; justify-content:space-between; max-width: none;">
       <div>
         <span class="eyebrow" data-i18n="home.featured">Destacados</span>
-        <h2><em>Una selección</em> del mes</h2>
+        <h2 class="display-heading"><em>Una selección</em><br>del mes</h2>
       </div>
       <a href="tienda.html" class="btn btn-ghost btn-arrow" data-i18n="home.hero.cta">Ver la tienda</a>
     </div>
@@ -109,57 +146,60 @@
   </div>
 </section>
 
-<!-- ============== STORY ============== -->
-<section class="section">
-  <div class="container split">
-    <div class="split-img">
-      <img class="split-photo"
-           src="img/jazmin-castello-coleccion-ramos-floristeria-castello.webp"
-           alt="Colección de ramos y plantas de Jazmín en Castelló — rosas, hortensias y lirios sobre fondo mediterráneo."
-           loading="lazy" width="1600" height="900">
-    </div>
-    <div>
-      <span class="eyebrow" data-i18n="home.story.title">Nuestra historia</span>
-      <h2><em>Tres décadas</em><br>cuidando plantas</h2>
-      <p data-i18n="home.story.text">Jazmín nace en 1992 como un proyecto familiar: un vivero y una floristería en Castelló.</p>
-      <p style="font-size:.95rem; color: var(--ink-soft); line-height:1.8;" data-i18n="about.p3"></p>
-      <a href="sobre.html" class="btn btn-outline btn-arrow mt-16" data-i18n="home.story.cta">Conoce más</a>
-    </div>
+<!-- ============== STORY (editorial split, photo bleeds left) ============== -->
+<section class="story-editorial" data-reveal="up">
+  <div class="story-editorial-photo">
+    <img src="img/jazmin-castello-coleccion-ramos-floristeria-castello.webp"
+         alt="Colección de ramos y plantas de Jazmín en Castelló — rosas, hortensias y lirios sobre fondo mediterráneo."
+         loading="lazy" width="1600" height="1000">
+  </div>
+  <div class="story-editorial-text">
+    <span class="eyebrow" data-i18n="home.story.title">Nuestra historia</span>
+    <h2 class="display-heading"><em>Tres décadas</em><br>cuidando plantas</h2>
+    <blockquote class="story-quote">
+      <span>«Cada planta lleva el mismo cuidado que la primera de 1992.»</span>
+    </blockquote>
+    <p data-i18n="home.story.text">Jazmín nace en 1992 como un proyecto familiar: un vivero y una floristería en Castelló.</p>
+    <a href="sobre.html" class="btn btn-outline btn-arrow mt-16" data-i18n="home.story.cta">Conoce más</a>
   </div>
 </section>
 
-<!-- ============== VISIT ============== -->
-<section class="section section--blue-soft">
-  <div class="container split">
-    <div>
+<!-- ============== VISIT (storefront-as-background + glass card) ============== -->
+<section class="visit-editorial" data-reveal="up">
+  <img class="visit-bg"
+       src="img/jazmin-castello-tienda-floristeria-puerta-azul.webp"
+       alt="Entrada de la floristería Jazmín en Castelló de la Plana — puerta azul mediterránea con flores y plantas."
+       loading="lazy">
+  <div class="container">
+    <div class="visit-card">
       <span class="eyebrow" data-i18n="home.visit.title">Visítanos</span>
-      <h2><em>Ven a vernos</em><br>al vivero</h2>
+      <h2 class="display-heading"><em>Ven a vernos</em><br>al vivero</h2>
       <p data-i18n="home.visit.text">Pásate por nuestras instalaciones en Castelló de la Plana.</p>
 
       <div class="info-list">
         <div class="info-line">
-          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s-7-7-7-13a7 7 0 1 1 14 0c0 6-7 13-7 13z"/><circle cx="12" cy="9" r="2.5"/></svg></span>
+          <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s-7-7-7-13a7 7 0 1 1 14 0c0 6-7 13-7 13z"/><circle cx="12" cy="9" r="2.5"/></svg></span>
           <div>
             <strong data-i18n="common.address">Dirección</strong>
             Calle Río Anna 135 · 12006 Castelló de la Plana
           </div>
         </div>
         <div class="info-line">
-          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
           <div>
             <strong data-i18n="common.hours">Horario</strong>
             <span id="hrs-text">Lunes a sábado: 8:30–13:30 y 16:00–20:00<br>Domingo y festivos: 9:00–13:00</span>
           </div>
         </div>
         <div class="info-line">
-          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg></span>
+          <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg></span>
           <div>
             <strong data-i18n="common.phone">Teléfono</strong>
             <a href="tel:+34636543566">636 54 35 66</a>
           </div>
         </div>
         <div class="info-line">
-          <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
+          <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
           <div>
             <strong data-i18n="common.email">Email</strong>
             <a href="mailto:jazminfloristeria@hotmail.com">jazminfloristeria@hotmail.com</a>
@@ -167,14 +207,6 @@
         </div>
       </div>
       <a class="btn btn-primary btn-arrow mt-24" target="_blank" rel="noopener" href="https://www.google.com/maps/place/Viveros+JAZM%C3%8DN/@39.9855612,-0.0704806,17z/" data-i18n="common.openMaps">Abrir en Google Maps</a>
-    </div>
-
-    <!-- Storefront photo (the lavender-blue floristería on Calle Río Anna) -->
-    <div class="split-img">
-      <img class="split-photo"
-           src="img/jazmin-castello-tienda-floristeria-puerta-azul.webp"
-           alt="Entrada de la floristería Jazmín en Castelló de la Plana — puerta azul mediterránea con flores y plantas a la entrada."
-           loading="lazy" width="1600" height="900">
     </div>
   </div>
 </section>
@@ -194,6 +226,24 @@
     }
     updateHours();
     document.addEventListener("vj:langchange", updateHours);
+
+    /* Scroll reveals — restrained fade-up using IntersectionObserver.
+       Honours prefers-reduced-motion: shows everything immediately. */
+    const prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const targets = document.querySelectorAll("[data-reveal]");
+    if (prefersReduce || !("IntersectionObserver" in window)) {
+      targets.forEach(el => el.classList.add("is-revealed"));
+    } else {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-revealed");
+            io.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -10% 0px", threshold: 0.05 });
+      targets.forEach(el => io.observe(el));
+    }
   });
 </script>
 </body>

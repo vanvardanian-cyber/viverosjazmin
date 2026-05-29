@@ -1272,16 +1272,16 @@
     }
     const cats = document.getElementById("cat-grid");
     if (cats) {
-      cats.innerHTML = CATEGORIES.map((c, i) => {
-        const n = PRODUCTS.filter(p => p.cat === c.id).length;
+      // Editorial bento: each tile renders a category silhouette as background,
+      // a category name in italic serif on top, a small arrow chip top-right.
+      cats.innerHTML = CATEGORIES.map((c) => {
         return `
           <a class="cat-tile" href="tienda.html?cat=${c.id}">
-            <h3>${c[getLang()]}</h3>
-            <div class="cat-meta">
-              <span>${String(i + 1).padStart(2, "0")} / 06</span>
-              <span>${n} ${t("common.units")} →</span>
-            </div>
             <div class="cat-svg">${catSilhouetteSVG(c.id)}</div>
+            <span class="cat-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </span>
+            <span class="cat-name">${c[getLang()]}</span>
           </a>
         `;
       }).join("");
