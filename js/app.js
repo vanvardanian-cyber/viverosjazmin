@@ -529,6 +529,10 @@
     document.querySelectorAll("[data-i18n]").forEach(el => {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => {
+      // Trusted HTML strings from i18n (lets us keep <em> emphasis in copy)
+      el.innerHTML = t(el.getAttribute("data-i18n-html"));
+    });
     document.querySelectorAll("[data-i18n-attr]").forEach(el => {
       const spec = el.getAttribute("data-i18n-attr"); // e.g. "placeholder:common.search"
       spec.split(",").forEach(pair => {
@@ -627,6 +631,159 @@
   }
 
   /* ---------------- Product image (URL or SVG fallback) ---------------- */
+  /* Gallery for the product detail page — main image + clickable thumbnails.
+     Click main image → opens a lightbox (defined below) with prev/next.
+     Falls back to a single image (or the SVG placeholder) when only one is set. */
+  function productGalleryHTML(p) {
+    const imgs = Array.isArray(p.images) ? p.images.filter(Boolean) : [];
+    const alt = ((p.name && (p.name.es || p.name.va)) || "").replace(/"/g, "&quot;");
+    if (imgs.length === 0) {
+      // No real photos → reuse the SVG illustration full-bleed (not zoomable)
+      return `<div class="product-gallery"><div class="product-gallery-main">${productImgSVG(p)}</div></div>`;
+    }
+    const dataAttr = `data-images='${escapeHtmlSafe(JSON.stringify(imgs))}'`;
+    if (imgs.length === 1) {
+      return `
+        <div class="product-gallery">
+          <button type="button" class="product-gallery-main is-zoomable" data-gallery-open="0" ${dataAttr} aria-label="${alt}">
+            <img src="${imgs[0]}" alt="${alt}" loading="lazy">
+            <span class="product-gallery-zoom" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </span>
+          </button>
+        </div>`;
+    }
+    const thumbs = imgs.map((src, i) => `
+      <button type="button" class="product-gallery-thumb ${i === 0 ? "is-active" : ""}" data-idx="${i}" aria-label="${alt} — ${i + 1}">
+        <img src="${src}" alt="" loading="lazy">
+      </button>`).join("");
+    return `
+      <div class="product-gallery" data-gallery ${dataAttr}>
+        <button type="button" class="product-gallery-main is-zoomable" data-gallery-open="0" aria-label="${alt}">
+          <img src="${imgs[0]}" alt="${alt}" data-gallery-main loading="lazy">
+          <span class="product-gallery-zoom" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </span>
+        </button>
+        <div class="product-gallery-thumbs">${thumbs}</div>
+      </div>`;
+  }
+
+  function wireProductGallery(scope) {
+    const gallery = scope.querySelector(".product-gallery");
+    if (!gallery) return;
+    const mainBtn = gallery.querySelector(".product-gallery-main.is-zoomable");
+    const mainImg = gallery.querySelector("[data-gallery-main]") || (mainBtn && mainBtn.querySelector("img"));
+    const imgsAttr = gallery.getAttribute("data-images") ||
+                     (mainBtn && mainBtn.getAttribute("data-images"));
+    let imgs = [];
+    try { imgs = JSON.parse(imgsAttr || "[]"); } catch {}
+    let currentIdx = 0;
+    // Thumbnail clicks swap the main image
+    gallery.querySelectorAll(".product-gallery-thumb").forEach(btn => {
+      btn.addEventListener("click", () => {
+        gallery.querySelectorAll(".product-gallery-thumb").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        currentIdx = parseInt(btn.dataset.idx, 10) || 0;
+        if (mainImg) mainImg.src = imgs[currentIdx];
+        if (mainBtn) mainBtn.dataset.galleryOpen = String(currentIdx);
+      });
+    });
+    // Main image click → open lightbox
+    if (mainBtn) {
+      mainBtn.addEventListener("click", () => {
+        if (!imgs.length) return;
+        openLightbox(imgs, parseInt(mainBtn.dataset.galleryOpen, 10) || 0);
+      });
+    }
+  }
+
+  /* ---------------- Lightbox / fullscreen image viewer ---------------- */
+  function openLightbox(images, startIdx) {
+    if (!Array.isArray(images) || images.length === 0) return;
+    let idx = Math.max(0, Math.min(startIdx || 0, images.length - 1));
+    const multi = images.length > 1;
+
+    // Build the modal
+    const modal = document.createElement("div");
+    modal.className = "vj-lightbox";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.innerHTML = `
+      <button type="button" class="vj-lightbox-close" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      ${multi ? `
+        <button type="button" class="vj-lightbox-nav vj-lightbox-prev" aria-label="Anterior">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button type="button" class="vj-lightbox-nav vj-lightbox-next" aria-label="Siguiente">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>` : ""}
+      <div class="vj-lightbox-stage">
+        <img src="${images[idx]}" alt="" />
+      </div>
+      ${multi ? `<div class="vj-lightbox-counter"><span data-current>${idx + 1}</span> / ${images.length}</div>` : ""}
+    `;
+    document.body.appendChild(modal);
+    document.body.classList.add("vj-no-scroll");
+    requestAnimationFrame(() => modal.classList.add("is-open"));
+
+    const img = modal.querySelector(".vj-lightbox-stage img");
+    const counter = modal.querySelector("[data-current]");
+    function show(i) {
+      idx = (i + images.length) % images.length;
+      img.style.opacity = "0";
+      const next = new Image();
+      next.onload = () => {
+        img.src = images[idx];
+        img.style.opacity = "1";
+      };
+      next.src = images[idx];
+      if (counter) counter.textContent = String(idx + 1);
+    }
+
+    function close() {
+      modal.classList.remove("is-open");
+      document.body.classList.remove("vj-no-scroll");
+      document.removeEventListener("keydown", onKey);
+      setTimeout(() => modal.remove(), 200);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowRight" && multi) show(idx + 1);
+      else if (e.key === "ArrowLeft" && multi) show(idx - 1);
+    }
+    document.addEventListener("keydown", onKey);
+
+    modal.querySelector(".vj-lightbox-close").addEventListener("click", close);
+    // Click on backdrop (but not on the image) closes
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal || e.target.classList.contains("vj-lightbox-stage")) close();
+    });
+    if (multi) {
+      modal.querySelector(".vj-lightbox-prev").addEventListener("click", () => show(idx - 1));
+      modal.querySelector(".vj-lightbox-next").addEventListener("click", () => show(idx + 1));
+    }
+
+    // Swipe support for touch devices
+    let touchStartX = 0, touchStartY = 0;
+    modal.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    modal.addEventListener("touchend", (e) => {
+      if (!multi) return;
+      const dx = (e.changedTouches[0].clientX - touchStartX);
+      const dy = (e.changedTouches[0].clientY - touchStartY);
+      // Horizontal swipe with at least 40px and dominant over vertical
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) show(idx + 1); else show(idx - 1);
+      }
+    }, { passive: true });
+  }
+
   function productImgSVG(p) {
     // If admin has set a real image URL, use it.
     if (p.img && /^(https?:|data:)/.test(p.img)) {
@@ -922,9 +1079,9 @@
             </div>
           </div>
 
-          <a class="brand" href="index.html" aria-label="Viveros Jazmín">
-            <span class="brand-name">Viveros Jazmín</span>
-            <span class="brand-sub">Castelló · Desde 1992</span>
+          <a class="brand" href="index.html" aria-label="Jazmín · Plantas y Flores">
+            <span class="brand-name">Jazmín</span>
+            <span class="brand-sub" data-i18n="brand.sub">Plantas &amp; Flores · Castelló · Desde 1992</span>
           </a>
 
           <div class="header-side header-side--right">
@@ -969,8 +1126,8 @@
           <div class="footer-grid">
             <div>
               <a class="brand" href="index.html" style="align-items:flex-start;">
-                <span class="brand-name">Viveros Jazmín</span>
-                <span class="brand-sub">Castelló · Desde 1992</span>
+                <span class="brand-name">Jazmín</span>
+                <span class="brand-sub" data-i18n="brand.sub">Plantas &amp; Flores · Castelló · Desde 1992</span>
               </a>
               <p class="tagline" data-i18n="footer.tagline"></p>
             </div>
@@ -1000,7 +1157,7 @@
             </div>
           </div>
           <div class="footer-bottom">
-            <div>© 1992–2026 Viveros Jazmín · <span data-i18n="footer.copy"></span></div>
+            <div>© 1992–2026 Jazmín · <span data-i18n="footer.copy"></span></div>
             <div class="footer-legal">
               <a href="aviso-legal.html">Aviso Legal</a> ·
               <a href="privacidad.html">Privacidad</a> ·
@@ -1333,7 +1490,7 @@
           <a href="tienda.html?cat=${p.cat}">${catName(p.cat)}</a>
         </div>
         <div class="product-detail">
-          <div class="product-detail-img">${productImgSVG(p)}</div>
+          <div class="product-detail-img">${productGalleryHTML(p)}</div>
           <div class="product-detail-info">
             <div class="detail-cat">${catName(p.cat)}</div>
             <h1>${productName(p)}</h1>
@@ -1388,6 +1545,7 @@
       root.querySelector("#add-detail").addEventListener("click", () => {
         addToCart(p.id, parseInt(qty.value) || 1);
       });
+      wireProductGallery(root);
       const likeBtn = root.querySelector("#detail-like");
       if (likeBtn) likeBtn.addEventListener("click", () => {
         const nowLiked = likeToggle(p.id);

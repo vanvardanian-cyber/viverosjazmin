@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Admin · Viveros Jazmín</title>
+  <title>Admin · Jazmín</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
     <!-- ===== LOGIN GATE ===== -->
     <div id="admin-login" class="form-card" style="max-width:440px; margin: 0 auto 40px; padding:36px;">
       <h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;font-size:1.6rem;margin:0 0 6px;">Acceso administrador</h3>
-      <p class="muted" style="font-size:.9rem; margin-bottom:24px;">Solo el equipo de Viveros Jazmín puede entrar aquí.</p>
+      <p class="muted" style="font-size:.9rem; margin-bottom:24px;">Solo el equipo de Jazmín puede entrar aquí.</p>
       <div class="auth-error" id="admin-error"></div>
       <form id="admin-login-form" autocomplete="on">
         <div class="form-grid">
@@ -142,21 +142,22 @@
             </div>
 
             <div class="form-field full">
-              <label>Imagen del producto (opcional)</label>
-              <div class="img-picker">
-                <div class="img-preview" id="img-preview">
-                  <span class="img-empty">Sin imagen</span>
+              <label>Imágenes del producto (hasta 6)</label>
+              <div class="img-manager">
+                <div class="img-list" id="img-list">
+                  <span class="img-empty" id="img-empty">Aún no hay imágenes. Sube fotos o pega una URL.</span>
                 </div>
-                <div class="img-controls">
+                <div class="img-add-row">
                   <label class="btn btn-light img-upload-btn" style="cursor:pointer;">
                     Subir foto…
-                    <input type="file" id="f-imgfile" accept="image/*" style="display:none;">
+                    <input type="file" id="f-imgfile" accept="image/*" multiple style="display:none;">
                   </label>
-                  <button type="button" class="btn btn-ghost" id="img-clear" style="display:none;padding:8px 12px;font-size:.7rem;">Quitar</button>
+                  <div class="img-url-row">
+                    <input type="url" id="f-img-url" placeholder="…o pega una URL https://…">
+                    <button type="button" class="btn btn-light btn-sm" id="f-img-url-add">Añadir</button>
+                  </div>
                 </div>
-                <div class="img-or">— o —</div>
-                <input type="url" name="img" id="f-img" placeholder="Pega una URL de imagen (https://…)">
-                <small style="color:var(--ink-soft);font-size:.72rem;">Recomendado: hasta 500 KB. Para fotos grandes, usa una URL externa.</small>
+                <small style="color:var(--ink-soft);font-size:.72rem;">La primera imagen es la principal. Arrastra para reordenar. Recomendado: hasta 500 KB cada foto subida.</small>
               </div>
             </div>
             <div class="form-field full">
@@ -299,7 +300,12 @@
 <script>
   /* ============================================================
      ADMIN AUTH GATE (runs before everything else)
+     Only emails in ADMIN_EMAILS can see the panel — being merely
+     logged in with a Supabase account is NOT enough.
+     Server-side RLS additionally enforces this for every read/write.
      ============================================================ */
+  const ADMIN_EMAILS = ["vanomg95@gmail.com"];   // add more here if needed
+
   (function authGate() {
     const supa = window.VJ_SUPA?.client;
     const loginCard = document.getElementById("admin-login");
@@ -309,6 +315,11 @@
     const userEl   = document.getElementById("admin-user");
     const errEl    = document.getElementById("admin-error");
     const loginForm= document.getElementById("admin-login-form");
+
+    function isAdminEmail(email) {
+      if (!email) return false;
+      return ADMIN_EMAILS.includes(String(email).trim().toLowerCase());
+    }
 
     function showLogin() {
       loginCard.style.display = "";
@@ -325,25 +336,49 @@
       // Boot the rest of the admin script (defined below)
       window.__adminBoot && window.__adminBoot();
     }
+    async function denyAndSignOut(reason) {
+      try { await supa.auth.signOut(); } catch {}
+      showLogin();
+      errEl.textContent = reason || "Esta cuenta no tiene permisos de administración.";
+      errEl.classList.add("is-show");
+    }
 
     async function check() {
       if (!supa) { showLogin(); errEl.textContent = "Supabase no inicializado."; errEl.classList.add("is-show"); return; }
       const { data } = await supa.auth.getSession();
       const user = data?.session?.user;
-      if (user) showPanel(user); else showLogin();
+      if (!user) { showLogin(); return; }
+      // User is signed in to Supabase — but are they admin?
+      if (!isAdminEmail(user.email)) {
+        await denyAndSignOut("Esta cuenta no tiene permisos de administración.");
+        return;
+      }
+      showPanel(user);
     }
 
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       errEl.classList.remove("is-show");
       const fd = new FormData(loginForm);
+      const email = (fd.get("email") || "").trim();
+      // Pre-check: don't bother contacting Supabase with non-admin emails
+      if (!isAdminEmail(email)) {
+        errEl.textContent = "Esta cuenta no tiene permisos de administración.";
+        errEl.classList.add("is-show");
+        return;
+      }
       const { data, error } = await supa.auth.signInWithPassword({
-        email: fd.get("email").trim(),
+        email,
         password: fd.get("password")
       });
       if (error) {
         errEl.textContent = "Credenciales no válidas.";
         errEl.classList.add("is-show");
+        return;
+      }
+      // Double-check after sign-in (paranoia in case of pre-check bypass)
+      if (!isAdminEmail(data.user?.email)) {
+        await denyAndSignOut("Esta cuenta no tiene permisos de administración.");
         return;
       }
       showPanel(data.user);
@@ -373,53 +408,134 @@
     const seedVal = document.getElementById("seed-val");
     let editingId = null;
 
-    // image picker elements
-    const imgPreview = document.getElementById("img-preview");
-    const imgFile    = document.getElementById("f-imgfile");
-    const imgUrl     = document.getElementById("f-img");
-    const imgClear   = document.getElementById("img-clear");
+    // ============================================================
+    // Multi-image manager (up to 6 per product). Mix of file uploads
+    // and external URLs. Drag-to-reorder. First image = main.
+    // ============================================================
+    const MAX_IMAGES = 6;
+    const imgListEl   = document.getElementById("img-list");
+    const imgEmptyEl  = document.getElementById("img-empty");
+    const imgFile     = document.getElementById("f-imgfile");
+    const imgUrlInput = document.getElementById("f-img-url");
+    const imgUrlAdd   = document.getElementById("f-img-url-add");
+
+    // The current edit's image array — populated on edit, mutated by UI
+    let currentImages = [];
+
+    function renderImageList() {
+      if (currentImages.length === 0) {
+        imgListEl.innerHTML = `<span class="img-empty">Aún no hay imágenes. Sube fotos o pega una URL.</span>`;
+        return;
+      }
+      imgListEl.innerHTML = currentImages.map((src, i) => `
+        <div class="img-tile" draggable="true" data-idx="${i}">
+          <img src="${src}" alt="">
+          ${i === 0 ? `<span class="img-tile-badge">Principal</span>` : ""}
+          <button type="button" class="img-tile-remove" data-remove="${i}" aria-label="Quitar">×</button>
+        </div>
+      `).join("");
+      // Wire remove buttons
+      imgListEl.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.remove, 10);
+          currentImages.splice(idx, 1);
+          renderImageList();
+        });
+      });
+      // Wire drag-to-reorder
+      let dragFromIdx = null;
+      imgListEl.querySelectorAll(".img-tile").forEach(tile => {
+        tile.addEventListener("dragstart", (e) => {
+          dragFromIdx = parseInt(tile.dataset.idx, 10);
+          tile.classList.add("is-dragging");
+          if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+        });
+        tile.addEventListener("dragend", () => {
+          tile.classList.remove("is-dragging");
+          dragFromIdx = null;
+        });
+        tile.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          tile.classList.add("is-drag-over");
+        });
+        tile.addEventListener("dragleave", () => tile.classList.remove("is-drag-over"));
+        tile.addEventListener("drop", (e) => {
+          e.preventDefault();
+          tile.classList.remove("is-drag-over");
+          const toIdx = parseInt(tile.dataset.idx, 10);
+          if (dragFromIdx == null || dragFromIdx === toIdx) return;
+          const item = currentImages.splice(dragFromIdx, 1)[0];
+          currentImages.splice(toIdx, 0, item);
+          renderImageList();
+        });
+      });
+    }
+
+    function addImage(src) {
+      if (!src) return;
+      if (currentImages.length >= MAX_IMAGES) {
+        alert(`Máximo ${MAX_IMAGES} imágenes por producto. Quita una antes de añadir otra.`);
+        return;
+      }
+      currentImages.push(src);
+      renderImageList();
+    }
 
     // populate category dropdown
     const catSel = document.getElementById("f-cat");
     catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.es}</option>`).join("");
 
-    function updateImgPreview() {
-      const v = (imgUrl.value || "").trim();
-      if (v && /^(https?:|data:)/.test(v)) {
-        imgPreview.innerHTML = `<img src="${v}" alt="">`;
-        imgClear.style.display = "";
-      } else {
-        imgPreview.innerHTML = `<span class="img-empty">Sin imagen</span>`;
-        imgClear.style.display = "none";
-      }
-    }
-    imgUrl.addEventListener("input", updateImgPreview);
-    imgClear.addEventListener("click", () => { imgUrl.value = ""; imgFile.value = ""; updateImgPreview(); });
-    imgFile.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen.");
+    // URL add button
+    imgUrlAdd.addEventListener("click", () => {
+      const v = (imgUrlInput.value || "").trim();
+      if (!v) return;
+      if (!/^https?:\/\//.test(v)) {
+        alert("Por favor pega una URL válida (que empiece por https://).");
         return;
       }
-      // Warn but allow up to 1MB; reject above 2MB
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Imagen demasiado grande (más de 2 MB). Reduce el tamaño o usa una URL externa.");
+      addImage(v);
+      imgUrlInput.value = "";
+    });
+    imgUrlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); imgUrlAdd.click(); }
+    });
+
+    // File upload (multi-select)
+    imgFile.addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const slotsLeft = MAX_IMAGES - currentImages.length;
+      if (slotsLeft <= 0) {
+        alert(`Ya tienes ${MAX_IMAGES} imágenes. Quita alguna antes de añadir más.`);
         imgFile.value = "";
         return;
       }
-      if (file.size > 512 * 1024) {
-        if (!confirm(`Esta imagen pesa ${(file.size/1024).toFixed(0)} KB. Se recomienda bajo 500 KB para no saturar el almacenamiento. ¿Continuar?`)) {
-          imgFile.value = "";
-          return;
-        }
+      const toProcess = files.slice(0, slotsLeft);
+      if (files.length > slotsLeft) {
+        alert(`Solo se añadirán las primeras ${slotsLeft} (máximo ${MAX_IMAGES} por producto).`);
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        imgUrl.value = reader.result;   // data:image/...;base64,...
-        updateImgPreview();
-      };
-      reader.readAsDataURL(file);
+      for (const file of toProcess) {
+        if (!file.type.startsWith("image/")) continue;
+        if (file.size > 2 * 1024 * 1024) {
+          alert(`"${file.name}" pesa más de 2 MB y se ha saltado. Redúcela o usa una URL.`);
+          continue;
+        }
+        if (file.size > 512 * 1024) {
+          if (!confirm(`"${file.name}" pesa ${(file.size/1024).toFixed(0)} KB. Se recomienda bajo 500 KB. ¿Añadir igualmente?`)) continue;
+        }
+        // Encode to base64 data URL
+        await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            addImage(reader.result);
+            resolve();
+          };
+          reader.onerror = () => resolve();
+          reader.readAsDataURL(file);
+        });
+      }
+      imgFile.value = "";
     });
 
     // tiny inline SVG icons
@@ -492,7 +608,9 @@
       seedVal.textContent = "0";
       seedSlider.value = 0;
       imgFile.value = "";
-      updateImgPreview();
+      imgUrlInput.value = "";
+      currentImages = [];
+      renderImageList();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -511,9 +629,13 @@
       form.elements.price.value = p.price;
       form.elements.stock.value = p.stock;
       form.elements.origin.value = p.origin || "";
-      form.elements.img.value = p.img || "";
+      // Load images: prefer new array, fall back to single legacy img
+      currentImages = Array.isArray(p.images) && p.images.length
+        ? p.images.slice(0, MAX_IMAGES)
+        : (p.img ? [p.img] : []);
       imgFile.value = "";
-      updateImgPreview();
+      imgUrlInput.value = "";
+      renderImageList();
       const seed = Number(p.imgSeed) || 0;
       form.elements.imgSeed.value = seed;
       seedVal.textContent = seed;
@@ -549,13 +671,16 @@
       const fd = new FormData(form);
       const cat = fd.get("cat");
       const id = editingId || VJ_CATALOG.nextId(cat);
+      // Images: array of up to 6 URLs/data-URLs from the multi-image manager
+      const images = currentImages.slice(0, MAX_IMAGES);
       const product = {
         id,
         cat,
         price: parseFloat(fd.get("price")) || 0,
         stock: parseInt(fd.get("stock")) || 0,
         imgSeed: parseInt(fd.get("imgSeed")) || 0,
-        img: (fd.get("img") || "").trim() || undefined,
+        img: images[0] || undefined,    // legacy single img = first photo
+        images,                          // full array
         origin: (fd.get("origin") || "").trim(),
         name: { es: (fd.get("name_es")||"").trim(), va: (fd.get("name_va")||"").trim() },
         desc: { es: (fd.get("desc_es")||"").trim(), va: (fd.get("desc_va")||"").trim() }

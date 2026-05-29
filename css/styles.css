@@ -859,8 +859,8 @@ body.nav-locked { overflow: hidden; }
   gap: 28px 24px;
 }
 @media (max-width: 1080px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 800px)  { .product-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px)  { .product-grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px)  { .product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; } }
+@media (max-width: 380px)  { .product-grid { grid-template-columns: 1fr; } }
 
 .product-card {
   background: transparent;
@@ -1234,10 +1234,154 @@ body.nav-locked { overflow: hidden; }
 }
 @media (max-width: 980px) { .product-detail { grid-template-columns: 1fr; gap: 40px; } }
 .product-detail-img {
+  /* Container for the gallery — keep simple, let .product-gallery handle sizing */
+  display: block;
+}
+
+/* Multi-image gallery: large main image + thumbnail strip below */
+.product-gallery { display: flex; flex-direction: column; gap: 14px; }
+.product-gallery-main {
   aspect-ratio: 4/5;
   border-radius: var(--r-sm);
   background: var(--blue-2);
   overflow: hidden;
+  position: relative;
+  padding: 0; border: 0;
+  cursor: default;
+}
+.product-gallery-main.is-zoomable {
+  cursor: zoom-in;
+}
+.product-gallery-main img,
+.product-gallery-main svg {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+/* Tiny "zoom" hint that fades in on hover over zoomable images */
+.product-gallery-zoom {
+  position: absolute; bottom: 12px; right: 12px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.92);
+  color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  opacity: 0; transition: opacity .15s ease;
+  pointer-events: none;
+}
+.product-gallery-main.is-zoomable:hover .product-gallery-zoom { opacity: 1; }
+/* On touch devices there's no hover — show the hint subtly all the time */
+@media (hover: none) {
+  .product-gallery-main.is-zoomable .product-gallery-zoom { opacity: .9; }
+}
+
+/* ---------- Lightbox / full-screen image viewer ---------- */
+body.vj-no-scroll { overflow: hidden; }
+
+.vj-lightbox {
+  position: fixed; inset: 0;
+  background: rgba(20, 25, 30, .92);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5000;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.vj-lightbox.is-open { opacity: 1; }
+
+.vj-lightbox-stage {
+  width: 92vw;
+  height: 92vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 0;
+}
+.vj-lightbox-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+  transition: opacity .15s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.vj-lightbox-close,
+.vj-lightbox-nav {
+  position: absolute;
+  background: rgba(255,255,255,.1);
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background .15s ease, transform .15s ease;
+}
+.vj-lightbox-close:hover,
+.vj-lightbox-nav:hover {
+  background: rgba(255,255,255,.2);
+  transform: scale(1.05);
+}
+.vj-lightbox-close {
+  top: 20px; right: 20px;
+  width: 44px; height: 44px;
+  z-index: 2;
+}
+.vj-lightbox-nav {
+  top: 50%; transform: translateY(-50%);
+  width: 52px; height: 52px;
+  z-index: 2;
+}
+.vj-lightbox-nav:hover { transform: translateY(-50%) scale(1.05); }
+.vj-lightbox-prev { left: 20px; }
+.vj-lightbox-next { right: 20px; }
+
+.vj-lightbox-counter {
+  position: absolute;
+  bottom: 24px; left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,.85);
+  font-size: .82rem; letter-spacing: .14em;
+  font-feature-settings: 'tnum';
+  background: rgba(0,0,0,.4);
+  padding: 6px 14px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Lightbox on phones: smaller controls, full-width stage */
+@media (max-width: 600px) {
+  .vj-lightbox-stage { width: 100vw; height: 100vh; padding: 60px 0 80px; }
+  .vj-lightbox-close { top: 12px; right: 12px; width: 40px; height: 40px; }
+  .vj-lightbox-nav { width: 44px; height: 44px; }
+  .vj-lightbox-prev { left: 8px; }
+  .vj-lightbox-next { right: 8px; }
+  .vj-lightbox-counter { bottom: 16px; font-size: .75rem; padding: 5px 12px; }
+}
+.product-gallery-thumbs {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+.product-gallery-thumb {
+  aspect-ratio: 1/1;
+  border-radius: var(--r-sm);
+  background: var(--blue-3);
+  border: 2px solid transparent;
+  overflow: hidden;
+  padding: 0; cursor: pointer;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.product-gallery-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.product-gallery-thumb:hover { transform: translateY(-1px); }
+.product-gallery-thumb.is-active {
+  border-color: var(--blue-deep);
+}
+@media (max-width: 540px) {
+  .product-gallery-thumbs { grid-template-columns: repeat(5, 1fr); }
 }
 .detail-cat {
   font-size: .68rem; color: var(--blue-deep); letter-spacing: .22em; text-transform: uppercase; font-weight: 600;
@@ -1803,6 +1947,83 @@ body.nav-locked { overflow: hidden; }
   color: var(--ink-soft); text-align: center; margin: 4px 0;
 }
 
+/* Multi-image manager (admin) */
+.img-manager {
+  display: grid; gap: 12px;
+}
+.img-list {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  min-height: 100px;
+  padding: 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--r-sm);
+  background: #fff;
+  align-items: center;
+}
+.img-list:has(.img-empty) {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100px;
+}
+.img-list .img-empty {
+  display: inline-block;
+  font-size: .72rem; color: var(--ink-soft);
+  letter-spacing: .14em; text-transform: uppercase;
+  text-align: center; line-height: 1.6;
+}
+.img-tile {
+  position: relative;
+  aspect-ratio: 1/1;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--blue-3);
+  cursor: grab;
+  border: 2px solid transparent;
+  transition: border-color .15s, transform .15s;
+}
+.img-tile:hover { border-color: var(--line); }
+.img-tile.is-dragging { opacity: .5; cursor: grabbing; }
+.img-tile.is-drag-over { border-color: var(--blue-deep); transform: scale(1.04); }
+.img-tile img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.img-tile-badge {
+  position: absolute; bottom: 4px; left: 4px;
+  background: rgba(31, 42, 46, .85); color: #fff;
+  font-size: .58rem; font-weight: 600;
+  padding: 3px 6px; border-radius: 3px;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.img-tile-remove {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px;
+  border-radius: 50%; border: 0;
+  background: rgba(255, 255, 255, .92); color: var(--ink);
+  font-size: 1.1rem; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+  transition: background .15s;
+}
+.img-tile-remove:hover { background: #c93b58; color: #fff; }
+.img-add-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.img-url-row {
+  display: flex; align-items: center; gap: 6px; flex: 1; min-width: 240px;
+}
+.img-url-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: .85rem;
+  font-family: inherit;
+}
+@media (max-width: 720px) {
+  .img-list { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* ---------- Job landing card ---------- */
 .job-card {
   background: var(--paper);
@@ -2108,3 +2329,180 @@ body.nav-locked { overflow: hidden; }
 .gap-4 { gap: 4px; }
 .flex { display: flex; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+/* ===========================================================
+   RESPONSIVE POLISH — fluid typography, mobile touch targets,
+   tablet adjustments, small-laptop window scaling.
+   These rules run AFTER everything else so they win.
+   =========================================================== */
+
+/* --- Fluid headings using clamp() — scale smoothly across all viewports --- */
+.hero h1                 { font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1.05; }
+.hero p                  { font-size: clamp(1rem, 1.8vw, 1.18rem); }
+.section-head h2,
+.page-head h1            { font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.1; }
+.account-page-head h1    { font-size: clamp(1.7rem, 3.4vw, 2.4rem); }
+.account-hero-name       { font-size: clamp(1.7rem, 3.8vw, 2.4rem); }
+
+/* --- Touch target minimums (Apple HIG / WCAG: 44px) --- */
+@media (max-width: 980px) {
+  .btn { min-height: 44px; }
+  .icon-btn,
+  .pw-toggle,
+  .menu-toggle { min-width: 44px; min-height: 44px; }
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="url"],
+  input[type="password"],
+  select,
+  textarea { min-height: 44px; font-size: 16px; }   /* 16px stops iOS auto-zoom */
+}
+
+/* --- Tablet (601-980px): narrow side gutters, single-column forms --- */
+@media (max-width: 980px) {
+  .section { padding: 64px 0; }
+  .section--tight { padding: 48px 0; }
+  .page-head { padding: 48px 0 32px; }
+  .form-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+  /* Detail actions wrap nicely */
+  .detail-actions { flex-wrap: wrap; gap: 10px; }
+  .detail-actions .btn { flex: 1 1 auto; }
+}
+
+/* --- Phone (≤600px) --- */
+@media (max-width: 600px) {
+  .container { padding: 0 16px; }
+  .section { padding: 48px 0; }
+  .section--tight { padding: 32px 0; }
+  .page-head { padding: 36px 0 24px; }
+
+  /* Account: sidebar becomes a card UNDER the title, scrolls horizontally */
+  .account-layout { gap: 20px; }
+  .account-side {
+    padding: 16px;
+    position: static;
+  }
+  .account-side-head { padding-bottom: 12px; margin-bottom: 12px; gap: 10px; }
+  .account-avatar { width: 40px; height: 40px; font-size: .9rem; }
+  .account-name { font-size: 1rem; }
+  .account-email { font-size: .72rem; }
+  /* Menu becomes a horizontal scrollable strip on phones — saves vertical space */
+  .account-menu {
+    display: flex; flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    margin: 0 -16px;
+    padding-left: 16px; padding-right: 16px;
+    scrollbar-width: thin;
+  }
+  .account-menu a {
+    grid-template-columns: 22px auto auto;
+    flex-shrink: 0;
+    padding: 10px 14px;
+    background: var(--blue-3);
+    border-radius: 999px;
+  }
+  .account-menu a.is-active { background: var(--blue-deep); color: #fff; }
+  .account-menu a.is-active .acct-menu-ico,
+  .account-menu a.is-active .acct-menu-ct { color: #fff; }
+  .account-menu a.is-active .acct-menu-ct { background: rgba(255,255,255,.25); }
+  .account-menu-foot {
+    flex-direction: row; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px;
+  }
+  .account-menu-foot .logout { padding: 8px 10px; font-size: .72rem; }
+
+  /* Product detail */
+  .detail-cat { font-size: .62rem; }
+  .product-detail h1 { font-size: clamp(1.7rem, 7vw, 2.2rem); margin-bottom: 8px; }
+  .detail-price { font-size: 1.25rem; margin: 12px 0 16px; }
+  .product-gallery { gap: 10px; }
+  .product-gallery-thumbs { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+  /* Cart row stacks: image | (name + qty) | line + remove */
+  .cart-row {
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    padding: 14px 0;
+  }
+  .cart-img { width: 80px !important; height: 80px !important; }
+  .cart-info { font-size: .92rem; }
+  .cart-controls {
+    grid-column: 1 / -1;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-left: 0;
+  }
+
+  /* Forms */
+  .form-grid { grid-template-columns: 1fr; gap: 14px; }
+  .form-field.full { grid-column: 1 / -1; }
+
+  /* Buttons stack and go full-width inside detail-actions */
+  .detail-actions .btn { width: 100%; }
+
+  /* Headers: shorter heights, drop the "Castelló · Desde 1992" subline */
+  .brand-sub { display: none; }
+
+  /* Account cart preview rows */
+  .account-cart-row { grid-template-columns: 52px 1fr auto; gap: 12px; padding: 12px 14px; }
+  .account-cart-img { width: 52px; height: 52px; }
+  .account-cart-name { font-size: .95rem; }
+  .account-cart-foot { padding: 14px; }
+  .account-cart-foot-val { font-size: 1.2rem; }
+
+  /* Order rows on phone — single column */
+  .order-row { padding: 16px; }
+  .order-meta .ref { font-size: .76rem; }
+  .order-total { font-size: 1rem; }
+
+  /* Footer: tighter */
+  .footer { padding: 48px 0 32px; }
+
+  /* Crumbs/page metadata */
+  .crumbs { font-size: .72rem; margin-bottom: 16px; }
+}
+
+/* --- Very small phones (≤380px) — tighter still --- */
+@media (max-width: 380px) {
+  .container { padding: 0 14px; }
+  .hero { padding-top: 80px; }
+  .product-gallery-thumbs { grid-template-columns: repeat(3, 1fr); }
+  .account-cart-row { grid-template-columns: 44px 1fr auto; gap: 10px; }
+}
+
+/* --- Small laptops (981-1240px) — slight tightening --- */
+@media (max-width: 1240px) and (min-width: 981px) {
+  .container { padding: 0 32px; }
+  .account-layout { gap: 32px; grid-template-columns: 220px 1fr; }
+  .product-detail { gap: 56px; }
+}
+
+/* --- Large desktops (1600px+) — cap content width nicely --- */
+@media (min-width: 1600px) {
+  .container { max-width: 1400px; }
+}
+
+/* --- Landscape phones — adjust hero so it doesn't push CTAs off-screen --- */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero { padding-top: 96px; padding-bottom: 24px; }
+  .hero-grid { gap: 24px; }
+}
+
+/* --- Prevent horizontal scroll on every page --- */
+html, body { overflow-x: hidden; }
+img, svg, video { max-width: 100%; height: auto; }
+
+/* --- Better focus rings for keyboard users (accessibility) --- */
+*:focus-visible {
+  outline: 2px solid var(--blue-deep);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+button:focus-visible,
+a:focus-visible { outline-offset: 3px; }
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible { outline-offset: 0; }
