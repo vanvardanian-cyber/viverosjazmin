@@ -93,6 +93,11 @@
           </h4>
           <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" style="max-width:240px; padding-top:8px; padding-bottom:8px;">
         </div>
+        <div class="apps-filter" id="admin-world-filter" style="margin-bottom:14px;">
+          <button data-world="all" class="is-active">Todos</button>
+          <button data-world="vivero">Vivero &amp; Jardín</button>
+          <button data-world="floristeria">Floristería &amp; Flores</button>
+        </div>
         <div class="admin-list" id="admin-list"></div>
       </div>
 
@@ -513,7 +518,25 @@
 
     // populate category dropdown
     const catSel = document.getElementById("f-cat");
-    catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.es}</option>`).join("");
+    const WORLD_LABELS = { vivero: "Vivero & Jardín", floristeria: "Floristería & Flores" };
+    catSel.innerHTML = ["vivero", "floristeria"].map(w =>
+      `<optgroup label="${WORLD_LABELS[w]}">` +
+      CATEGORIES.filter(c => c.world === w).map(c => `<option value="${c.id}">${c.es}</option>`).join("") +
+      `</optgroup>`
+    ).join("");
+    const worldOf = (id) => (CATEGORIES.find(c => c.id === id) || {}).world || "";
+    const worldShort = (id) => worldOf(id) === "floristeria" ? "Floristería" : worldOf(id) === "vivero" ? "Vivero" : "—";
+
+    // World quick-filter for the product list (Todos / Vivero / Floristería)
+    let activeWorldFilter = "all";
+    const worldFilterEl = document.getElementById("admin-world-filter");
+    if (worldFilterEl) {
+      worldFilterEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+        activeWorldFilter = b.dataset.world;
+        worldFilterEl.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
+        renderList();
+      }));
+    }
 
     // URL add button
     imgUrlAdd.addEventListener("click", () => {
@@ -593,6 +616,7 @@
     function renderList() {
       const term = (search.value || "").trim().toLowerCase();
       let items = VJ_CATALOG.list();
+      if (activeWorldFilter !== "all") items = items.filter(p => worldOf(p.cat) === activeWorldFilter);
       if (term) {
         items = items.filter(p =>
           (p.name.es + " " + p.name.va + " " + p.id).toLowerCase().includes(term)
@@ -613,9 +637,9 @@
           </div>
           <div>
             <div class="name">${escapeHtml(p.name.es)}</div>
-            <div class="meta">${escapeHtml(p.id)} · ${escapeHtml(p.name.va)}</div>
+            <div class="meta">${escapeHtml(p.id)} · ${escapeHtml(catName(p.cat))}</div>
           </div>
-          <div class="col-cat">${catName(p.cat)}</div>
+          <div class="col-cat"><span class="world-badge world-${worldOf(p.cat)}">${worldShort(p.cat)}</span></div>
           <div class="col-price">${fmtPrice(p.price)}</div>
           <div class="actions">
             <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>

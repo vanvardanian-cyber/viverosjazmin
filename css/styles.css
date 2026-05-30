@@ -1704,8 +1704,13 @@ body.vj-no-scroll { overflow: hidden; }
   border-bottom: 1px solid var(--line);
 }
 @media (max-width: 600px) {
-  .admin-row { grid-template-columns: 60px 1fr 80px; }
+  .admin-row { grid-template-columns: 48px minmax(0,1fr) auto auto; gap: 13px; }
   .admin-row .col-stock, .admin-row .col-cat { display: none; }
+  .admin-row > div:nth-child(2) { min-width: 0; }
+  .admin-row .thumb { width: 48px; height: 48px; }
+  .admin-row .name { font-size: .95rem; }
+  .admin-row .col-price { font-size: .88rem; }
+  .admin-row .actions { gap: 4px; }
 }
 .admin-row .thumb {
   width: 60px; height: 60px; border-radius: 4px; overflow: hidden;
@@ -1719,6 +1724,12 @@ body.vj-no-scroll { overflow: hidden; }
 }
 .admin-row .meta { font-size: .75rem; color: var(--ink-soft); margin-top: 2px;}
 .admin-row .col-cat { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600;}
+.world-badge {
+  display: inline-block; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
+  font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.world-badge.world-vivero { background: #E4EFDA; color: #466A2E; }
+.world-badge.world-floristeria { background: #F4E0EC; color: #8A3B63; }
 .admin-row .col-price { font-weight: 600; font-feature-settings: 'tnum';}
 .admin-row .col-stock { font-size: .85rem; color: var(--ink-soft); font-feature-settings: 'tnum';}
 .admin-row .actions { display: flex; gap: 4px; justify-content: flex-end;}
@@ -1794,8 +1805,13 @@ body.vj-no-scroll { overflow: hidden; }
   display: flex; gap: 4px; align-items: center;
   border-bottom: 1px solid var(--line);
   margin: 8px 0 32px;
+  overflow-x: auto;                  /* tabs scroll horizontally on small screens */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.admin-tabs::-webkit-scrollbar { display: none; }
 .admin-tab {
+  flex-shrink: 0; white-space: nowrap;
   display: inline-flex; align-items: center; gap: 8px;
   background: transparent; border: 0; cursor: pointer;
   padding: 14px 18px 12px;
