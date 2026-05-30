@@ -802,57 +802,11 @@ body.nav-locked { overflow: hidden; }
 .section-head h2 { margin-bottom: 14px; }
 .section-head p { color: var(--ink-soft); font-size: 1.05rem; }
 
-/* ---------- Category bento grid (modern) ---------- */
-.cat-bento {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 220px;
-  gap: 16px;
-}
-.cat-bento .cat-tile:nth-child(1) { grid-column: span 2; grid-row: span 2; }
-.cat-bento .cat-tile:nth-child(2) { grid-row: span 1; }
-.cat-bento .cat-tile:nth-child(3) { grid-row: span 1; }
-.cat-bento .cat-tile:nth-child(4) { grid-column: span 1; grid-row: span 2; }
-.cat-bento .cat-tile:nth-child(5) { grid-row: span 1; }
-.cat-bento .cat-tile:nth-child(6) { grid-row: span 1; }
-@media (max-width: 880px) {
-  .cat-bento { grid-template-columns: 1fr 1fr; grid-auto-rows: 180px; gap: 12px;}
-  .cat-bento .cat-tile:nth-child(n) { grid-column: span 1; grid-row: span 1;}
-  .cat-bento .cat-tile:nth-child(1) { grid-column: span 2; }
-}
-.cat-tile {
-  position: relative; overflow: hidden;
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 28px;
-  background: var(--blue-2);
-  text-decoration: none; color: var(--ink);
-  transition: transform .35s ease, box-shadow .35s ease;
-  border-radius: var(--r-sm);
-}
-.cat-tile:nth-child(1)  { background: var(--blue); }
-.cat-tile:nth-child(3)  { background: var(--cream); }
-.cat-tile:nth-child(4)  { background: var(--blue-3); }
-.cat-tile:nth-child(6)  { background: var(--blue-2); }
-.cat-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md);}
-.cat-tile h3 {
-  font-family: 'Playfair Display', serif;
-  font-style: italic; font-weight: 500;
-  font-size: clamp(1.4rem, 2.2vw, 2rem);
-  margin: 0;
-  position: relative; z-index: 2;
-}
-.cat-tile .cat-meta {
-  display: flex; justify-content: space-between; align-items: flex-end;
-  font-size: .72rem; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--blue-deep);
-  position: relative; z-index: 2;
-}
-.cat-tile .cat-svg {
-  position: absolute; right: -20px; bottom: -20px;
-  width: 60%; height: 80%;
-  opacity: .55; pointer-events: none;
-}
-.cat-tile:nth-child(1) .cat-svg { width: 45%; height: 70%; right: 10%; bottom: 0; opacity: .7; }
+/* ---------- Category bento grid ----------
+   The editorial bento (12-col grid, photo tiles with scrim, .cat-name /
+   .cat-arrow) is defined further down in this file. The old pre-redesign
+   block that lived here was removed: its nth-child span rules fought the
+   editorial grid and squashed tiles (e.g. "Sustratos" into a 1-col sliver). */
 
 /* ---------- Product grid ---------- */
 .product-grid {
@@ -2931,7 +2885,7 @@ select:focus-visible { outline-offset: 0; }
 .cat-bento > a::before {
   content: "";
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20,30,40,0) 40%, rgba(20,30,40,.55) 100%);
+  background: linear-gradient(180deg, rgba(20,30,40,0) 28%, rgba(20,30,40,.38) 62%, rgba(20,30,40,.78) 100%);
   z-index: 1;
 }
 .cat-bento > a svg,
@@ -2946,6 +2900,7 @@ select:focus-visible { outline-offset: 0; }
   font-style: italic; font-weight: 500;
   font-size: clamp(1.2rem, 2vw, 2rem);
   color: #fff; line-height: 1;
+  text-shadow: 0 1px 16px rgba(20,30,40,.55), 0 1px 3px rgba(20,30,40,.4);
 }
 .cat-bento .cat-arrow {
   position: absolute; top: 18px; right: 18px;

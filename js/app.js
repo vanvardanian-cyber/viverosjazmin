@@ -1342,12 +1342,26 @@
     }
     const cats = document.getElementById("cat-grid");
     if (cats) {
-      // Editorial bento: each tile renders a category silhouette as background,
-      // a category name in italic serif on top, a small arrow chip top-right.
-      cats.innerHTML = CATEGORIES.map((c) => {
+      // Editorial bento: each tile shows a real photo matching the category,
+      // a dark scrim (CSS ::before), the name in italic serif, an arrow chip.
+      const CAT_PHOTO = {
+        interior:  "1501004318641-b39e6451bec6",  // potted indoor plant
+        exterior:  "1466781783364-36c955e42a7f",  // garden greenery
+        arboles:   "1518531933037-91b2f5f229cc",  // tree / foliage
+        sustratos: "1416879595882-3373a0480b5b",  // soil / substrate
+        macetas:   "1459411552884-841db9b3cc2a",  // potted plant
+        flores:    "1457089328109-e5d9bd499191",  // seasonal flowers
+      };
+      const catPhoto = (id, w) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&q=80&w=${w}`;
+      cats.innerHTML = CATEGORIES.map((c, i) => {
+        const pid = CAT_PHOTO[c.id];
+        const w = i === 0 ? 1100 : 720;   // first tile is the large one
+        const media = pid
+          ? `<img class="cat-photo" src="${catPhoto(pid, w)}" alt="" loading="lazy">`
+          : `<div class="cat-svg">${catSilhouetteSVG(c.id)}</div>`;
         return `
           <a class="cat-tile" href="tienda.html?cat=${c.id}">
-            <div class="cat-svg">${catSilhouetteSVG(c.id)}</div>
+            ${media}
             <span class="cat-arrow" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </span>
