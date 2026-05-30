@@ -50,6 +50,69 @@
   </div>
 </section>
 
+<!-- ============== CATEGORIES — two worlds ============== -->
+<section class="section" id="cat-section">
+  <div class="container">
+    <div class="section-head section-head--split" data-reveal="up">
+      <div>
+        <span class="eyebrow" data-i18n="home.categories">Categorías</span>
+        <h2 class="display-heading"><em>Dos mundos,</em><br>una casa</h2>
+      </div>
+      <p class="section-head-lead">Plantas para tu casa y jardín, flores para tu día. Elige por dónde empezar.</p>
+    </div>
+    <div class="world-doors" data-reveal="up">
+      <a class="world-door" href="tienda.html?world=vivero">
+        <img src="https://images.unsplash.com/photo-1466781783364-36c955e42a7f?auto=format&amp;fit=crop&amp;q=80&amp;w=1000" alt="" loading="lazy">
+        <div class="world-door-body">
+          <span class="world-door-eyebrow">01 — Vivero</span>
+          <h3 data-i18n="world.vivero">Vivero &amp; Jardín</h3>
+          <p data-i18n="world.viveroTag">Plantas, árboles y todo para tu jardín</p>
+          <span class="world-door-cta"><span data-i18n="home.hero.cta">Ver la tienda</span> <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+      <a class="world-door" href="tienda.html?world=floristeria">
+        <img src="img/jazmin-castello-coleccion-ramos-floristeria-castello.webp" alt="" loading="lazy">
+        <div class="world-door-body">
+          <span class="world-door-eyebrow">02 — Floristería</span>
+          <h3 data-i18n="world.floristeria">Floristería &amp; Flores</h3>
+          <p data-i18n="world.floristeriaTag">Ramos, flores y encargos especiales</p>
+          <span class="world-door-cta"><span data-i18n="home.hero.cta">Ver la tienda</span> <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FEATURED (horizontal rail) ============== -->
+<section class="section section--paper" style="border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden;">
+  <div class="container">
+    <div class="section-head flex-between" data-reveal="up" style="display:flex; align-items:flex-end; justify-content:space-between; max-width: none;">
+      <div>
+        <span class="eyebrow" data-i18n="home.featured">Destacados</span>
+        <h2 class="display-heading"><em>Una selección</em><br>del mes</h2>
+      </div>
+      <a href="tienda.html" class="btn btn-ghost btn-arrow" data-i18n="home.hero.cta">Ver la tienda</a>
+    </div>
+
+    <div class="rail-wrap">
+      <div class="product-rail" id="featured-grid"></div>
+    </div>
+
+    <div class="rail-controls">
+      <span class="rail-count"><span id="rail-pos">01</span> <span style="opacity:.5;">/</span> <span id="rail-total">08</span></span>
+      <div class="rail-track"><span class="rail-thumb"></span></div>
+      <div class="rail-buttons">
+        <button class="rail-arrow" id="rail-prev" aria-label="Anterior" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="rail-arrow" id="rail-next" aria-label="Siguiente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============== MARQUEE: in season ============== -->
 <section class="marquee" aria-label="En flor ahora mismo">
   <div class="marquee-track">
@@ -98,50 +161,6 @@
     <div class="stat">
       <div class="num"><em>CS</em></div>
       <div class="lbl" data-i18n="home.stats.region">Castelló de la Plana</div>
-    </div>
-  </div>
-</section>
-
-<!-- ============== CATEGORIES BENTO ============== -->
-<section class="section" id="cat-section">
-  <div class="container">
-    <div class="section-head section-head--split" data-reveal="up">
-      <div>
-        <span class="eyebrow" data-i18n="home.categories">Categorías</span>
-        <h2 class="display-heading"><em>Encuentra</em><br>lo que cuidas</h2>
-      </div>
-      <p class="section-head-lead" data-i18n="shop.subtitle">Explora todo nuestro catálogo organizado por familias.</p>
-    </div>
-    <div class="cat-bento" id="cat-grid" data-reveal="up"></div>
-  </div>
-</section>
-
-<!-- ============== FEATURED (horizontal rail) ============== -->
-<section class="section section--paper" style="border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden;">
-  <div class="container">
-    <div class="section-head flex-between" data-reveal="up" style="display:flex; align-items:flex-end; justify-content:space-between; max-width: none;">
-      <div>
-        <span class="eyebrow" data-i18n="home.featured">Destacados</span>
-        <h2 class="display-heading"><em>Una selección</em><br>del mes</h2>
-      </div>
-      <a href="tienda.html" class="btn btn-ghost btn-arrow" data-i18n="home.hero.cta">Ver la tienda</a>
-    </div>
-
-    <div class="rail-wrap">
-      <div class="product-rail" id="featured-grid"></div>
-    </div>
-
-    <div class="rail-controls">
-      <span class="rail-count"><span id="rail-pos">01</span> <span style="opacity:.5;">/</span> <span id="rail-total">08</span></span>
-      <div class="rail-track"><span class="rail-thumb"></span></div>
-      <div class="rail-buttons">
-        <button class="rail-arrow" id="rail-prev" aria-label="Anterior" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        </button>
-        <button class="rail-arrow" id="rail-next" aria-label="Siguiente">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </div>
     </div>
   </div>
 </section>
