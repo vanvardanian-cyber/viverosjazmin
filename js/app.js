@@ -1158,7 +1158,7 @@
 
           <a class="brand" href="index.html" aria-label="Jazmín · Plantas y Flores">
             <span class="brand-name">Jazmín</span>
-            <span class="brand-sub" data-i18n="brand.sub">Plantas &amp; Flores · Castelló · Desde 1992</span>
+            <span class="brand-sub" data-i18n="brand.subShort">Plantas &amp; Flores</span>
           </a>
 
           <div class="header-side header-side--right">

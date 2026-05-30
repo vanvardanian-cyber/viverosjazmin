@@ -159,8 +159,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
   font-family: 'Playfair Display', serif;
   font-style: italic;
   font-weight: 500;
-  font-size: 2.1rem;
-  letter-spacing: .005em;
+  font-size: 2.15rem;
+  letter-spacing: -.005em;
   color: var(--ink);
 }
 .brand-sub {
@@ -168,6 +168,11 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
   font-size: .62rem; letter-spacing: .42em; text-transform: uppercase;
   color: var(--ink-soft);
   margin-top: 6px;
+}
+/* Header lockup: keep the tagline on one tidy line under "Jazmín" */
+.header .brand-sub {
+  font-size: .58rem; letter-spacing: .3em;
+  white-space: nowrap; margin-top: 7px;
 }
 .nav {
   display: flex; gap: 32px; align-items: center;
