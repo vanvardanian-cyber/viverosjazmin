@@ -197,7 +197,14 @@
   async function saveProduct(p) {
     if (!supa) throw new Error("Supabase not initialized");
     const row = productToRow(p, PRODUCTS.findIndex(x => x.id === p.id));
-    const { error } = await supa.from("products").upsert(row);
+    let { error } = await supa.from("products").upsert(row);
+    // If the new attribute columns aren't migrated yet, retry without them so
+    // saving products never breaks (graceful pre-migration fallback).
+    if (error && /florist_type|flower_type|color|find the .*column|schema cache|PGRST204/i.test((error.message || "") + " " + (error.code || ""))) {
+      const safe = { ...row };
+      delete safe.florist_type; delete safe.flower_type; delete safe.color;
+      ({ error } = await supa.from("products").upsert(safe));
+    }
     if (error) throw error;
     // Update local cache
     const i = PRODUCTS.findIndex(x => x.id === p.id);
@@ -1503,6 +1510,50 @@
     ];
     const worldOfCat = (id) => (CATEGORIES.find(c => c.id === id) || {}).world || "";
 
+    // ---- Price + Floristería facets ----
+    let priceMin = null, priceMax = null;
+    const facetSel = { floristType: new Set(), flowerType: new Set(), color: new Set() };
+    const FLORIST_TYPE_LABELS = {
+      es: { ramo: "Ramo", decoracion: "Decoración", flores: "Flores", planta: "Planta con flor" },
+      va: { ramo: "Ram",  decoracion: "Decoració",  flores: "Flors",  planta: "Planta amb flor" }
+    };
+    const escAttr = (s) => String(s).replace(/"/g, "&quot;");
+    const facetValueLabel = (key, val) =>
+      key === "floristType" ? ((FLORIST_TYPE_LABELS[getLang()] || FLORIST_TYPE_LABELS.es)[val] || val) : val;
+    const floristProducts = () => PRODUCTS.filter(p => worldOfCat(p.cat) === "floristeria");
+    function buildFacet(key) {
+      const counts = {};
+      floristProducts().forEach(p => { const v = (p[key] || "").trim(); if (v) counts[v] = (counts[v] || 0) + 1; });
+      return Object.entries(counts).map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count || String(a.value).localeCompare(String(b.value)));
+    }
+    function facetHTML(key, titleKey) {
+      const opts = buildFacet(key);
+      if (!opts.length) return "";
+      return `<details class="facet" open>
+        <summary class="facet-title">${t(titleKey)}<svg class="facet-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="facet-options">
+          ${opts.map(o => `
+            <label class="facet-opt">
+              <input type="checkbox" data-facet="${key}" value="${escAttr(o.value)}" ${facetSel[key].has(o.value) ? "checked" : ""}>
+              <span class="facet-box"></span>
+              <span class="facet-label">${facetValueLabel(key, o.value)} <span class="facet-count">(${o.count})</span></span>
+            </label>`).join("")}
+        </div>
+      </details>`;
+    }
+    function priceFilterHTML() {
+      return `<div class="facet facet--price">
+        <div class="facet-title">${t("filter.price")}</div>
+        <div class="price-row">
+          <input type="number" id="price-min" inputmode="decimal" min="0" step="0.5" placeholder="${t("filter.from")}" value="${priceMin ?? ""}">
+          <span class="price-sep">–</span>
+          <input type="number" id="price-max" inputmode="decimal" min="0" step="0.5" placeholder="${t("filter.to")}" value="${priceMax ?? ""}">
+          <span class="price-eur">€</span>
+        </div>
+      </div>`;
+    }
+
     function renderFilters() {
       let html = `<h4 data-i18n="common.filter">${t("common.filter")}</h4>
         <div class="filter-list">
@@ -1522,13 +1573,32 @@
             </button>`).join("")}
         </div>`;
       });
-      html += `</div>
-        <a class="shop-occasions" href="contacto.html">
+      html += `</div>`;
+      html += priceFilterHTML();
+      if (activeWorld === "floristeria") {
+        html += facetHTML("floristType", "filter.type");
+        html += facetHTML("flowerType", "filter.flowerType");
+        html += facetHTML("color", "filter.color");
+      }
+      html += `<a class="shop-occasions" href="contacto.html">
           <strong>${t("shop.occasions.title")}</strong>
           <span>${t("shop.occasions.text")}</span>
           <span class="shop-occasions-cta">${t("shop.occasions.cta")} →</span>
         </a>`;
       filters.innerHTML = html;
+      // price inputs (live filtering)
+      const pmin = filters.querySelector("#price-min");
+      const pmax = filters.querySelector("#price-max");
+      if (pmin) pmin.addEventListener("input", () => { priceMin = pmin.value === "" ? null : parseFloat(pmin.value); renderGrid(); });
+      if (pmax) pmax.addEventListener("input", () => { priceMax = pmax.value === "" ? null : parseFloat(pmax.value); renderGrid(); });
+      // facet checkboxes
+      filters.querySelectorAll("input[data-facet]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const set = facetSel[cb.dataset.facet];
+          if (cb.checked) set.add(cb.value); else set.delete(cb.value);
+          renderGrid();
+        });
+      });
       filters.querySelectorAll("button[data-cat]").forEach(b => {
         b.addEventListener("click", () => {
           activeCat = b.dataset.cat;
@@ -1549,6 +1619,11 @@
       let list = PRODUCTS.slice();
       if (activeCat !== "all") list = list.filter(p => p.cat === activeCat);
       else if (activeWorld) list = list.filter(p => worldOfCat(p.cat) === activeWorld);
+      if (priceMin != null && !isNaN(priceMin)) list = list.filter(p => Number(p.price) >= priceMin);
+      if (priceMax != null && !isNaN(priceMax)) list = list.filter(p => Number(p.price) <= priceMax);
+      ["floristType", "flowerType", "color"].forEach(key => {
+        if (facetSel[key].size) list = list.filter(p => facetSel[key].has((p[key] || "").trim()));
+      });
       if (term) {
         const T = term.toLowerCase();
         list = list.filter(p =>

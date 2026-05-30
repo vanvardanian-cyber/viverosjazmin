@@ -151,6 +151,33 @@
               <small style="color:var(--ink-soft);font-size:.72rem;">Opcional. Se muestra en la ficha del producto bajo "Origen".</small>
             </div>
 
+            <!-- Floristería attributes — feed the shop filters in the flower world -->
+            <div class="form-field">
+              <label>Tipo <span class="lang-tag">Floristería</span></label>
+              <select name="floristType">
+                <option value="">—</option>
+                <option value="ramo">Ramo</option>
+                <option value="decoracion">Decoración</option>
+                <option value="flores">Flores</option>
+                <option value="planta">Planta con flor</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Tipo de flor</label>
+              <input type="text" name="flowerType" list="flowerTypeList" maxlength="40" placeholder="p. ej. Rosa">
+              <datalist id="flowerTypeList">
+                <option value="Rosa"></option><option value="Gerbera"></option><option value="Clavel"></option><option value="Crisantemo"></option><option value="Girasol"></option><option value="Alstromeria"></option><option value="Lirio"></option><option value="Tulipán"></option><option value="Hortensia"></option><option value="Peonía"></option>
+              </datalist>
+            </div>
+            <div class="form-field full">
+              <label>Color</label>
+              <input type="text" name="color" list="colorList" maxlength="30" placeholder="p. ej. Rojo">
+              <datalist id="colorList">
+                <option value="Rojo"></option><option value="Blanco"></option><option value="Rosa"></option><option value="Amarillo"></option><option value="Naranja"></option><option value="Morado"></option><option value="Azul"></option><option value="Verde"></option><option value="Mixto"></option>
+              </datalist>
+              <small style="color:var(--ink-soft);font-size:.72rem;">Para floristería: alimentan los filtros de la tienda (ramo, decoración, tipo de flor, color).</small>
+            </div>
+
             <div class="form-field full">
               <label>Imágenes del producto (hasta 6)</label>
               <div class="img-manager">
@@ -682,6 +709,9 @@
       form.elements.price.value = p.price;
       form.elements.stock.value = p.stock;
       form.elements.origin.value = p.origin || "";
+      form.elements.floristType.value = p.floristType || "";
+      form.elements.flowerType.value = p.flowerType || "";
+      form.elements.color.value = p.color || "";
       // Load images: prefer new array, fall back to single legacy img
       currentImages = Array.isArray(p.images) && p.images.length
         ? p.images.slice(0, MAX_IMAGES)
@@ -735,6 +765,9 @@
         img: images[0] || undefined,    // legacy single img = first photo
         images,                          // full array
         origin: (fd.get("origin") || "").trim(),
+        floristType: (fd.get("floristType") || "").trim(),
+        flowerType: (fd.get("flowerType") || "").trim(),
+        color: (fd.get("color") || "").trim(),
         name: { es: (fd.get("name_es")||"").trim(), va: (fd.get("name_va")||"").trim() },
         desc: { es: (fd.get("desc_es")||"").trim(), va: (fd.get("desc_va")||"").trim() }
       };

@@ -1178,6 +1178,39 @@ body.nav-locked { overflow: hidden; }
   font-weight: 600; letter-spacing: .04em;
 }
 
+/* Price filter + Floristería facets (collapsible checkbox groups) */
+.facet { border-top: 1px solid var(--line); padding: 16px 0; }
+.facet-title {
+  font-family: 'Inter', sans-serif; font-size: .68rem; text-transform: uppercase;
+  letter-spacing: .22em; color: var(--ink-soft); font-weight: 600;
+  display: flex; align-items: center; justify-content: space-between;
+  list-style: none; margin: 0;
+}
+details.facet > summary.facet-title { cursor: pointer; }
+details.facet > summary::-webkit-details-marker { display: none; }
+.facet-chevron { transition: transform .25s ease; color: var(--ink-soft); flex-shrink: 0; }
+details.facet[open] > summary .facet-chevron { transform: rotate(180deg); }
+.facet-options { display: flex; flex-direction: column; gap: 11px; margin-top: 14px; }
+.facet-opt { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: .92rem; color: var(--ink); }
+.facet-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+.facet-box {
+  width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--blue-deep);
+  flex-shrink: 0; position: relative; transition: background .15s ease, border-color .15s ease;
+}
+.facet-opt input:checked + .facet-box { background: var(--blue-deep); border-color: var(--blue-deep); }
+.facet-opt input:checked + .facet-box::after {
+  content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.facet-opt input:focus-visible + .facet-box { outline: 2px solid var(--blue-deep); outline-offset: 2px; }
+.facet-count { color: var(--ink-soft); font-size: .82em; }
+.facet--price .price-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.facet--price input {
+  width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--r-sm); font-family: inherit; font-size: .9rem; background: #fff;
+}
+.facet--price .price-sep, .facet--price .price-eur { color: var(--ink-soft); font-size: .9rem; }
+
 .search-box {
   width: 100%;
   padding: 14px 18px 14px 44px;
