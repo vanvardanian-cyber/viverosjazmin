@@ -69,6 +69,11 @@
         <span>Preguntas</span>
         <span class="tab-count" id="tab-questions-count">0</span>
       </button>
+      <button class="admin-tab" data-tab="messages" role="tab">
+        <span>Mensajes</span>
+        <span class="tab-count" id="tab-messages-count">0</span>
+        <span class="tab-dot" id="tab-messages-dot" style="display:none; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:.6rem; font-weight:700; line-height:16px; text-align:center; margin-left:2px;"></span>
+      </button>
     </nav>
 
     <!-- ===== PANEL: PRODUCTS ===== -->
@@ -195,6 +200,11 @@
           <button data-status="cancelled">Cancelados</button>
         </div>
       </div>
+      <div style="margin-bottom:18px;">
+        <input type="search" id="orders-search" class="search-box"
+               placeholder="Buscar por nombre, email, teléfono o nº de pedido…"
+               style="width:100%; max-width:none; padding-top:10px; padding-bottom:10px;">
+      </div>
       <div id="orders-list" class="apps-list"></div>
     </div>
 
@@ -284,6 +294,25 @@
           </form>
         </div>
       </div>
+    </div>
+
+    <!-- ===== PANEL: MESSAGES ===== -->
+    <div class="admin-panel" data-panel="messages">
+      <div class="admin-notice">
+        <strong>Mensajes de contacto.</strong> Cuando alguien escribe desde la página de Contacto, su mensaje aparece aquí en tiempo real. Los nuevos se marcan con un punto rojo en la pestaña.
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
+        <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
+          Total · <span id="messages-count">0</span> mensajes
+        </h4>
+        <div class="apps-filter" id="messages-filter">
+          <button data-status="all" class="is-active">Todos</button>
+          <button data-status="new">Nuevos</button>
+          <button data-status="read">Leídos</button>
+          <button data-status="archived">Archivados</button>
+        </div>
+      </div>
+      <div id="messages-list" class="apps-list"></div>
     </div>
 
     </div><!-- /#admin-content -->
@@ -727,17 +756,22 @@
       panels.forEach(p => p.classList.toggle("is-active", p.dataset.panel === name));
       // Only products panel shows the Reset/Export buttons
       panelActions.style.display = (name === "products") ? "" : "none";
-      if (name === "applications") renderApps();
+      if (name === "applications") loadApps().then(renderApps);
       if (name === "questions")    renderQuestions();
       if (name === "orders")       renderOrders();
+      if (name === "messages")     loadMessages().then(renderMessages);
     }));
 
-    let ordersCache = [];   // declared early so updateTabCounts can read it
+    let ordersCache   = [];   // declared early so updateTabCounts can read it
+    let appsCache     = [];   // job applications (Supabase + local backup)
+    let messagesCache = [];   // contact messages (Supabase + local backup)
     function updateTabCounts() {
       document.getElementById("tab-products-count").textContent = VJ_CATALOG.list().length;
-      document.getElementById("tab-apps-count").textContent     = VJ_JOBS.apps().length;
+      document.getElementById("tab-apps-count").textContent     = appsCache.length;
       document.getElementById("tab-questions-count").textContent= VJ_JOBS.questions().length;
       document.getElementById("tab-orders-count").textContent   = ordersCache.length;
+      document.getElementById("tab-messages-count").textContent = messagesCache.length;
+      updateMessagesBadge();
     }
     updateTabCounts();
     document.addEventListener("vj:applicationschange", updateTabCounts);
@@ -749,6 +783,7 @@
     const ordersListEl   = document.getElementById("orders-list");
     const ordersFilterEl = document.getElementById("orders-filter");
     const ordersCountEl  = document.getElementById("orders-count");
+    const ordersSearchEl = document.getElementById("orders-search");
     let ordersActiveStatus = "all";
 
     const ORDER_STATUS = {
@@ -765,6 +800,7 @@
       ordersFilterEl.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
       renderOrders();
     }));
+    if (ordersSearchEl) ordersSearchEl.addEventListener("input", renderOrders);
 
     async function loadOrders() {
       const supa = window.VJ_SUPA?.client;
@@ -779,12 +815,19 @@
     }
 
     function renderOrders() {
+      const term = (ordersSearchEl?.value || "").trim().toLowerCase();
       let list = ordersCache;
-      ordersCountEl.textContent = list.length;
+      ordersCountEl.textContent = ordersCache.length;
       if (ordersActiveStatus !== "all") list = list.filter(o => o.status === ordersActiveStatus);
+      if (term) {
+        list = list.filter(o =>
+          ((o.customer_name||"") + " " + (o.customer_email||"") + " " +
+           (o.customer_phone||"") + " " + (o.id||"")).toLowerCase().includes(term)
+        );
+      }
 
       if (list.length === 0) {
-        ordersListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${ordersCache.length === 0 ? "Aún no hay pedidos." : "Ningún pedido con este estado."}</h3></div>`;
+        ordersListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${ordersCache.length === 0 ? "Aún no hay pedidos." : "Ningún pedido coincide con la búsqueda o el filtro."}</h3></div>`;
         return;
       }
 
@@ -858,6 +901,19 @@
     loadOrders().then(() => {
       updateTabCounts();
     });
+    loadApps().then(() => {
+      // If the admin opened straight onto a deep-linked applications view
+      if (document.querySelector('[data-panel="applications"].is-active')) renderApps();
+    });
+    loadMessages().then(() => {
+      if (document.querySelector('[data-panel="messages"].is-active')) renderMessages();
+    });
+    if (window.VJ_JOBS?.loadQuestions) {
+      VJ_JOBS.loadQuestions().then(() => {
+        updateTabCounts();
+        if (document.querySelector('[data-panel="questions"].is-active')) renderQuestions();
+      });
+    }
 
     /* ============================================================
        APPLICATIONS PANEL
@@ -874,6 +930,47 @@
       discarded: "Descartada"
     };
 
+    // Map a Supabase row to the shape the UI expects (created_at → createdAt)
+    function rowToApp(r) {
+      return {
+        id: r.id,
+        status: r.status || "new",
+        createdAt: r.created_at,
+        position: r.position,
+        name: r.name,
+        email: r.email,
+        phone: r.phone,
+        path: r.path,
+        cv: r.cv || null,
+        answers: r.answers || {},
+        message: r.message
+      };
+    }
+
+    // Load applications from Supabase, merged with any local-only backups
+    // (deduped by id, database copy wins). Falls back to local if the table
+    // isn't set up yet or the network fails.
+    async function loadApps() {
+      let dbApps = [];
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { data, error } = await supa
+            .from("applications")
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          dbApps = (data || []).map(rowToApp);
+        }
+      } catch (err) {
+        console.error("Applications fetch error:", err);
+      }
+      const seen = new Set(dbApps.map(a => a.id));
+      const localApps = (window.VJ_JOBS?.apps() || []).filter(a => !seen.has(a.id));
+      appsCache = [...dbApps, ...localApps];
+      updateTabCounts();
+    }
+
     appsFilter.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
       appsActiveStatus = b.dataset.status;
       appsFilter.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
@@ -881,7 +978,7 @@
     }));
 
     function renderApps() {
-      let apps = VJ_JOBS.apps();
+      let apps = appsCache;
       const total = apps.length;
       appsCount.textContent = total;
       if (appsActiveStatus !== "all") apps = apps.filter(a => a.status === appsActiveStatus);
@@ -932,21 +1029,187 @@
       }).join("");
     }
 
-    appsList.addEventListener("change", (e) => {
-      if (e.target.dataset.act === "status") {
-        const id = e.target.closest(".app-card").dataset.id;
-        VJ_JOBS.update(id, { status: e.target.value });
-        renderApps();
-      }
+    appsList.addEventListener("change", async (e) => {
+      if (e.target.dataset.act !== "status") return;
+      const id = e.target.closest(".app-card").dataset.id;
+      const status = e.target.value;
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.from("applications").update({ status }).eq("id", id);
+          if (error) throw error;
+        }
+      } catch (err) { alert("No se pudo actualizar el estado: " + (err.message || err)); return; }
+      VJ_JOBS.update(id, { status });                 // keep local backup in sync
+      const i = appsCache.findIndex(a => a.id === id);
+      if (i >= 0) appsCache[i].status = status;
+      renderApps();
     });
-    appsList.addEventListener("click", (e) => {
+    appsList.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-act='del']");
       if (!btn) return;
       const id = btn.closest(".app-card").dataset.id;
-      if (confirm("¿Eliminar esta candidatura definitivamente?")) {
-        VJ_JOBS.remove(id);
-        renderApps();
+      if (!confirm("¿Eliminar esta candidatura definitivamente?")) return;
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.from("applications").delete().eq("id", id);
+          if (error) throw error;
+        }
+      } catch (err) { alert("No se pudo eliminar: " + (err.message || err)); return; }
+      VJ_JOBS.remove(id);                              // keep local backup in sync
+      appsCache = appsCache.filter(a => a.id !== id);
+      renderApps();
+    });
+
+    /* ============================================================
+       MESSAGES PANEL (contact form → Supabase)
+       ============================================================ */
+    const messagesListEl   = document.getElementById("messages-list");
+    const messagesFilterEl = document.getElementById("messages-filter");
+    const messagesCountEl  = document.getElementById("messages-count");
+    let messagesActiveStatus = "all";
+
+    const MSG_STATUS = { new: "Nuevo", read: "Leído", archived: "Archivado" };
+    const MSG_TYPE   = {
+      general: "Consulta general", boda: "Boda", evento: "Evento",
+      funeral: "Funeral", empresa: "Empresa", otro: "Otro"
+    };
+
+    function msgRowToObj(r) {
+      return {
+        id: r.id, status: r.status || "new", createdAt: r.created_at,
+        type: r.type || "general", name: r.name, email: r.email,
+        phone: r.phone, message: r.message
+      };
+    }
+
+    // Red dot on the "Mensajes" tab shows how many are still unread (status=new)
+    function updateMessagesBadge() {
+      const dot = document.getElementById("tab-messages-dot");
+      if (!dot) return;
+      const unread = messagesCache.filter(m => m.status === "new").length;
+      dot.style.display = unread > 0 ? "" : "none";
+      dot.textContent = unread > 9 ? "9+" : String(unread);
+    }
+
+    async function loadMessages() {
+      let dbMsgs = [];
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { data, error } = await supa
+            .from("contact_messages")
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          dbMsgs = (data || []).map(msgRowToObj);
+        }
+      } catch (err) {
+        console.error("Messages fetch error:", err);
       }
+      let localMsgs = [];
+      try { localMsgs = JSON.parse(localStorage.getItem("vj.contactMessages") || "[]"); } catch {}
+      const seen = new Set(dbMsgs.map(m => m.id));
+      messagesCache = [...dbMsgs, ...localMsgs.filter(m => !seen.has(m.id))];
+      updateTabCounts();
+    }
+
+    messagesFilterEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      messagesActiveStatus = b.dataset.status;
+      messagesFilterEl.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
+      renderMessages();
+    }));
+
+    function renderMessages() {
+      let list = messagesCache;
+      messagesCountEl.textContent = messagesCache.length;
+      if (messagesActiveStatus !== "all") list = list.filter(m => m.status === messagesActiveStatus);
+      if (list.length === 0) {
+        messagesListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${messagesCache.length === 0 ? "Aún no hay mensajes." : "Ningún mensaje con este estado."}</h3></div>`;
+        return;
+      }
+      messagesListEl.innerHTML = list.map(m => {
+        const date = new Date(m.createdAt).toLocaleDateString("es-ES", { day:"numeric", month:"short", year:"numeric" });
+        const time = new Date(m.createdAt).toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
+        const typeLabel = MSG_TYPE[m.type] || m.type || "—";
+        return `
+          <article class="app-card" data-id="${m.id}">
+            <header class="app-card-head">
+              <div>
+                <div class="app-name">${escapeHtml(m.name || "(Sin nombre)")} · <span style="font-weight:500;color:var(--blue-deep);">${escapeHtml(typeLabel)}</span></div>
+                <div class="app-meta">${escapeHtml(m.email || "—")}${m.phone ? " · " + escapeHtml(m.phone) : ""} · <span class="ref">${m.id}</span></div>
+              </div>
+              <div class="app-side">
+                <span class="status-pill status-${m.status}">${MSG_STATUS[m.status] || m.status}</span>
+                <span class="app-date">${date} · ${time}</span>
+              </div>
+            </header>
+            <div class="app-card-body">
+              ${m.message ? `<div class="app-row"><strong>Mensaje</strong><p>${escapeHtml(m.message)}</p></div>` : ""}
+              ${m.email ? `<div class="app-row"><a class="btn btn-light" href="mailto:${escapeHtml(m.email)}" style="padding:8px 14px;font-size:.72rem;">Responder por email</a></div>` : ""}
+            </div>
+            <footer class="app-card-foot">
+              <label class="muted" style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;">Estado:</label>
+              <select data-act="status" class="status-select">
+                ${Object.entries(MSG_STATUS).map(([k,v]) => `<option value="${k}" ${k===m.status?'selected':''}>${v}</option>`).join("")}
+              </select>
+              <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+            </footer>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function syncLocalMessage(id, patch) {
+      try {
+        const KEY = "vj.contactMessages";
+        const arr = JSON.parse(localStorage.getItem(KEY) || "[]");
+        const i = arr.findIndex(m => m.id === id);
+        if (i >= 0) { arr[i] = { ...arr[i], ...patch }; localStorage.setItem(KEY, JSON.stringify(arr)); }
+      } catch {}
+    }
+    function removeLocalMessage(id) {
+      try {
+        const KEY = "vj.contactMessages";
+        const arr = JSON.parse(localStorage.getItem(KEY) || "[]").filter(m => m.id !== id);
+        localStorage.setItem(KEY, JSON.stringify(arr));
+      } catch {}
+    }
+
+    messagesListEl.addEventListener("change", async (e) => {
+      if (e.target.dataset.act !== "status") return;
+      const id = e.target.closest(".app-card").dataset.id;
+      const status = e.target.value;
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.from("contact_messages").update({ status }).eq("id", id);
+          if (error) throw error;
+        }
+      } catch (err) { alert("No se pudo actualizar: " + (err.message || err)); return; }
+      const i = messagesCache.findIndex(m => m.id === id);
+      if (i >= 0) messagesCache[i].status = status;
+      syncLocalMessage(id, { status });
+      updateMessagesBadge();
+      renderMessages();
+    });
+    messagesListEl.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-act='del']");
+      if (!btn) return;
+      const id = btn.closest(".app-card").dataset.id;
+      if (!confirm("¿Eliminar este mensaje definitivamente?")) return;
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.from("contact_messages").delete().eq("id", id);
+          if (error) throw error;
+        }
+      } catch (err) { alert("No se pudo eliminar: " + (err.message || err)); return; }
+      messagesCache = messagesCache.filter(m => m.id !== id);
+      removeLocalMessage(id);
+      updateMessagesBadge();
+      renderMessages();
     });
 
     /* ============================================================

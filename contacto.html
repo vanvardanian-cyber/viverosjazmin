@@ -30,7 +30,19 @@
   <div class="container split">
     <div>
       <form id="contact-form" class="form-card">
+        <p class="muted" data-i18n="contact.consult" style="font-size:.92rem; line-height:1.65; margin:0 0 22px;">¿Preparas una boda, un evento o una despedida? Componemos ramos, centros y decoración floral por encargo. Cuéntanos qué necesitas y te asesoramos sin compromiso.</p>
         <div class="form-grid">
+          <div class="form-field full">
+            <label data-i18n="contact.form.type">¿En qué podemos ayudarte?</label>
+            <select name="type">
+              <option value="general" data-i18n="contact.type.general">Consulta general</option>
+              <option value="boda" data-i18n="contact.type.boda">Boda</option>
+              <option value="evento" data-i18n="contact.type.evento">Evento o celebración</option>
+              <option value="funeral" data-i18n="contact.type.funeral">Funeral / duelo</option>
+              <option value="empresa" data-i18n="contact.type.empresa">Empresa / negocio</option>
+              <option value="otro" data-i18n="contact.type.otro">Otro</option>
+            </select>
+          </div>
           <div class="form-field full">
             <label data-i18n="contact.form.name">Tu nombre</label>
             <input type="text" name="name" required>
@@ -38,6 +50,10 @@
           <div class="form-field full">
             <label data-i18n="contact.form.email">Tu correo</label>
             <input type="email" name="email" required>
+          </div>
+          <div class="form-field full">
+            <label data-i18n="contact.form.phone">Tu teléfono (opcional)</label>
+            <input type="tel" name="phone">
           </div>
           <div class="form-field full">
             <label data-i18n="contact.form.message">Mensaje</label>

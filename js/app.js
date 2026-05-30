@@ -51,20 +51,89 @@
     }
   ];
 
+  let jobsQuestionsCache = null;   // populated async from Supabase; null until loaded
+  function jobsDefaultsClone() {
+    return DEFAULT_JOBS_QUESTIONS.map(q => JSON.parse(JSON.stringify(q)));
+  }
+  function qRowToObj(r) {
+    return {
+      id: r.id,
+      type: r.type,
+      label: { es: r.label_es, va: r.label_va },
+      required: !!r.required,
+      skipIfCv: !!r.skip_if_cv,
+      options: Array.isArray(r.options) ? r.options : []
+    };
+  }
+  function qObjToRow(q, i) {
+    return {
+      id: q.id,
+      sort_order: i,
+      type: q.type,
+      label_es: q.label?.es || "",
+      label_va: q.label?.va || "",
+      required: !!q.required,
+      skip_if_cv: !!q.skipIfCv,
+      options: q.options || []
+    };
+  }
+  // Sync accessor — returns the cache once loaded, else localStorage/defaults.
   function getJobsQuestions() {
+    if (Array.isArray(jobsQuestionsCache)) return jobsQuestionsCache;
     try {
       const raw = JSON.parse(localStorage.getItem(STORAGE_JOBS_Q));
       if (Array.isArray(raw) && raw.length) return raw;
     } catch {}
-    return DEFAULT_JOBS_QUESTIONS.map(q => JSON.parse(JSON.stringify(q)));
+    return jobsDefaultsClone();
   }
+  // Async loader — pulls the shared question set from Supabase into the cache
+  // so every visitor sees the questions the admin configured (not just defaults).
+  async function loadJobsQuestions() {
+    const supa = window.VJ_SUPA?.client;
+    if (supa) {
+      try {
+        const { data, error } = await supa
+          .from("job_questions")
+          .select("*")
+          .order("sort_order", { ascending: true });
+        if (error) throw error;
+        if (Array.isArray(data)) {
+          jobsQuestionsCache = data.length ? data.map(qRowToObj) : jobsDefaultsClone();
+          try { localStorage.setItem(STORAGE_JOBS_Q, JSON.stringify(jobsQuestionsCache)); } catch {}
+          document.dispatchEvent(new CustomEvent("vj:jobsquestionschange"));
+          return jobsQuestionsCache;
+        }
+      } catch (err) {
+        console.error("Job questions fetch error:", err);
+      }
+    }
+    jobsQuestionsCache = getJobsQuestions();
+    return jobsQuestionsCache;
+  }
+  // Save the whole question set: update cache + local immediately, then push to
+  // Supabase in the background (replace-all on this tiny admin-only table).
   function saveJobsQuestions(arr) {
-    localStorage.setItem(STORAGE_JOBS_Q, JSON.stringify(arr));
+    jobsQuestionsCache = arr;
+    try { localStorage.setItem(STORAGE_JOBS_Q, JSON.stringify(arr)); } catch {}
     document.dispatchEvent(new CustomEvent("vj:jobsquestionschange"));
+    const supa = window.VJ_SUPA?.client;
+    if (supa) {
+      (async () => {
+        try {
+          const { error: delErr } = await supa.from("job_questions").delete().neq("id", "___never___");
+          if (delErr) throw delErr;
+          if (arr.length) {
+            const { error: insErr } = await supa.from("job_questions").insert(arr.map(qObjToRow));
+            if (insErr) throw insErr;
+          }
+        } catch (err) {
+          console.error("Job questions save error:", err);
+        }
+      })();
+    }
   }
   function resetJobsQuestions() {
-    localStorage.removeItem(STORAGE_JOBS_Q);
-    document.dispatchEvent(new CustomEvent("vj:jobsquestionschange"));
+    saveJobsQuestions(jobsDefaultsClone());
   }
   function getApplications() {
     try {
@@ -93,6 +162,7 @@
   }
   window.VJ_JOBS = {
     questions: getJobsQuestions,
+    loadQuestions: loadJobsQuestions,
     saveQuestions: saveJobsQuestions,
     resetQuestions: resetJobsQuestions,
     apps: getApplications,
@@ -2224,8 +2294,47 @@
     const form = document.getElementById("contact-form");
     const ok = document.getElementById("contact-success");
     if (!form) return;
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const fd = new FormData(form);
+      const msg = {
+        id:      "MSG-" + Date.now().toString(36).toUpperCase(),
+        status:  "new",
+        type:    fd.get("type") || "general",
+        name:    (fd.get("name")    || "").trim(),
+        email:   (fd.get("email")   || "").trim(),
+        phone:   (fd.get("phone")   || "").trim(),
+        message: (fd.get("message") || "").trim()
+      };
+
+      // Local backup first — so nothing is lost if the DB/network is down.
+      try {
+        const KEY = "vj.contactMessages";
+        const arr = JSON.parse(localStorage.getItem(KEY) || "[]");
+        arr.unshift({ ...msg, createdAt: new Date().toISOString() });
+        localStorage.setItem(KEY, JSON.stringify(arr));
+      } catch {}
+
+      // Send to Supabase so the message reaches the shop from any device.
+      const btn = form.querySelector('button[type="submit"]');
+      const orig = btn ? btn.textContent : "";
+      if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.from("contact_messages").insert({
+            id: msg.id, status: "new", type: msg.type,
+            name: msg.name || null, email: msg.email || null,
+            phone: msg.phone || null, message: msg.message || null
+          });
+          if (error) throw error;
+        }
+      } catch (err) {
+        console.error("Contact message save to Supabase failed (kept local copy):", err);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = orig; }
+      }
+
       form.style.display = "none";
       ok.style.display = "block";
     });

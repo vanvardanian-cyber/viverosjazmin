@@ -403,7 +403,7 @@
     });
     back.addEventListener("click", () => showStep(Math.max(1, current - 1)));
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!validateStep(3)) return;
       const fd = new FormData(form);
@@ -428,7 +428,40 @@
         answers,
         message: (fd.get("message")||"").trim()
       };
+
+      // Keep a local backup first — this also generates the reference code.
       const ref = VJ_JOBS.submit(app);
+
+      // Send it to Supabase so the application reaches the shop from ANY
+      // device (not just this browser). If the table isn't set up yet or the
+      // network fails, the local copy above still has it — the form never breaks.
+      const btn = document.getElementById("job-submit");
+      const origBtn = btn ? btn.textContent : "";
+      if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+      try {
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.from("applications").insert({
+            id:       ref,
+            status:   "new",
+            position: app.position || null,
+            name:     app.name  || null,
+            email:    app.email || null,
+            phone:    app.phone || null,
+            path:     app.path  || null,
+            cv:       app.cv,            // jsonb { filename, size, dataUrl } or null
+            answers:  app.answers || {},
+            message:  app.message || null
+          });
+          if (error) throw error;
+        }
+      } catch (err) {
+        // Non-fatal: the candidate still sees success and we kept the local copy.
+        console.error("Application save to Supabase failed (kept local copy):", err);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = origBtn; }
+      }
+
       form.style.display = "none";
       stepper.style.display = "none";
       document.getElementById("jobs-ref").textContent = ref;
@@ -436,9 +469,11 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
-    // Initial state
+    // Initial state — show something immediately, then refresh with the shared
+    // question set from Supabase so visitors see the admin's custom questions.
     renderQuestions();
     showStep(1);
+    if (window.VJ_JOBS?.loadQuestions) VJ_JOBS.loadQuestions().then(renderQuestions);
   })();
 </script>
 </body>

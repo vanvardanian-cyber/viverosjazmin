@@ -1882,6 +1882,8 @@ body.vj-no-scroll { overflow: hidden; }
 .status-shipped   { background: #E3DCEF; color: #4A3673; }
 .status-delivered { background: #DDEFE2; color: #36673E; }
 .status-cancelled { background: #FBEAEA; color: #8B3A3A; }
+.status-read      { background: var(--blue-2); color: var(--blue-deep); }
+.status-archived  { background: #EDE3DC; color: #7A6353; }
 
 .app-card-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px;}
 .app-row { font-size: .9rem; color: var(--ink-soft); }
