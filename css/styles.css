@@ -224,26 +224,28 @@ body.nav-locked { overflow: hidden; }
 
 /* Header action group — favoritos, cart, account, all aligned on the right */
 .header-actions {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 8px;
   margin-left: 8px;
   flex-wrap: nowrap;
 }
-.icon-btn {
+/* Scoped to .header-actions so the bare admin `.icon-btn` rule (further down,
+   used for edit/delete buttons) can't shrink the header icons. */
+.header-actions .icon-btn {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
   background: transparent; border: 0; cursor: pointer;
   color: var(--ink);
-  width: 40px; height: 40px;
+  width: 46px; height: 46px;
   border-radius: 50%;
   text-decoration: none;
   transition: background .2s, color .2s;
 }
-.icon-btn:hover { background: var(--blue-3); }
-.icon-btn svg { width: 20px; height: 20px; display: block; }
+.header-actions .icon-btn:hover { background: var(--blue-3); }
+.header-actions .icon-btn svg { width: 24px; height: 24px; display: block; stroke-width: 1.9; }
 
-.cart-btn:hover { color: var(--accent); }
-.fav-btn:hover { color: #c93b58; }
-.cart-btn svg { width: 22px; height: 22px; }
+.header-actions .cart-btn:hover { color: var(--accent); }
+.header-actions .fav-btn:hover { color: #c93b58; }
+.header-actions .cart-btn svg { width: 26px; height: 26px; }
 
 /* Account button — a single pill that morphs based on auth state.
    Guest: avatar + uppercase "Entrar" label, no background.
@@ -251,7 +253,7 @@ body.nav-locked { overflow: hidden; }
 .user-pill {
   position: relative;
   display: inline-flex; align-items: center; gap: 8px;
-  height: 40px; padding: 0 14px 0 6px;
+  height: 46px; padding: 0 16px 0 7px;
   border-radius: 999px;
   color: var(--ink);
   text-decoration: none;
@@ -263,7 +265,7 @@ body.nav-locked { overflow: hidden; }
   flex-shrink: 0;
 }
 .user-pill .user-pill-avatar {
-  width: 28px; height: 28px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: var(--blue-3);
   display: inline-flex; align-items: center; justify-content: center;
@@ -272,7 +274,7 @@ body.nav-locked { overflow: hidden; }
   transition: background .2s, color .2s;
   flex-shrink: 0;
 }
-.user-pill .user-pill-avatar svg { width: 16px; height: 16px; display: block; }
+.user-pill .user-pill-avatar svg { width: 19px; height: 19px; display: block; stroke-width: 1.9; }
 .user-pill .user-pill-label {
   font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
   font-weight: 600;
@@ -1151,6 +1153,29 @@ body.nav-locked { overflow: hidden; }
 }
 .filter-list .count {
   font-size: .75rem; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+}
+/* Two-world grouped filters (Vivero & Jardín / Floristería & Flores) */
+.filter-group { display: contents; }
+.filter-list .filter-group-head {
+  font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;
+  font-size: 1.05rem; color: var(--blue-ink); margin-top: 18px;
+}
+.filter-list .filter-sub { padding-left: 16px; font-size: .85rem; }
+.shop-occasions {
+  display: block; margin-top: 4px; padding: 18px;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--blue-3); text-decoration: none; color: var(--ink);
+  transition: background .2s ease, transform .2s ease;
+}
+.shop-occasions:hover { background: var(--blue-2); transform: translateY(-1px); }
+.shop-occasions strong {
+  display: block; font-family: 'Playfair Display', serif; font-style: italic;
+  font-weight: 500; font-size: 1.05rem; margin-bottom: 6px;
+}
+.shop-occasions > span { display: block; font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
+.shop-occasions .shop-occasions-cta {
+  margin-top: 10px; font-size: .78rem; color: var(--blue-deep);
+  font-weight: 600; letter-spacing: .04em;
 }
 
 .search-box {

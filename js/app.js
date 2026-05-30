@@ -1156,7 +1156,8 @@
 
           <div class="header-side header-side--right">
             <nav class="nav" aria-label="primary">
-              <a href="tienda.html"   data-i18n="nav.shop">Tienda</a>
+              <a href="tienda.html?world=vivero"      data-i18n="nav.vivero">Vivero</a>
+              <a href="tienda.html?world=floristeria" data-i18n="nav.floristeria">Floristería</a>
               <a href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a>
               <a href="contacto.html" data-i18n="nav.contact">Contacto</a>
               <div class="lang-toggle mobile-only" role="group" aria-label="Language">
@@ -1202,9 +1203,14 @@
               <p class="tagline" data-i18n="footer.tagline"></p>
             </div>
             <div>
-              <h4 data-i18n="footer.shop"></h4>
+              <h4 data-i18n="world.vivero">Vivero &amp; Jardín</h4>
               <ul>
-                ${CATEGORIES.map(c => `<li><a href="tienda.html?cat=${c.id}">${c[lang]}</a></li>`).join("")}
+                ${CATEGORIES.filter(c => c.world === "vivero").map(c => `<li><a href="tienda.html?cat=${c.id}">${c[lang]}</a></li>`).join("")}
+              </ul>
+              <h4 data-i18n="world.floristeria" style="margin-top:20px;">Floristería &amp; Flores</h4>
+              <ul>
+                ${CATEGORIES.filter(c => c.world === "floristeria").map(c => `<li><a href="tienda.html?cat=${c.id}">${c[lang]}</a></li>`).join("")}
+                <li><a href="contacto.html">${lang === "va" ? "Bodes, esdeveniments i funerals" : "Bodas, eventos y funerales"}</a></li>
               </ul>
             </div>
             <div>
@@ -1488,31 +1494,50 @@
 
     const params = new URLSearchParams(location.search);
     let activeCat = params.get("cat") || "all";
+    let activeWorld = params.get("world") || "";   // "" | "vivero" | "floristeria"
     let term = "";
 
+    const WORLDS = [
+      { id: "vivero",      key: "world.vivero" },
+      { id: "floristeria", key: "world.floristeria" }
+    ];
+    const worldOfCat = (id) => (CATEGORIES.find(c => c.id === id) || {}).world || "";
+
     function renderFilters() {
-      const items = [
-        { id: "all", label: t("common.all"), count: PRODUCTS.length },
-        ...CATEGORIES.map(c => ({
-          id: c.id, label: c[getLang()],
-          count: PRODUCTS.filter(p => p.cat === c.id).length
-        }))
-      ];
-      filters.innerHTML =
-        `<h4 data-i18n="common.filter">${t("common.filter")}</h4>
-         <div class="filter-list">
-           ${items.map(i => `
-             <button data-cat="${i.id}" class="${activeCat === i.id ? "is-active" : ""}">
-               <span>${i.label}</span><span class="count">${i.count}</span>
-             </button>`).join("")}
-         </div>`;
+      let html = `<h4 data-i18n="common.filter">${t("common.filter")}</h4>
+        <div class="filter-list">
+          <button data-cat="all" data-world="" class="${activeCat === "all" && !activeWorld ? "is-active" : ""}">
+            <span>${t("common.all")}</span><span class="count">${PRODUCTS.length}</span>
+          </button>`;
+      WORLDS.forEach(w => {
+        const cats = CATEGORIES.filter(c => c.world === w.id);
+        const worldCount = PRODUCTS.filter(p => worldOfCat(p.cat) === w.id).length;
+        html += `<div class="filter-group">
+          <button class="filter-group-head ${activeWorld === w.id && activeCat === "all" ? "is-active" : ""}" data-cat="all" data-world="${w.id}">
+            <span>${t(w.key)}</span><span class="count">${worldCount}</span>
+          </button>
+          ${cats.map(c => `
+            <button class="filter-sub ${activeCat === c.id ? "is-active" : ""}" data-cat="${c.id}" data-world="${w.id}">
+              <span>${c[getLang()]}</span><span class="count">${PRODUCTS.filter(p => p.cat === c.id).length}</span>
+            </button>`).join("")}
+        </div>`;
+      });
+      html += `</div>
+        <a class="shop-occasions" href="contacto.html">
+          <strong>${t("shop.occasions.title")}</strong>
+          <span>${t("shop.occasions.text")}</span>
+          <span class="shop-occasions-cta">${t("shop.occasions.cta")} →</span>
+        </a>`;
+      filters.innerHTML = html;
       filters.querySelectorAll("button[data-cat]").forEach(b => {
         b.addEventListener("click", () => {
           activeCat = b.dataset.cat;
-          // update url without reload
+          activeWorld = b.dataset.world || "";
           const u = new URL(location.href);
-          if (activeCat === "all") u.searchParams.delete("cat");
-          else u.searchParams.set("cat", activeCat);
+          u.searchParams.delete("cat");
+          u.searchParams.delete("world");
+          if (activeWorld) u.searchParams.set("world", activeWorld);
+          if (activeCat !== "all") u.searchParams.set("cat", activeCat);
           history.replaceState({}, "", u);
           renderFilters();
           renderGrid();
@@ -1523,6 +1548,7 @@
     function renderGrid() {
       let list = PRODUCTS.slice();
       if (activeCat !== "all") list = list.filter(p => p.cat === activeCat);
+      else if (activeWorld) list = list.filter(p => worldOfCat(p.cat) === activeWorld);
       if (term) {
         const T = term.toLowerCase();
         list = list.filter(p =>
@@ -2377,20 +2403,24 @@
       updateCartBadge();
       updateAuthLink();
       // re-mark active nav
-      const p = location.pathname.split("/").pop() || "index.html";
-      document.querySelectorAll(".nav a").forEach(a => {
-        if (a.getAttribute("href") === p) a.classList.add("is-active");
-      });
+      markActiveNav();
     });
     document.addEventListener("vj:authchange", updateAuthLink);
     document.addEventListener("vj:likeschange", updateFavBadge);
     updateFavBadge();
 
-    // mark active nav link
-    const path = location.pathname.split("/").pop() || "index.html";
-    document.querySelectorAll(".nav a").forEach(a => {
-      if (a.getAttribute("href") === path) a.classList.add("is-active");
-    });
+    // mark active nav link (world-aware: Vivero/Floristería → tienda.html?world=…)
+    function markActiveNav() {
+      const here = location.pathname.split("/").pop() || "index.html";
+      const hereWorld = new URLSearchParams(location.search).get("world") || "";
+      document.querySelectorAll(".nav a").forEach(a => {
+        const u = new URL(a.getAttribute("href"), location.href);
+        const aPage = u.pathname.split("/").pop() || "index.html";
+        const aWorld = u.searchParams.get("world") || "";
+        a.classList.toggle("is-active", aPage === here && aWorld === hereWorld);
+      });
+    }
+    markActiveNav();
 
     renderHome();
     renderShop();

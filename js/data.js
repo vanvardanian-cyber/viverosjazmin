@@ -19,12 +19,12 @@ const SITE_INFO = {
 };
 
 const CATEGORIES = [
-  { id: "interior",  es: "Plantas de interior",   va: "Plantes d'interior" },
-  { id: "exterior",  es: "Plantas de exterior",   va: "Plantes d'exterior" },
-  { id: "arboles",   es: "Árboles y arbustos",    va: "Arbres i arbustos" },
-  { id: "sustratos", es: "Sustratos y abonos",    va: "Substrats i adobs" },
-  { id: "macetas",   es: "Macetas y jardinería",  va: "Testos i jardineria" },
-  { id: "flores",    es: "Flores de temporada",   va: "Flors de temporada" }
+  { id: "interior",  world: "vivero",      es: "Plantas de interior",   va: "Plantes d'interior" },
+  { id: "exterior",  world: "vivero",      es: "Plantas de exterior",   va: "Plantes d'exterior" },
+  { id: "arboles",   world: "vivero",      es: "Árboles y arbustos",    va: "Arbres i arbustos" },
+  { id: "sustratos", world: "vivero",      es: "Sustratos y abonos",    va: "Substrats i adobs" },
+  { id: "macetas",   world: "vivero",      es: "Macetas y jardinería",  va: "Testos i jardineria" },
+  { id: "flores",    world: "floristeria", es: "Flores de temporada",   va: "Flors de temporada" }
 ];
 
 /* Product images: themed SVG data-URLs are generated at runtime
@@ -314,8 +314,17 @@ const I18N = {
   es: {
     "nav.home": "Inicio",
     "nav.shop": "Tienda",
+    "nav.vivero": "Vivero",
+    "nav.floristeria": "Floristería",
     "nav.about": "Sobre nosotros",
     "nav.contact": "Contacto",
+    "world.vivero": "Vivero & Jardín",
+    "world.floristeria": "Floristería & Flores",
+    "world.viveroTag": "Plantas, árboles y todo para tu jardín",
+    "world.floristeriaTag": "Ramos, flores y encargos especiales",
+    "shop.occasions.title": "Ocasiones especiales",
+    "shop.occasions.text": "Bodas, eventos y funerales: flores y decoración por encargo.",
+    "shop.occasions.cta": "Pedir asesoramiento",
     "nav.cart": "Carrito",
     "common.viewMore": "Ver más",
     "common.buy": "Comprar",
@@ -502,8 +511,17 @@ const I18N = {
   va: {
     "nav.home": "Inici",
     "nav.shop": "Botiga",
+    "nav.vivero": "Viver",
+    "nav.floristeria": "Floristeria",
     "nav.about": "Sobre nosaltres",
     "nav.contact": "Contacte",
+    "world.vivero": "Viver & Jardí",
+    "world.floristeria": "Floristeria & Flors",
+    "world.viveroTag": "Plantes, arbres i tot per al teu jardí",
+    "world.floristeriaTag": "Rams, flors i encàrrecs especials",
+    "shop.occasions.title": "Ocasions especials",
+    "shop.occasions.text": "Casaments, esdeveniments i funerals: flors i decoració per encàrrec.",
+    "shop.occasions.cta": "Demanar assessorament",
     "nav.cart": "Cistella",
     "common.viewMore": "Veure més",
     "common.buy": "Comprar",
