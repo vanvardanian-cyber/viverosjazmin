@@ -151,6 +151,13 @@
               <small style="color:var(--ink-soft);font-size:.72rem;">Opcional. Se muestra en la ficha del producto bajo "Origen".</small>
             </div>
 
+            <div class="form-field full">
+              <label class="checkbox-line" style="cursor:pointer; align-items:flex-start;">
+                <input type="checkbox" name="featured">
+                <span><strong>★ Destacar en portada</strong> — aparece en el carrusel «Una selección» de la página de inicio.</span>
+              </label>
+            </div>
+
             <!-- Floristería attributes — feed the shop filters in the flower world -->
             <div class="form-field">
               <label>Tipo <span class="lang-tag">Floristería</span></label>
@@ -663,7 +670,7 @@
             }
           </div>
           <div>
-            <div class="name">${escapeHtml(p.name.es)}</div>
+            <div class="name">${escapeHtml(p.name.es)}${p.featured ? ` <span class="feat-star" title="Destacado en portada">★</span>` : ""}</div>
             <div class="meta">${escapeHtml(p.id)} · ${escapeHtml(catName(p.cat))}</div>
           </div>
           <div class="col-cat"><span class="world-badge world-${worldOf(p.cat)}">${worldShort(p.cat)}</span></div>
@@ -709,6 +716,7 @@
       form.elements.price.value = p.price;
       form.elements.stock.value = p.stock;
       form.elements.origin.value = p.origin || "";
+      form.elements.featured.checked = !!p.featured;
       form.elements.floristType.value = p.floristType || "";
       form.elements.flowerType.value = p.flowerType || "";
       form.elements.color.value = p.color || "";
@@ -765,6 +773,7 @@
         img: images[0] || undefined,    // legacy single img = first photo
         images,                          // full array
         origin: (fd.get("origin") || "").trim(),
+        featured: !!fd.get("featured"),
         floristType: (fd.get("floristType") || "").trim(),
         flowerType: (fd.get("flowerType") || "").trim(),
         color: (fd.get("color") || "").trim(),

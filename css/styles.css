@@ -1768,6 +1768,7 @@ body.vj-no-scroll { overflow: hidden; }
 }
 .world-badge.world-vivero { background: #E4EFDA; color: #466A2E; }
 .world-badge.world-floristeria { background: #F4E0EC; color: #8A3B63; }
+.feat-star { color: #d9a441; font-size: .92em; }
 .admin-row .col-price { font-weight: 600; font-feature-settings: 'tnum';}
 .admin-row .col-stock { font-size: .85rem; color: var(--ink-soft); font-feature-settings: 'tnum';}
 .admin-row .actions { display: flex; gap: 4px; justify-content: flex-end;}
@@ -1816,6 +1817,15 @@ body.vj-no-scroll { overflow: hidden; }
 }
 .admin-form-wrap .form-grid { gap: 12px; }
 .admin-form-wrap .form-field label { font-size: .62rem; letter-spacing: .18em; }
+/* Checkbox rows (e.g. "Destacar en portada") read as a normal sentence,
+   not the tiny tracked-uppercase used for field labels. */
+.admin-form-wrap .form-field label.checkbox-line {
+  text-transform: none; letter-spacing: normal; font-size: .85rem;
+  color: var(--ink); font-weight: 400; margin-bottom: 0; line-height: 1.45;
+  align-items: flex-start; gap: 10px;
+}
+.admin-form-wrap .form-field label.checkbox-line strong { font-weight: 600; }
+.admin-form-wrap .form-field label.checkbox-line input { margin-top: 2px; flex-shrink: 0; }
 .admin-form-wrap .form-field input,
 .admin-form-wrap .form-field textarea,
 .admin-form-wrap .form-field select {

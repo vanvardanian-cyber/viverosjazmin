@@ -42,6 +42,7 @@ function rowToProduct(row) {
     delivery: row.delivery || "standard",
     ivaRate: row.iva_rate != null ? Number(row.iva_rate) : 10,
     origin: row.origin || "",
+    featured: row.featured === true,
     // Floristería filter attributes (optional)
     floristType: row.florist_type || "",
     flowerType: row.flower_type || "",
@@ -69,6 +70,7 @@ function productToRow(p, sortOrder) {
     delivery: p.delivery || "standard",
     iva_rate: p.ivaRate != null ? p.ivaRate : 10,
     origin: (p.origin || "").trim() || null,
+    featured: !!p.featured,
     florist_type: (p.floristType || "").trim() || null,
     flower_type:  (p.flowerType  || "").trim() || null,
     color:        (p.color       || "").trim() || null,

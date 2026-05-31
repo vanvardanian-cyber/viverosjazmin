@@ -200,9 +200,9 @@
     let { error } = await supa.from("products").upsert(row);
     // If the new attribute columns aren't migrated yet, retry without them so
     // saving products never breaks (graceful pre-migration fallback).
-    if (error && /florist_type|flower_type|color|find the .*column|schema cache|PGRST204/i.test((error.message || "") + " " + (error.code || ""))) {
+    if (error && /florist_type|flower_type|color|featured|find the .*column|schema cache|PGRST204/i.test((error.message || "") + " " + (error.code || ""))) {
       const safe = { ...row };
-      delete safe.florist_type; delete safe.flower_type; delete safe.color;
+      delete safe.florist_type; delete safe.flower_type; delete safe.color; delete safe.featured;
       ({ error } = await supa.from("products").upsert(safe));
     }
     if (error) throw error;
@@ -1467,9 +1467,13 @@
   }
 
   function pickFeatured(n) {
-    const seen = new Set();
-    const out = [];
-    // round-robin through categories
+    // Products flagged "Destacar en portada" in the admin come first.
+    const flagged = PRODUCTS.filter(p => p.featured);
+    if (flagged.length >= n) return flagged.slice(0, n);
+    const out = flagged.slice();
+    const seen = new Set(flagged.map(p => p.id));
+    // Fill the remaining slots round-robin through categories, so the rail is
+    // never empty even before anything is flagged.
     for (let i = 0; out.length < n; i++) {
       for (const c of CATEGORIES) {
         const candidates = PRODUCTS.filter(p => p.cat === c.id && !seen.has(p.id));
