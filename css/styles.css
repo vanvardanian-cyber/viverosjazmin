@@ -1419,6 +1419,39 @@ body.vj-no-scroll { overflow: hidden; }
 .stock-pill.out::before { background: #b04a4a; }
 .detail-desc { font-size: 1.02rem; color: var(--ink-soft); margin-bottom: 32px; line-height: 1.75;}
 
+/* ---------- Planter picker (choose your pot) ---------- */
+.planter-pick { margin: 0 0 28px; }
+.planter-pick-title {
+  font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;
+  font-size: 1.25rem; color: var(--ink); margin-bottom: 14px;
+}
+.planter-list { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.planter-opt {
+  flex: 0 0 auto; width: 128px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 10px; cursor: pointer; text-align: left;
+  background: #fff; border: 1.5px solid var(--line); border-radius: var(--r-sm);
+  transition: border-color .2s, transform .2s;
+}
+.planter-opt:hover { border-color: var(--ink-soft); }
+.planter-opt.is-selected { border-color: var(--blue-ink); }
+.planter-opt-img {
+  width: 100%; aspect-ratio: 1/1; border-radius: 4px; overflow: hidden;
+  background: var(--blue-3); display: flex; align-items: center; justify-content: center;
+  color: var(--blue-deep);
+}
+.planter-opt-img img, .planter-opt-img svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.planter-opt-img.planter-none svg { width: 26px; height: 26px; object-fit: none; }
+.planter-opt-name {
+  font-size: .82rem; font-weight: 600; color: var(--ink); line-height: 1.25;
+  margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.planter-opt-price { font-size: .8rem; color: var(--ink-soft); margin-top: 2px; font-feature-settings: 'tnum'; }
+.planter-opt-price.free { color: var(--green-tag); font-weight: 600; }
+
+/* bundled pot line in the cart */
+.cart-addon { font-size: .82rem; color: var(--blue-deep); margin: 2px 0; }
+
 .qty-row { display: flex; gap: 14px; align-items: center; margin-bottom: 22px;}
 .qty-stepper {
   display: inline-flex; align-items: center;

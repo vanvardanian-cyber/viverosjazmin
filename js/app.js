@@ -200,9 +200,9 @@
     let { error } = await supa.from("products").upsert(row);
     // If the new attribute columns aren't migrated yet, retry without them so
     // saving products never breaks (graceful pre-migration fallback).
-    if (error && /florist_type|flower_type|color|featured|find the .*column|schema cache|PGRST204/i.test((error.message || "") + " " + (error.code || ""))) {
+    if (error && /florist_type|flower_type|color|featured|pot_size|find the .*column|schema cache|PGRST204/i.test((error.message || "") + " " + (error.code || ""))) {
       const safe = { ...row };
-      delete safe.florist_type; delete safe.flower_type; delete safe.color; delete safe.featured;
+      delete safe.florist_type; delete safe.flower_type; delete safe.color; delete safe.featured; delete safe.pot_size;
       ({ error } = await supa.from("products").upsert(safe));
     }
     if (error) throw error;
@@ -640,34 +640,40 @@
     updateCartBadge();
     document.dispatchEvent(new CustomEvent("vj:cartchange"));
   }
-  function addToCart(id, qty = 1) {
+  // A cart line is identified by product id + optional planter (pot id),
+  // so the same plant with different pots are separate lines.
+  function cartLineKey(it) { return it.planter ? it.id + "::" + it.planter : it.id; }
+  function cartItemUnitPrice(it) {
+    const p = PRODUCTS.find(x => x.id === it.id);
+    const base = p ? p.price : 0;
+    const pot = it.planter ? PRODUCTS.find(x => x.id === it.planter) : null;
+    return base + (pot ? pot.price : 0);
+  }
+  function addToCart(id, qty = 1, planter = null) {
     const cart = getCart();
-    const found = cart.find(it => it.id === id);
+    const found = cart.find(it => it.id === id && (it.planter || null) === (planter || null));
     if (found) found.qty += qty;
-    else cart.push({ id, qty });
+    else cart.push(planter ? { id, qty, planter } : { id, qty });
     setCart(cart);
     showToast(t("common.added"));
   }
-  function updateQty(id, qty) {
+  function updateQty(key, qty) {
     let cart = getCart();
-    if (qty <= 0) cart = cart.filter(it => it.id !== id);
+    if (qty <= 0) cart = cart.filter(it => cartLineKey(it) !== key);
     else {
-      const found = cart.find(it => it.id === id);
+      const found = cart.find(it => cartLineKey(it) === key);
       if (found) found.qty = qty;
     }
     setCart(cart);
   }
-  function removeFromCart(id) {
-    setCart(getCart().filter(it => it.id !== id));
+  function removeFromCart(key) {
+    setCart(getCart().filter(it => cartLineKey(it) !== key));
   }
   function cartCount() {
     return getCart().reduce((s, it) => s + it.qty, 0);
   }
   function cartTotal() {
-    return getCart().reduce((s, it) => {
-      const p = PRODUCTS.find(x => x.id === it.id);
-      return s + (p ? p.price * it.qty : 0);
-    }, 0);
+    return getCart().reduce((s, it) => s + cartItemUnitPrice(it) * it.qty, 0);
   }
   function updateCartBadge() {
     const badges = document.querySelectorAll(".cart-count");
@@ -1664,6 +1670,7 @@
     if (!root) return;
     const id = new URLSearchParams(location.search).get("id");
     const p = PRODUCTS.find(x => x.id === id);
+    let selectedPlanter = null;   // chosen pot id (for the planter picker)
 
     function render() {
       if (!p) {
@@ -1672,6 +1679,10 @@
         return;
       }
       const inStock = p.stock > 0;
+      // Size-matched pots for the planter picker (plants only, with a pot size set)
+      const pots = (p.cat !== "macetas" && p.potSize)
+        ? PRODUCTS.filter(x => x.cat === "macetas" && x.potSize === p.potSize)
+        : [];
       root.innerHTML = `
         <div class="crumbs">
           <a href="index.html">${t("nav.home")}</a> ·
@@ -1683,7 +1694,7 @@
           <div class="product-detail-info">
             <div class="detail-cat">${catName(p.cat)}</div>
             <h1>${productName(p)}</h1>
-            <div class="detail-price">${formatPrice(p.price)}</div>
+            <div class="detail-price" id="detail-price">${formatPrice(p.price)}</div>
             <span class="stock-pill ${inStock ? "" : "out"}">
               ${inStock
                 ? `${t("common.inStock")} · ${p.stock} ${t("common.units")}`
@@ -1702,6 +1713,25 @@
                   </div>
                 </div>
               </div>` : ""}
+            ${pots.length ? `
+            <div class="planter-pick">
+              <div class="planter-pick-title">${t("product.choosePot")}</div>
+              <div class="planter-list">
+                <button type="button" class="planter-opt ${!selectedPlanter ? "is-selected" : ""}" data-planter="">
+                  <span class="planter-opt-img planter-none" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14l-1.5 11h-11z"/><path d="M4 9h16"/></svg>
+                  </span>
+                  <span class="planter-opt-name">${t("product.noPot")}</span>
+                  <span class="planter-opt-price free">${t("product.free")}</span>
+                </button>
+                ${pots.map(pot => `
+                <button type="button" class="planter-opt ${selectedPlanter === pot.id ? "is-selected" : ""}" data-planter="${pot.id}">
+                  <span class="planter-opt-img">${productImgSVG(pot)}</span>
+                  <span class="planter-opt-name">${productName(pot)}</span>
+                  <span class="planter-opt-price">+ ${formatPrice(pot.price)}</span>
+                </button>`).join("")}
+              </div>
+            </div>` : ""}
             <div class="qty-row">
               <div class="qty-stepper">
                 <button class="js-dec" aria-label="-">−</button>
@@ -1731,8 +1761,23 @@
         const v = Math.max(parseInt(qty.value) - 1, 1);
         qty.value = v;
       });
+      // Planter picker — selecting a pot updates the live price + bundles it.
+      const priceEl = root.querySelector("#detail-price");
+      function refreshDetailPrice() {
+        const pot = selectedPlanter ? PRODUCTS.find(x => x.id === selectedPlanter) : null;
+        if (priceEl) priceEl.textContent = formatPrice(p.price + (pot ? pot.price : 0));
+      }
+      root.querySelectorAll(".planter-opt").forEach(btn => {
+        btn.addEventListener("click", () => {
+          root.querySelectorAll(".planter-opt").forEach(b => b.classList.remove("is-selected"));
+          btn.classList.add("is-selected");
+          selectedPlanter = btn.dataset.planter || null;
+          refreshDetailPrice();
+        });
+      });
+      refreshDetailPrice();
       root.querySelector("#add-detail").addEventListener("click", () => {
-        addToCart(p.id, parseInt(qty.value) || 1);
+        addToCart(p.id, parseInt(qty.value) || 1, selectedPlanter);
       });
       wireProductGallery(root);
       const likeBtn = root.querySelector("#detail-like");
@@ -1811,13 +1856,17 @@
       const rows = items.map(it => {
         const p = PRODUCTS.find(x => x.id === it.id);
         if (!p) return "";
+        const pot = it.planter ? PRODUCTS.find(x => x.id === it.planter) : null;
+        const key = cartLineKey(it);
+        const unit = cartItemUnitPrice(it);
         return `
-          <div class="cart-row" data-id="${p.id}">
+          <div class="cart-row" data-key="${key}">
             <a href="producto.html?id=${p.id}" class="cart-img">${productImgSVG(p)}</a>
             <div class="cart-info">
               <div class="cat">${catName(p.cat)}</div>
               <h4><a href="producto.html?id=${p.id}">${productName(p)}</a></h4>
-              <div class="unit">${formatPrice(p.price)} / ${t("common.units").slice(0,-1)}</div>
+              ${pot ? `<div class="cart-addon">+ ${productName(pot)} <span class="muted">(${formatPrice(pot.price)})</span></div>` : ""}
+              <div class="unit">${formatPrice(unit)} / ${t("common.units").slice(0,-1)}</div>
               <div class="qty-stepper mt-8">
                 <button class="js-dec">−</button>
                 <input type="number" class="js-qty" value="${it.qty}" min="1">
@@ -1825,7 +1874,7 @@
               </div>
             </div>
             <div class="cart-controls">
-              <div class="line-price">${formatPrice(p.price * it.qty)}</div>
+              <div class="line-price">${formatPrice(unit * it.qty)}</div>
               <button class="remove-btn js-remove">${t("common.remove")}</button>
             </div>
           </div>
@@ -1848,23 +1897,20 @@
 
       // wire controls
       root.querySelectorAll(".cart-row").forEach(row => {
-        const id = row.dataset.id;
+        const key = row.dataset.key;
+        const cur = () => getCart().find(it => cartLineKey(it) === key);
         row.querySelector(".js-inc").addEventListener("click", () => {
-          const cart = getCart();
-          const item = cart.find(it => it.id === id);
-          if (item) { updateQty(id, item.qty + 1); render(); }
+          const item = cur(); if (item) { updateQty(key, item.qty + 1); render(); }
         });
         row.querySelector(".js-dec").addEventListener("click", () => {
-          const cart = getCart();
-          const item = cart.find(it => it.id === id);
-          if (item) { updateQty(id, item.qty - 1); render(); }
+          const item = cur(); if (item) { updateQty(key, item.qty - 1); render(); }
         });
         row.querySelector(".js-qty").addEventListener("change", (e) => {
-          updateQty(id, Math.max(1, parseInt(e.target.value) || 1));
+          updateQty(key, Math.max(1, parseInt(e.target.value) || 1));
           render();
         });
         row.querySelector(".js-remove").addEventListener("click", () => {
-          removeFromCart(id); render();
+          removeFromCart(key); render();
         });
       });
     }
@@ -1894,9 +1940,12 @@
       const summary = items.map(it => {
         const p = PRODUCTS.find(x => x.id === it.id);
         if (!p) return "";
+        const pot = it.planter ? PRODUCTS.find(x => x.id === it.planter) : null;
+        const unit = cartItemUnitPrice(it);
+        const label = pot ? `${productName(p)} + ${productName(pot)}` : productName(p);
         return `<div class="summary-row">
-          <span>${productName(p)} <span class="muted">× ${it.qty}</span></span>
-          <span>${formatPrice(p.price * it.qty)}</span>
+          <span>${label} <span class="muted">× ${it.qty}</span></span>
+          <span>${formatPrice(unit * it.qty)}</span>
         </div>`;
       }).join("");
 
@@ -2080,12 +2129,14 @@
         // Build the Supabase row
         const rowItems = items.map(it => {
           const p = PRODUCTS.find(x => x.id === it.id);
+          const pot = it.planter ? PRODUCTS.find(x => x.id === it.planter) : null;
           return {
             id: it.id,
             qty: it.qty,
             name: p ? p.name : { es: it.id, va: it.id },
-            price: p ? p.price : 0,
-            cat: p ? p.cat : null
+            price: cartItemUnitPrice(it),
+            cat: p ? p.cat : null,
+            planter: pot ? { id: pot.id, name: pot.name, price: pot.price } : null
           };
         });
         const orderRow = {

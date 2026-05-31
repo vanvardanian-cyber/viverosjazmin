@@ -158,6 +158,17 @@
               </label>
             </div>
 
+            <div class="form-field full">
+              <label>Tamaño de maceta</label>
+              <select name="potSize">
+                <option value="">—</option>
+                <option value="S">Pequeña (S)</option>
+                <option value="M">Mediana (M)</option>
+                <option value="L">Grande (L)</option>
+              </select>
+              <small style="color:var(--ink-soft);font-size:.72rem;">En una <strong>maceta</strong>: su tamaño. En una <strong>planta</strong>: el tamaño de maceta que necesita — activa el selector «Elige tu maceta» en su ficha.</small>
+            </div>
+
             <!-- Floristería attributes — feed the shop filters in the flower world -->
             <div class="form-field">
               <label>Tipo <span class="lang-tag">Floristería</span></label>
@@ -717,6 +728,7 @@
       form.elements.stock.value = p.stock;
       form.elements.origin.value = p.origin || "";
       form.elements.featured.checked = !!p.featured;
+      form.elements.potSize.value = p.potSize || "";
       form.elements.floristType.value = p.floristType || "";
       form.elements.flowerType.value = p.flowerType || "";
       form.elements.color.value = p.color || "";
@@ -774,6 +786,7 @@
         images,                          // full array
         origin: (fd.get("origin") || "").trim(),
         featured: !!fd.get("featured"),
+        potSize: fd.get("potSize") || "",
         floristType: (fd.get("floristType") || "").trim(),
         flowerType: (fd.get("flowerType") || "").trim(),
         color: (fd.get("color") || "").trim(),
@@ -903,7 +916,7 @@
         const total = new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR" }).format(o.total);
         const items = Array.isArray(o.items) ? o.items : [];
         const itemsHtml = items.map(it => {
-          const name = it.name?.es || it.id;
+          const name = (it.name?.es || it.id) + (it.planter ? " + " + (it.planter.name?.es || "maceta") : "");
           const line = (it.qty * (it.price || 0));
           return `<div class="app-answer">
             <strong>${escapeHtml(name)} × ${it.qty}</strong>
