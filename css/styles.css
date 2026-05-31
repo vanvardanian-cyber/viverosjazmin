@@ -1548,6 +1548,49 @@ body.vj-no-scroll { overflow: hidden; }
 .radio-option input { accent-color: var(--blue-ink); }
 .radio-option.is-active { border-color: var(--ink); background: var(--blue-3); }
 
+/* ---------- Checkout delivery (zone autocomplete + notices) ---------- */
+.ship-tag {
+  display: inline-block; margin-left: 6px;
+  font-size: .62rem; letter-spacing: .04em; font-weight: 700; text-transform: uppercase;
+  background: #DDEFE2; color: #36673E; padding: 2px 8px; border-radius: 999px;
+}
+.deliv-combo { position: relative; }
+.deliv-combo > label {
+  display: block; font-size: .68rem; color: var(--ink-soft);
+  font-weight: 600; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 8px;
+}
+.deliv-combo > input {
+  width: 100%; padding: 13px 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: #fff;
+  font-family: inherit; font-size: .95rem; color: var(--ink);
+  outline: none; transition: border-color .2s;
+}
+.deliv-combo > input:focus { border-color: var(--ink); }
+.deliv-suggest {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-sm);
+  box-shadow: var(--shadow-md); max-height: 240px; overflow-y: auto;
+}
+.deliv-suggest .deliv-opt {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 11px 14px; background: transparent; border: 0;
+  border-bottom: 1px solid var(--line);
+  font-family: inherit; font-size: .9rem; color: var(--ink);
+}
+.deliv-suggest .deliv-opt:last-child { border-bottom: 0; }
+.deliv-suggest .deliv-opt:hover { background: var(--blue-3); }
+.deliv-status {
+  margin-top: 10px; font-size: .85rem; padding: 10px 14px;
+  border-radius: var(--r-sm); line-height: 1.5;
+}
+.deliv-status.is-in  { background: #DDEFE2; color: #36673E; }
+.deliv-status.is-out { background: #FBF1E0; color: #8A6D2A; }
+.deliv-gate {
+  font-size: .9rem; color: var(--blue-ink); line-height: 1.55;
+  padding: 14px 16px; border-radius: var(--r-sm);
+  background: var(--blue-3); border: 1px solid var(--line);
+}
+
 /* ---------- Story + Visit ---------- */
 .split {
   display: grid; grid-template-columns: 1fr 1fr;

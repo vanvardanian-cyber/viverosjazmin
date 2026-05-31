@@ -1913,6 +1913,8 @@
              <span class="guest-or">para rellenar más rápido</span>
            </div>`;
 
+      const canDeliver = cartTotal() >= DELIVERY.min;
+
       root.innerHTML = `
         <div class="cart-layout">
           <form class="form-card" id="checkout-form">
@@ -1940,12 +1942,28 @@
               </label>
               <label class="radio-option">
                 <input type="radio" name="delivery" value="ship">
-                <span>${t("checkout.ship")}</span>
+                <span>${t("checkout.ship")} <span class="ship-tag">${t("checkout.freeShipTag")}</span></span>
               </label>
             </div>
-            <div class="form-field full mt-16" id="ship-addr" style="display:none;">
-              <label>${t("checkout.address")}</label>
-              <input type="text" name="address" placeholder="Calle, número, ciudad, CP">
+            <div id="ship-addr" style="display:none;">
+              ${canDeliver ? `
+              <div class="deliv-combo mt-16">
+                <label>${t("checkout.cpTown")}</label>
+                <input type="text" id="deliv-loc" autocomplete="off" placeholder="${t("checkout.locPlaceholder")}">
+                <div class="deliv-suggest" id="deliv-suggest" hidden></div>
+              </div>
+              <div class="form-field full mt-16">
+                <label>${t("checkout.street")}</label>
+                <input type="text" name="street" placeholder="${t("checkout.streetPlaceholder")}">
+              </div>
+              <div class="deliv-status" id="deliv-status" hidden></div>
+              <input type="hidden" name="cp" id="deliv-cp">
+              <input type="hidden" name="town" id="deliv-town">
+              ` : `
+              <div class="deliv-gate mt-16">
+                ${t("checkout.minNotice")} <strong>${t("checkout.youNeed")} ${formatPrice(DELIVERY.min - cartTotal())}</strong> ${t("checkout.forFreeShip")}
+              </div>
+              `}
             </div>
             <div class="form-field full mt-16">
               <label>${t("checkout.notes")}</label>
@@ -1970,15 +1988,90 @@
           root.querySelectorAll(".radio-option").forEach(o => o.classList.remove("is-active"));
           r.closest(".radio-option").classList.add("is-active");
           addrField.style.display = r.value === "ship" ? "" : "none";
-          if (r.value === "ship") addrField.querySelector("input").setAttribute("required", "");
-          else addrField.querySelector("input").removeAttribute("required");
+          const ship = r.value === "ship" && canDeliver;
+          const locEl = root.querySelector("#deliv-loc");
+          const streetEl = root.querySelector('input[name="street"]');
+          if (locEl)    locEl.required = ship;
+          if (streetEl) streetEl.required = ship;
         });
       });
+
+      // Delivery-zone autocomplete — suggests CP/town from DELIVERY.zone as you
+      // type; manual entry allowed; flags whether the address is in our 7 km zone.
+      const locEl = root.querySelector("#deliv-loc");
+      if (locEl) {
+        const suggestEl = root.querySelector("#deliv-suggest");
+        const statusEl  = root.querySelector("#deliv-status");
+        const cpEl      = root.querySelector("#deliv-cp");
+        const townEl    = root.querySelector("#deliv-town");
+        const norm = s => (s || "").toString().trim().toLowerCase();
+        const zoneFromText = (txt) => {
+          const cp = (String(txt).match(/\b\d{5}\b/) || [])[0];
+          return cp ? (DELIVERY.zone.find(z => z.cp === cp) || null) : null;
+        };
+        function setStatus(zone) {
+          if (!statusEl) return;
+          if (zone) {
+            statusEl.hidden = false; statusEl.className = "deliv-status is-in";
+            statusEl.textContent = "✓ " + t("checkout.inZone");
+          } else if (locEl.value.trim()) {
+            statusEl.hidden = false; statusEl.className = "deliv-status is-out";
+            statusEl.textContent = t("checkout.outZone");
+          } else {
+            statusEl.hidden = true;
+          }
+        }
+        function renderSuggest() {
+          const q = norm(locEl.value);
+          const digits = q.replace(/\D/g, "");
+          if (!q) { suggestEl.hidden = true; suggestEl.innerHTML = ""; return; }
+          const matches = DELIVERY.zone.filter(z =>
+            (digits && z.cp.startsWith(digits)) || norm(z.town).includes(q)
+          ).slice(0, 6);
+          if (!matches.length) { suggestEl.hidden = true; suggestEl.innerHTML = ""; return; }
+          suggestEl.innerHTML = matches.map(z =>
+            `<button type="button" class="deliv-opt" data-cp="${z.cp}"><strong>${z.cp}</strong> · ${z.town}</button>`
+          ).join("");
+          suggestEl.hidden = false;
+        }
+        function pick(z) {
+          locEl.value = z.cp + " · " + z.town;
+          cpEl.value = z.cp; townEl.value = z.town;
+          suggestEl.hidden = true; suggestEl.innerHTML = "";
+          setStatus(z);
+        }
+        locEl.addEventListener("input", () => {
+          const z = zoneFromText(locEl.value);
+          cpEl.value = z ? z.cp : ((String(locEl.value).match(/\b\d{5}\b/) || [])[0] || "");
+          townEl.value = z ? z.town : "";
+          setStatus(z);
+          renderSuggest();
+        });
+        suggestEl.addEventListener("mousedown", (e) => {
+          const b = e.target.closest(".deliv-opt"); if (!b) return;
+          e.preventDefault();
+          const z = DELIVERY.zone.find(x => x.cp === b.dataset.cp);
+          if (z) pick(z);
+        });
+        locEl.addEventListener("blur", () => setTimeout(() => { suggestEl.hidden = true; }, 120));
+      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const ref = "JZ-" + Date.now().toString(36).toUpperCase();
         const details = Object.fromEntries(new FormData(form));
+        // Home delivery requires the minimum order — block and nudge to pickup.
+        if (details.delivery === "ship" && cartTotal() < DELIVERY.min) {
+          alert(t("checkout.minNotice"));
+          return;
+        }
+        // Compose the shipping address from the structured fields.
+        const shipAddr = details.delivery === "ship"
+          ? [ (details.street || "").trim(),
+              [(details.cp || "").trim(), (details.town || "").trim()].filter(Boolean).join(" ") ]
+              .filter(Boolean).join(", ")
+          : "";
+        details.address = shipAddr;   // keep legacy readers (gracias page) working
         const items = getCart();
         const total = cartTotal();
         const subtotal = total;
@@ -2001,7 +2094,7 @@
           customer_email:   (details.email || "").trim(),
           customer_phone:   (details.phone || "").trim(),
           delivery_method:  details.delivery === "ship" ? "ship" : "pickup",
-          delivery_address: (details.address || "").trim() || null,
+          delivery_address: shipAddr || null,
           notes:            (details.notes   || "").trim() || null,
           items:            rowItems,
           subtotal:         Number(subtotal.toFixed(2)),

@@ -27,6 +27,25 @@ const CATEGORIES = [
   { id: "flores",    world: "floristeria", es: "Flores de temporada",   va: "Flors de temporada" }
 ];
 
+/* ----- Home delivery -----
+   Local delivery zone: Castelló de la Plana + towns within ~7 km.
+   `min` is the minimum order (in €) for home delivery (free above it).
+   Edit the `zone` list to add/remove postal codes you deliver to. */
+const DELIVERY = {
+  min: 40,
+  zone: [
+    { cp: "12001", town: "Castelló de la Plana" },
+    { cp: "12002", town: "Castelló de la Plana" },
+    { cp: "12003", town: "Castelló de la Plana" },
+    { cp: "12004", town: "Castelló de la Plana" },
+    { cp: "12005", town: "Castelló de la Plana" },
+    { cp: "12006", town: "Castelló de la Plana" },
+    { cp: "12100", town: "El Grau de Castelló" },
+    { cp: "12550", town: "Almassora" },
+    { cp: "12190", town: "Borriol" }
+  ]
+};
+
 /* Product images: themed SVG data-URLs are generated at runtime
    from product.imgSeed so the site is fully self-contained.
    To use real photos, set product.img to a URL — the admin page
@@ -396,8 +415,18 @@ const I18N = {
     "checkout.phoneLbl": "Teléfono",
     "checkout.delivery": "Recogida / Envío",
     "checkout.pickup": "Recoger en tienda (gratis)",
-    "checkout.ship": "Envío a domicilio (Castelló y alrededores)",
+    "checkout.ship": "Envío a domicilio",
     "checkout.address": "Dirección de envío",
+    "checkout.freeShipTag": "Gratis desde 40 €",
+    "checkout.cpTown": "Código postal o población",
+    "checkout.locPlaceholder": "Escribe tu CP o población: 12005, Almassora…",
+    "checkout.street": "Calle y número",
+    "checkout.streetPlaceholder": "p. ej. Calle Mayor 12, 3ºA",
+    "checkout.minNotice": "El envío a domicilio está disponible para pedidos desde 40 €.",
+    "checkout.youNeed": "Te faltan",
+    "checkout.forFreeShip": "para poder pedir con envío.",
+    "checkout.inZone": "¡Repartimos en tu zona!",
+    "checkout.outZone": "Esta dirección está fuera de nuestra zona de reparto (7 km). Elige recogida en tienda o escríbenos.",
     "checkout.notes": "Notas para el pedido",
     "checkout.summary": "Resumen del pedido",
     "checkout.submit": "Enviar pedido",
@@ -600,8 +629,18 @@ const I18N = {
     "checkout.phoneLbl": "Telèfon",
     "checkout.delivery": "Arreplegada / Enviament",
     "checkout.pickup": "Arreplegar a la botiga (gratis)",
-    "checkout.ship": "Enviament a domicili (Castelló i voltants)",
+    "checkout.ship": "Enviament a domicili",
     "checkout.address": "Adreça d'enviament",
+    "checkout.freeShipTag": "Gratis des de 40 €",
+    "checkout.cpTown": "Codi postal o població",
+    "checkout.locPlaceholder": "Escriu el teu CP o població: 12005, Almassora…",
+    "checkout.street": "Carrer i número",
+    "checkout.streetPlaceholder": "p. ex. Carrer Major 12, 3rA",
+    "checkout.minNotice": "L'enviament a domicili està disponible per a comandes des de 40 €.",
+    "checkout.youNeed": "Et falten",
+    "checkout.forFreeShip": "per a poder demanar amb enviament.",
+    "checkout.inZone": "Repartim a la teua zona!",
+    "checkout.outZone": "Esta adreça està fora de la nostra zona de repartiment (7 km). Tria arreplegada a la botiga o escriu-nos.",
     "checkout.notes": "Notes per a la comanda",
     "checkout.summary": "Resum de la comanda",
     "checkout.submit": "Enviar comanda",
