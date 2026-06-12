@@ -585,15 +585,20 @@
 
   /* ---------------- i18n ---------------- */
 
+  const LANGS = ["es", "va", "en"];
   function getLang() {
     const stored = localStorage.getItem(STORAGE_LANG);
-    if (stored === "es" || stored === "va") return stored;
+    if (LANGS.includes(stored)) return stored;
     // default to Spanish
     return "es";
   }
+  function langTag(lang) {
+    return lang === "va" ? "ca-valencia" : lang === "en" ? "en" : "es";
+  }
   function setLang(lang) {
+    if (!LANGS.includes(lang)) lang = "es";
     localStorage.setItem(STORAGE_LANG, lang);
-    document.documentElement.lang = lang === "va" ? "ca-valencia" : "es";
+    document.documentElement.lang = langTag(lang);
     applyTranslations();
     // re-render dynamic content on the current page
     document.dispatchEvent(new CustomEvent("vj:langchange", { detail: { lang } }));
@@ -617,8 +622,8 @@
         if (attr && key) el.setAttribute(attr, t(key));
       });
     });
-    // active language button
-    document.querySelectorAll(".lang-toggle button").forEach(btn => {
+    // active language option
+    document.querySelectorAll(".lang-menu button[data-lang]").forEach(btn => {
       btn.classList.toggle("is-active", btn.dataset.lang === getLang());
     });
   }
@@ -1152,6 +1157,24 @@
     const cl = (id) => { const c = CATEGORIES.find(x => x.id === id); return c ? c[lang] : id; };
     const all = t("nav.seeAll");
     const chevron = `<svg class="dd-caret" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+    // Mini SVG flags (reliable cross-platform, unlike emoji flags)
+    const flags = {
+      es: `<span class="flag"><svg viewBox="0 0 3 2" preserveAspectRatio="none"><rect width="3" height="2" fill="#AA151B"/><rect y=".5" width="3" height="1" fill="#F1BF00"/></svg></span>`,
+      va: `<span class="flag"><svg viewBox="0 0 9 6" preserveAspectRatio="none"><rect width="9" height="6" fill="#F1BF00"/><g fill="#DA121A"><rect x="1" width="1" height="6"/><rect x="3" width="1" height="6"/><rect x="5" width="1" height="6"/><rect x="7" width="1" height="6"/></g></svg></span>`,
+      en: `<span class="flag"><svg viewBox="0 0 60 30" preserveAspectRatio="none"><rect width="60" height="30" fill="#012169"/><path d="M0,0 60,30 M60,0 0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 60,30 M60,0 0,30" stroke="#C8102E" stroke-width="4"/><rect x="25" width="10" height="30" fill="#fff"/><rect y="10" width="60" height="10" fill="#fff"/><rect x="27" width="6" height="30" fill="#C8102E"/><rect y="12" width="60" height="6" fill="#C8102E"/></svg></span>`
+    };
+    const langNames = { es: "Español", va: "Valencià", en: "English" };
+    const langCodes = { es: "ES", va: "VAL", en: "EN" };
+    const langSelect = (extra) => `
+      <div class="lang-select ${extra || ""}" data-lang-select>
+        <button type="button" class="lang-current" aria-haspopup="true" aria-expanded="false" aria-label="Idioma / Language">
+          ${flags[lang]}<span class="lang-code">${langCodes[lang]}</span>
+          <svg class="lang-caret" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-menu">
+          ${LANGS.map(l => `<button type="button" data-lang="${l}" class="lang-opt ${l === lang ? "is-active" : ""}">${flags[l]}<span>${langNames[l]}</span></button>`).join("")}
+        </div>
+      </div>`;
     return `
       <header class="header header--tiered">
         <div class="header-top">
@@ -1164,14 +1187,10 @@
               <span class="brand-sub" data-i18n="brand.subShort">Plantas &amp; Flores</span>
             </a>
             <div class="header-actions">
-              <a href="tienda.html" class="icon-btn search-btn" aria-label="Buscar">
+              <button type="button" class="icon-btn search-btn" data-search-toggle aria-label="Buscar">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-              </a>
-              <div class="lang-toggle desktop-only" role="group" aria-label="Idioma">
-                <button data-lang="es">ES</button>
-                <span class="sep">·</span>
-                <button data-lang="va">VAL</button>
-              </div>
+              </button>
+              ${langSelect("lang-select--desktop")}
               <a href="favoritos.html" class="icon-btn fav-btn" aria-label="Favoritos">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="fav-count is-empty">0</span>
@@ -1232,22 +1251,27 @@
               <li class="mainnav-item"><a class="mainnav-link" href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a></li>
               <li class="mainnav-item"><a class="mainnav-link" href="contacto.html" data-i18n="nav.contact">Contacto</a></li>
               <li class="mainnav-item mainnav-lang mobile-only">
-                <div class="lang-toggle" role="group" aria-label="Idioma">
-                  <button data-lang="es">ES</button>
-                  <span class="sep">·</span>
-                  <button data-lang="va">VAL</button>
-                </div>
+                ${langSelect("lang-select--mobile")}
               </li>
             </ul>
           </div>
         </nav>
+        <div class="header-search" data-search-panel hidden>
+          <form class="container header-search-form" data-search-form>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" name="q" data-search-input placeholder="${t("common.search")}" autocomplete="off" aria-label="Buscar productos">
+            <button type="button" class="header-search-close" data-search-close aria-label="Cerrar">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </form>
+        </div>
         <div class="nav-backdrop" aria-hidden="true"></div>
       </header>
     `;
   }
   function footerHTML() {
     const lang = getLang();
-    const hours = SITE_INFO.hours[lang].replace(" · ", "<br>");
+    const hours = (SITE_INFO.hours[lang] || SITE_INFO.hours.es).replace(" · ", "<br>");
     return `
       <footer class="footer">
         <div class="container">
@@ -1382,10 +1406,44 @@
       if (!window.matchMedia("(max-width: 980px)").matches) closeNav();
     });
 
-    // Lang switches
-    document.querySelectorAll(".lang-toggle button").forEach(b => {
-      b.addEventListener("click", () => setLang(b.dataset.lang));
+    // Language flag dropdown(s): toggle the menu, pick a language
+    document.querySelectorAll("[data-lang-select]").forEach(sel => {
+      const btn = sel.querySelector(".lang-current");
+      if (btn) btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = sel.classList.contains("is-open");
+        document.querySelectorAll("[data-lang-select].is-open").forEach(s => s.classList.remove("is-open"));
+        sel.classList.toggle("is-open", !open);
+        btn.setAttribute("aria-expanded", String(!open));
+      });
+      sel.querySelectorAll("button[data-lang]").forEach(b => {
+        b.addEventListener("click", () => setLang(b.dataset.lang));
+      });
     });
+    document.addEventListener("click", () => {
+      document.querySelectorAll("[data-lang-select].is-open").forEach(s => s.classList.remove("is-open"));
+    });
+
+    // Header search: toggle the inline panel; submit → shop with ?q=
+    const searchPanel = document.querySelector("[data-search-panel]");
+    const searchInput = document.querySelector("[data-search-input]");
+    document.querySelectorAll("[data-search-toggle]").forEach(b => {
+      b.addEventListener("click", () => {
+        if (!searchPanel) return;
+        const willShow = searchPanel.hasAttribute("hidden");
+        searchPanel.toggleAttribute("hidden", !willShow);
+        if (willShow && searchInput) setTimeout(() => searchInput.focus(), 30);
+      });
+    });
+    const searchClose = document.querySelector("[data-search-close]");
+    if (searchClose && searchPanel) searchClose.addEventListener("click", () => searchPanel.setAttribute("hidden", ""));
+    const searchForm = document.querySelector("[data-search-form]");
+    if (searchForm) searchForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = (searchInput && searchInput.value || "").trim();
+      location.href = "tienda.html" + (q ? "?q=" + encodeURIComponent(q) : "");
+    });
+
     updateCartBadge();
     updateAuthLink();
   }
@@ -1576,7 +1634,8 @@
     const params = new URLSearchParams(location.search);
     let activeCat = params.get("cat") || "all";
     let activeWorld = params.get("world") || "";   // "" | "vivero" | "floristeria"
-    let term = "";
+    let term = (params.get("q") || "").trim();     // header search lands here
+    if (search && term) search.value = term;
 
     const WORLDS = [
       { id: "vivero",      key: "world.vivero" },
@@ -2669,7 +2728,7 @@
 
   /* ---------------- Boot ---------------- */
   document.addEventListener("DOMContentLoaded", async () => {
-    document.documentElement.lang = getLang() === "va" ? "ca-valencia" : "es";
+    document.documentElement.lang = langTag(getLang());
     mountChrome();
     initHeader();
     applyTranslations();
