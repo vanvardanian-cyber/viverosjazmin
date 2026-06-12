@@ -1148,40 +1148,32 @@
 
   /* ---------------- Header / Footer templates ---------------- */
   function headerHTML() {
+    const lang = getLang();
+    const cl = (id) => { const c = CATEGORIES.find(x => x.id === id); return c ? c[lang] : id; };
+    const all = t("nav.seeAll");
+    const chevron = `<svg class="dd-caret" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
     return `
-      <header class="header">
-        <div class="container header-inner">
-          <div class="header-side header-side--left">
-            <button class="menu-toggle" aria-label="Menu" aria-expanded="false">
+      <header class="header header--tiered">
+        <div class="header-top">
+          <div class="container header-top-inner">
+            <button class="menu-toggle" aria-label="Menú" aria-expanded="false">
               <span></span><span></span><span></span>
             </button>
-            <div class="lang-toggle desktop-only" role="group" aria-label="Language">
-              <button data-lang="es">ES</button>
-              <span class="sep">·</span>
-              <button data-lang="va">VAL</button>
-            </div>
-          </div>
-
-          <a class="brand" href="index.html" aria-label="Jazmín · Plantas y Flores">
-            <span class="brand-name">Jazmín</span>
-            <span class="brand-sub" data-i18n="brand.subShort">Plantas &amp; Flores</span>
-          </a>
-
-          <div class="header-side header-side--right">
-            <nav class="nav" aria-label="primary">
-              <a href="tienda.html?world=vivero"      data-i18n="nav.vivero">Vivero</a>
-              <a href="tienda.html?world=floristeria" data-i18n="nav.floristeria">Floristería</a>
-              <a href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a>
-              <a href="contacto.html" data-i18n="nav.contact">Contacto</a>
-              <div class="lang-toggle mobile-only" role="group" aria-label="Language">
+            <a class="brand" href="index.html" aria-label="Jazmín · Plantas y Flores">
+              <span class="brand-name">Jazmín</span>
+              <span class="brand-sub" data-i18n="brand.subShort">Plantas &amp; Flores</span>
+            </a>
+            <div class="header-actions">
+              <a href="tienda.html" class="icon-btn search-btn" aria-label="Buscar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              </a>
+              <div class="lang-toggle desktop-only" role="group" aria-label="Idioma">
                 <button data-lang="es">ES</button>
                 <span class="sep">·</span>
                 <button data-lang="va">VAL</button>
               </div>
-            </nav>
-            <div class="header-actions">
               <a href="favoritos.html" class="icon-btn fav-btn" aria-label="Favoritos">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="fav-count is-empty">0</span>
               </a>
               <a href="carrito.html" class="icon-btn cart-btn" aria-label="Carrito">
@@ -1190,13 +1182,65 @@
               </a>
               <a class="user-pill" data-vj-user-link href="entrar.html" aria-label="Cuenta">
                 <span class="user-pill-avatar" data-vj-user-avatar aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                 </span>
                 <span class="user-pill-label" data-vj-user-label>Entrar</span>
               </a>
             </div>
           </div>
         </div>
+
+        <nav class="header-nav" aria-label="primary">
+          <div class="container">
+            <ul class="mainnav">
+              <li class="mainnav-item has-dropdown">
+                <a class="mainnav-link" href="tienda.html?world=vivero" data-i18n="nav.plantas">Plantas</a>
+                <button type="button" class="dd-toggle" aria-label="Abrir submenú">${chevron}</button>
+                <div class="dropdown">
+                  <a href="tienda.html?cat=interior">${cl("interior")}</a>
+                  <a href="tienda.html?cat=exterior">${cl("exterior")}</a>
+                  <a href="tienda.html?cat=arboles">${cl("arboles")}</a>
+                  <a href="tienda.html?cat=sustratos">${cl("sustratos")}</a>
+                  <a class="dropdown-all" href="tienda.html?world=vivero">${all} →</a>
+                </div>
+              </li>
+              <li class="mainnav-item has-dropdown">
+                <a class="mainnav-link" href="tienda.html?world=floristeria" data-i18n="nav.flores">Flores</a>
+                <button type="button" class="dd-toggle" aria-label="Abrir submenú">${chevron}</button>
+                <div class="dropdown">
+                  <a href="tienda.html?cat=flores">${cl("flores")}</a>
+                  <a class="dropdown-all" href="tienda.html?world=floristeria">${all} →</a>
+                </div>
+              </li>
+              <li class="mainnav-item has-dropdown">
+                <a class="mainnav-link" href="tienda.html?cat=macetas" data-i18n="nav.decoracion">Decoración</a>
+                <button type="button" class="dd-toggle" aria-label="Abrir submenú">${chevron}</button>
+                <div class="dropdown">
+                  <a href="tienda.html?cat=macetas">${cl("macetas")}</a>
+                </div>
+              </li>
+              <li class="mainnav-item has-dropdown">
+                <a class="mainnav-link" href="contacto.html" data-i18n="nav.eventos">Eventos</a>
+                <button type="button" class="dd-toggle" aria-label="Abrir submenú">${chevron}</button>
+                <div class="dropdown">
+                  <a href="contacto.html?tipo=boda"    data-i18n="contact.type.boda">Boda</a>
+                  <a href="contacto.html?tipo=evento"  data-i18n="contact.type.evento">Evento o celebración</a>
+                  <a href="contacto.html?tipo=funeral" data-i18n="contact.type.funeral">Funeral / duelo</a>
+                  <a href="contacto.html?tipo=empresa" data-i18n="contact.type.empresa">Empresa / negocio</a>
+                </div>
+              </li>
+              <li class="mainnav-item"><a class="mainnav-link" href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a></li>
+              <li class="mainnav-item"><a class="mainnav-link" href="contacto.html" data-i18n="nav.contact">Contacto</a></li>
+              <li class="mainnav-item mainnav-lang mobile-only">
+                <div class="lang-toggle" role="group" aria-label="Idioma">
+                  <button data-lang="es">ES</button>
+                  <span class="sep">·</span>
+                  <button data-lang="va">VAL</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </nav>
         <div class="nav-backdrop" aria-hidden="true"></div>
       </header>
     `;
@@ -1274,12 +1318,32 @@
       existing.replaceWith(wrap.firstElementChild);
     }
   }
+  function rerenderHeader() {
+    // Header dropdowns carry language-dependent category labels
+    const existing = document.querySelector(".header");
+    if (existing) {
+      const wrap = document.createElement("div");
+      wrap.innerHTML = headerHTML();
+      existing.replaceWith(wrap.firstElementChild);
+    }
+  }
 
   /* ---------------- Header / Nav ---------------- */
   function initHeader() {
     const tog = document.querySelector(".menu-toggle");
-    const nav = document.querySelector(".nav");
+    const nav = document.querySelector(".header-nav");
     const backdrop = document.querySelector(".nav-backdrop");
+
+    // Dropdown chevrons (mobile accordion; hidden on desktop where hover opens)
+    document.querySelectorAll(".header-nav .dd-toggle").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const item = btn.closest(".mainnav-item");
+        const open = item.classList.contains("is-expanded");
+        document.querySelectorAll(".mainnav-item.is-expanded").forEach(i => i.classList.remove("is-expanded"));
+        if (!open) item.classList.add("is-expanded");
+      });
+    });
 
     function closeNav() {
       if (!nav) return;
@@ -2621,11 +2685,12 @@
     // re-render footer on lang change (category labels & hours)
     document.addEventListener("vj:langchange", () => {
       rerenderFooter();
-      initHeader(); // re-wire lang buttons etc.
+      rerenderHeader();          // dropdowns carry translated category labels
+      initHeader();              // re-wire toggles, dropdowns, lang buttons
       applyTranslations();
       updateCartBadge();
       updateAuthLink();
-      // re-mark active nav
+      updateFavBadge();
       markActiveNav();
     });
     document.addEventListener("vj:authchange", updateAuthLink);
@@ -2636,7 +2701,7 @@
     function markActiveNav() {
       const here = location.pathname.split("/").pop() || "index.html";
       const hereWorld = new URLSearchParams(location.search).get("world") || "";
-      document.querySelectorAll(".nav a").forEach(a => {
+      document.querySelectorAll(".header-nav .mainnav-link").forEach(a => {
         const u = new URL(a.getAttribute("href"), location.href);
         const aPage = u.pathname.split("/").pop() || "index.html";
         const aWorld = u.searchParams.get("world") || "";
