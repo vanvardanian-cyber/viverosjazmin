@@ -16,69 +16,67 @@
 
 <div data-vj-header></div>
 
-<!-- ============== HERO (editorial, full-bleed) ============== -->
-<section class="hero hero--editorial">
-  <div class="hero-photo-wrap" data-reveal="fade">
-    <img class="hero-photo"
-         src="img/floristeria-vivero-jazmin-castellon-ramos-plantas-decoracion.webp"
-         alt="Floristería y vivero Jazmín en Castelló de la Plana — ramos de temporada con hortensias, rosas y plantas en jarrones."
-         loading="eager" fetchpriority="high" width="1600" height="900">
-  </div>
-  <div class="container hero-editorial-content">
-    <div class="hero-text" data-reveal="up">
+<!-- ============== HERO (compact, marketplace) ============== -->
+<section class="hero-shop">
+  <div class="container hero-shop-inner">
+    <div class="hero-shop-text" data-reveal="up">
       <span class="eyebrow" data-i18n="home.hero.eyebrow">Plantas &amp; Flores · Castelló · 1992</span>
-      <h1 data-i18n-html="home.hero.title">
-        <em>Plantas</em> para tu casa,<br>
-        <em>flores</em> para tu día.
-      </h1>
-      <span class="hero-rule" aria-hidden="true"></span>
-      <p class="lead" data-i18n="home.hero.lead">
-        Vivero y floristería en el corazón de Castelló de la Plana. Macetas, ramos, flores de temporada y la planta perfecta para cada rincón.
-      </p>
-      <div class="hero-actions">
-        <a href="tienda.html" class="btn btn-primary btn-arrow" data-i18n="home.hero.cta">Ver la tienda</a>
-        <a href="sobre.html"  class="btn btn-ghost btn-arrow" data-i18n="home.story.cta">Conoce más</a>
-      </div>
+      <h1 class="hero-shop-title" data-i18n-html="home.promise"><em>Verde</em> para tu casa.<br><em>Flores</em> para tus momentos.</h1>
+      <form class="hero-search" data-hero-search action="tienda.html" method="get" role="search">
+        <svg class="hero-search-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" name="q" data-hero-input class="hero-search-input" data-i18n-attr="placeholder:common.search" placeholder="Buscar productos…" autocomplete="off" aria-label="Buscar productos">
+        <button type="submit" class="hero-search-go" data-i18n="home.search.go">Buscar</button>
+      </form>
+      <div class="hero-pills" data-hero-pills aria-label="Categorías"></div>
     </div>
-    <div class="hero-foot">
-      <span class="hero-foot-meta">Castelló · 39.98°N</span>
-      <a href="#cat-section" class="hero-scroll" aria-label="Descubrir más">
-        <span>Descubre</span>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-      </a>
+    <div class="hero-shop-media" data-reveal="fade">
+      <img class="hero-shop-img"
+           src="img/floristeria-vivero-jazmin-castellon-ramos-plantas-decoracion.webp"
+           alt="Floristería y vivero Jazmín en Castelló de la Plana — ramos de temporada con hortensias, rosas y plantas en jarrones."
+           loading="eager" fetchpriority="high" width="1200" height="1200">
     </div>
   </div>
 </section>
 
-<!-- ============== CATEGORIES — two worlds ============== -->
-<section class="section" id="cat-section">
+<!-- ============== TRUST STRIP ============== -->
+<section class="trust-strip">
+  <div class="container trust-inner">
+    <span class="trust-item">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7zM5.5 19a2 2 0 1 0 0 .01zM18.5 19a2 2 0 1 0 0 .01z"/></svg>
+      <span data-i18n="home.trust.delivery">Entrega en Castelló (7 km)</span>
+    </span>
+    <span class="trust-item">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v11h16V9M4 9h16M9 20v-6h6v6"/></svg>
+      <span data-i18n="home.trust.pickup">Recogida en tienda</span>
+    </span>
+    <span class="trust-item">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      <span data-i18n="home.trust.secure">Pago seguro</span>
+    </span>
+    <span class="trust-item">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-5 7-9 7-9s7 4 7 9a7 7 0 0 1-7 7zM11 20v-9"/></svg>
+      <span data-i18n="home.trust.since">Floristería desde 1992</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============== SHELF — marketplace (toggle + grid) ============== -->
+<section class="section shelf-section" id="cat-section">
   <div class="container">
-    <div class="section-head section-head--split" data-reveal="up">
-      <div>
-        <span class="eyebrow" data-i18n="home.categories">Categorías</span>
-        <h2 class="display-heading"><em>Dos mundos,</em><br>una casa</h2>
+    <div class="shelf-head" data-reveal="up">
+      <div class="shelf-head-l">
+        <span class="eyebrow" data-i18n="home.shop.eyebrow">La tienda</span>
+        <h2 class="shelf-title" data-i18n="home.shop.title">Compra ahora</h2>
       </div>
-      <p class="section-head-lead">Plantas para tu casa y jardín, flores para tu día. Elige por dónde empezar.</p>
+      <div class="dept-toggle" role="tablist" aria-label="Departamento">
+        <button type="button" class="dept-btn is-active" data-dept="all" role="tab" aria-selected="true" data-i18n="home.dept.all">Todo</button>
+        <button type="button" class="dept-btn" data-dept="vivero" role="tab" aria-selected="false" data-i18n="home.dept.vivero">Plantas &amp; Jardín</button>
+        <button type="button" class="dept-btn" data-dept="floristeria" role="tab" aria-selected="false" data-i18n="home.dept.floristeria">Flores &amp; Eventos</button>
+      </div>
     </div>
-    <div class="world-doors" data-reveal="up">
-      <a class="world-door" href="tienda.html?world=vivero">
-        <img src="https://images.unsplash.com/photo-1466781783364-36c955e42a7f?auto=format&amp;fit=crop&amp;q=80&amp;w=1000" alt="" loading="lazy">
-        <div class="world-door-body">
-          <span class="world-door-eyebrow">01 — Vivero</span>
-          <h3 data-i18n="world.vivero">Vivero &amp; Jardín</h3>
-          <p data-i18n="world.viveroTag">Plantas, árboles y todo para tu jardín</p>
-          <span class="world-door-cta"><span data-i18n="home.hero.cta">Ver la tienda</span> <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-        </div>
-      </a>
-      <a class="world-door" href="tienda.html?world=floristeria">
-        <img src="img/jazmin-castello-coleccion-ramos-floristeria-castello.webp" alt="" loading="lazy">
-        <div class="world-door-body">
-          <span class="world-door-eyebrow">02 — Floristería</span>
-          <h3 data-i18n="world.floristeria">Floristería &amp; Flores</h3>
-          <p data-i18n="world.floristeriaTag">Ramos, flores y encargos especiales</p>
-          <span class="world-door-cta"><span data-i18n="home.hero.cta">Ver la tienda</span> <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-        </div>
-      </a>
+    <div class="product-grid shelf-grid" id="shelf-grid"></div>
+    <div class="shelf-more">
+      <a href="tienda.html" class="btn btn-outline btn-arrow" data-i18n="home.shop.all">Ver toda la tienda</a>
     </div>
   </div>
 </section>
@@ -143,24 +141,32 @@
   </div>
 </section>
 
-<!-- ============== NUMBERS (editorial) ============== -->
-<section class="numbers numbers--editorial" data-reveal="up">
-  <div class="container">
-    <div class="stat">
-      <div class="num">33</div>
-      <div class="lbl" data-i18n="home.stats.years">Años cultivando</div>
+<!-- ============== EVENTS BAND ============== -->
+<section class="events-band" data-reveal="up">
+  <div class="container events-inner">
+    <div class="events-text">
+      <span class="eyebrow" data-i18n="home.events.eyebrow">Para tu evento</span>
+      <h2 class="display-heading" data-i18n-html="home.events.title"><em>Flores</em> que cuentan<br>tu historia</h2>
+      <p data-i18n="home.events.text">Bodas, celebraciones, homenajes y empresas. Te asesoramos sin compromiso.</p>
+      <a href="contacto.html" class="btn btn-primary btn-arrow mt-16" data-i18n="home.events.cta">Pídenos presupuesto</a>
     </div>
-    <div class="stat">
-      <div class="num">+40</div>
-      <div class="lbl" data-i18n="home.stats.species">Variedades en stock</div>
-    </div>
-    <div class="stat">
-      <div class="num">1992</div>
-      <div class="lbl" data-i18n="home.stats.founded">Proyecto familiar</div>
-    </div>
-    <div class="stat">
-      <div class="num"><em>CS</em></div>
-      <div class="lbl" data-i18n="home.stats.region">Castelló de la Plana</div>
+    <div class="events-cards">
+      <a class="event-card" href="contacto.html?tipo=boda">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5"/><circle cx="16" cy="15" r="5"/><path d="M8 10l2-6h4l2 6"/></svg>
+        <strong data-i18n="contact.type.boda">Boda</strong>
+      </a>
+      <a class="event-card" href="contacto.html?tipo=evento">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.5 2.5M16.5 16.5L19 19M19 5l-2.5 2.5M7.5 16.5L5 19"/><circle cx="12" cy="12" r="3"/></svg>
+        <strong data-i18n="contact.type.evento">Evento</strong>
+      </a>
+      <a class="event-card" href="contacto.html?tipo=funeral">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 7.6a5 5 0 0 0-7.1 0L12 9.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 23.4l8.8-8.7a5 5 0 0 0 0-7.1z"/></svg>
+        <strong data-i18n="contact.type.funeral">Funeral</strong>
+      </a>
+      <a class="event-card" href="contacto.html?tipo=empresa">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3M9 9v.01M9 13v.01M9 17v.01"/></svg>
+        <strong data-i18n="contact.type.empresa">Empresa</strong>
+      </a>
     </div>
   </div>
 </section>

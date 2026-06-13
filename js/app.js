@@ -1472,44 +1472,94 @@
 
   /* ---------------- Page renderers ---------------- */
 
+  // A product's "world" (vivero / floristeria) is inherited from its category.
+  function productWorld(p) {
+    const c = CATEGORIES.find(x => x.id === p.cat);
+    return c ? c.world : "";
+  }
+
+  // Round-robin a pool of products across their categories so a grid shows
+  // variety instead of 10 of the same thing; featured items float up per cat.
+  function pickSpread(pool, n) {
+    const byCat = {};
+    pool.forEach(p => { (byCat[p.cat] = byCat[p.cat] || []).push(p); });
+    Object.values(byCat).forEach(arr =>
+      arr.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)));
+    const cats = Object.keys(byCat);
+    const out = [];
+    for (let i = 0; out.length < n; i++) {
+      let added = false;
+      for (const c of cats) {
+        if (byCat[c][i]) { out.push(byCat[c][i]); added = true; if (out.length >= n) break; }
+      }
+      if (!added) break;
+    }
+    return out;
+  }
+
+  // Marketplace shelf: a department-filtered grid of buyable product cards.
+  function renderShelf(dept) {
+    const grid = document.getElementById("shelf-grid");
+    if (!grid) return;
+    let pool = PRODUCTS.filter(p => p.availableOnline !== false && p.stock > 0);
+    if (dept && dept !== "all") pool = pool.filter(p => productWorld(p) === dept);
+    const items = pickSpread(pool, 10);
+    grid.innerHTML = items.length
+      ? items.map(productCardHTML).join("")
+      : `<p class="shelf-empty" data-i18n="home.shop.empty">Pronto más productos por aquí.</p>`;
+    attachAddButtons(grid);
+    applyTranslations();
+  }
+
+  function renderHeroPills() {
+    const wrap = document.querySelector("[data-hero-pills]");
+    if (!wrap) return;
+    const lang = getLang();
+    wrap.innerHTML = CATEGORIES
+      .map(c => `<a class="pill" href="tienda.html?cat=${c.id}">${c[lang]}</a>`)
+      .join("");
+  }
+
+  function activeDept() {
+    const on = document.querySelector(".dept-toggle .dept-btn.is-active");
+    return on ? on.dataset.dept : "all";
+  }
+
   function renderHome() {
-    // featured: pick 8 across categories
-    const featured = pickFeatured(8);
     const grid = document.getElementById("featured-grid");
     if (grid) {
+      const featured = pickFeatured(8);
       grid.innerHTML = featured.map(productCardHTML).join("");
       attachAddButtons(grid);
       initRail(grid);
     }
-    const cats = document.getElementById("cat-grid");
-    if (cats) {
-      // Editorial bento: each tile shows a real photo matching the category,
-      // a dark scrim (CSS ::before), the name in italic serif, an arrow chip.
-      const CAT_PHOTO = {
-        interior:  "1501004318641-b39e6451bec6",  // potted indoor plant
-        exterior:  "1466781783364-36c955e42a7f",  // garden greenery
-        arboles:   "1518531933037-91b2f5f229cc",  // tree / foliage
-        sustratos: "1416879595882-3373a0480b5b",  // soil / substrate
-        macetas:   "1459411552884-841db9b3cc2a",  // potted plant
-        flores:    "1457089328109-e5d9bd499191",  // seasonal flowers
-      };
-      const catPhoto = (id, w) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&q=80&w=${w}`;
-      cats.innerHTML = CATEGORIES.map((c, i) => {
-        const pid = CAT_PHOTO[c.id];
-        const w = i === 0 ? 1100 : 720;   // first tile is the large one
-        const media = pid
-          ? `<img class="cat-photo" src="${catPhoto(pid, w)}" alt="" loading="lazy">`
-          : `<div class="cat-svg">${catSilhouetteSVG(c.id)}</div>`;
-        return `
-          <a class="cat-tile" href="tienda.html?cat=${c.id}">
-            ${media}
-            <span class="cat-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-            <span class="cat-name">${c[getLang()]}</span>
-          </a>
-        `;
-      }).join("");
+
+    // Marketplace shelf + department toggle
+    const toggle = document.querySelector(".dept-toggle");
+    if (toggle && !toggle._wired) {
+      toggle._wired = true;
+      toggle.querySelectorAll(".dept-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          toggle.querySelectorAll(".dept-btn").forEach(b => {
+            b.classList.remove("is-active");
+            b.setAttribute("aria-selected", "false");
+          });
+          btn.classList.add("is-active");
+          btn.setAttribute("aria-selected", "true");
+          renderShelf(btn.dataset.dept);
+        });
+      });
+    }
+    renderHeroPills();
+    renderShelf(activeDept());
+
+    // Keep category-dependent text in sync when the language changes.
+    if (!renderHome._langWired) {
+      renderHome._langWired = true;
+      document.addEventListener("vj:langchange", () => {
+        renderHeroPills();
+        renderShelf(activeDept());
+      });
     }
   }
 
