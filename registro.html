@@ -101,6 +101,30 @@
       err.textContent = (I18N[lang]["auth.err." + code]) || (I18N[lang]["auth.err.unknown"]);
       err.classList.add("is-show");
     }
+    // When the project requires email confirmation, signUp succeeds but doesn't
+    // log the user in yet — show a friendly "check your inbox" panel instead of
+    // an error, and let them head to the login page once they've confirmed.
+    function showConfirmSent(email) {
+      const wrap = document.querySelector(".auth-form-wrap");
+      if (!wrap) return;
+      const stored = localStorage.getItem("vj.lang");
+      const L = stored === "en" ? "en" : (stored === "va" ? "va" : "es");
+      const T = {
+        es: { h: "Revisa tu correo", p: `Te hemos enviado un enlace de confirmación a <strong>${email}</strong>. Ábrelo para activar tu cuenta; después podrás entrar con tu correo y contraseña.`, hint: "¿No lo ves? Mira en spam o promociones.", cta: "Ir a iniciar sesión" },
+        va: { h: "Revisa el teu correu", p: `T'hem enviat un enllaç de confirmació a <strong>${email}</strong>. Obri'l per a activar el teu compte; després podràs entrar amb el teu correu i contrasenya.`, hint: "No el veus? Mira a spam o promocions.", cta: "Anar a iniciar sessió" },
+        en: { h: "Check your email", p: `We've sent a confirmation link to <strong>${email}</strong>. Open it to activate your account; after that you can sign in with your email and password.`, hint: "Don't see it? Check spam or promotions.", cta: "Go to sign in" }
+      }[L];
+      wrap.innerHTML = `
+        <div class="auth-confirm" style="text-align:center;">
+          <div style="width:64px;height:64px;margin:0 auto 20px;border-radius:50%;background:var(--blue-3);display:flex;align-items:center;justify-content:center;color:var(--blue-ink);">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>
+          </div>
+          <h1>${T.h}</h1>
+          <p class="auth-sub">${T.p}</p>
+          <p style="color:var(--ink-soft);font-size:.82rem;margin:0 0 24px;">${T.hint}</p>
+          <a href="entrar.html" class="btn btn-primary btn-block btn-arrow">${T.cta}</a>
+        </div>`;
+    }
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       err.classList.remove("is-show");
@@ -118,6 +142,7 @@
         const ret = new URLSearchParams(location.search).get("return");
         location.href = ret || "cuenta.html";
       } catch (e) {
+        if ((e.message || "") === "confirm") { showConfirmSent(fd.get("email")); return; }
         showErr(e.message || "unknown");
       }
     });

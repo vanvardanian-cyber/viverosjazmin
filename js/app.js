@@ -266,38 +266,57 @@
     const u = _readUsers()[s.email];
     return u || null;
   }
+  // Customer accounts run on Supabase Auth. We keep the same VJ_AUTH API and
+  // error-code contract the login/register pages expect; only the internals
+  // changed. A successful sign-in/up is mirrored into localStorage by
+  // _syncSupabaseSession so the synchronous currentUser() keeps working.
   async function registerUser({ name, email, phone, password }) {
-    email = email.trim().toLowerCase();
+    email = (email || "").trim().toLowerCase();
     if (!name || !email || !password) throw new Error("missing");
     if (password.length < 6) throw new Error("short");
-    const users = _readUsers();
-    if (users[email]) throw new Error("exists");
-    const salt = _genSalt();
-    const passwordHash = await _hash(password, salt);
-    users[email] = {
-      name: name.trim(),
+    const supa = window.VJ_SUPA?.client;
+    if (!supa) throw new Error("unknown");
+    const { data, error } = await supa.auth.signUp({
       email,
-      phone: (phone || "").trim(),
-      passwordHash, salt,
-      createdAt: new Date().toISOString(),
-      addresses: [],
-      orders: []
-    };
-    _writeUsers(users);
-    localStorage.setItem(STORAGE_SESSION, JSON.stringify({ email, since: Date.now() }));
-    document.dispatchEvent(new CustomEvent("vj:authchange"));
-    return users[email];
+      password,
+      options: { data: { name: name.trim(), phone: (phone || "").trim() } }
+    });
+    if (error) {
+      const m = (error.message || "").toLowerCase();
+      if (m.includes("already") || m.includes("registered")) throw new Error("exists");
+      if (m.includes("weak") || m.includes("at least") || m.includes("6 char")) throw new Error("short");
+      throw new Error("unknown");
+    }
+    if (data.session) {
+      _syncSupabaseSession(data.session);
+      // Best-effort: store name/phone immediately (the DB trigger also does this).
+      if (data.user?.id) {
+        try {
+          await supa.from("profiles").upsert({
+            id: data.user.id, name: name.trim(), phone: (phone || "").trim()
+          });
+        } catch {}
+      }
+      return currentUser();
+    }
+    // No session means the project still requires email confirmation.
+    throw new Error("confirm");
   }
   async function loginUser({ email, password }) {
-    email = email.trim().toLowerCase();
-    const users = _readUsers();
-    const u = users[email];
-    if (!u) throw new Error("nouser");
-    const h = await _hash(password, u.salt);
-    if (h !== u.passwordHash) throw new Error("badpass");
-    localStorage.setItem(STORAGE_SESSION, JSON.stringify({ email, since: Date.now() }));
-    document.dispatchEvent(new CustomEvent("vj:authchange"));
-    return u;
+    email = (email || "").trim().toLowerCase();
+    if (!email || !password) throw new Error("missing");
+    const supa = window.VJ_SUPA?.client;
+    if (!supa) throw new Error("unknown");
+    const { data, error } = await supa.auth.signInWithPassword({ email, password });
+    if (error) {
+      const m = (error.message || "").toLowerCase();
+      if (m.includes("not confirmed")) throw new Error("confirm");
+      // Supabase returns one generic message for both wrong-password and
+      // unknown-email (to avoid leaking which emails have accounts).
+      throw new Error("badpass");
+    }
+    if (data.session) _syncSupabaseSession(data.session);
+    return currentUser();
   }
   async function logoutUser() {
     // If this is a Supabase OAuth session, sign out of Supabase too
@@ -1438,11 +1457,7 @@
     const searchClose = document.querySelector("[data-search-close]");
     if (searchClose && searchPanel) searchClose.addEventListener("click", () => searchPanel.setAttribute("hidden", ""));
     const searchForm = document.querySelector("[data-search-form]");
-    if (searchForm) searchForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const q = (searchInput && searchInput.value || "").trim();
-      location.href = "tienda.html" + (q ? "?q=" + encodeURIComponent(q) : "");
-    });
+    if (searchForm && searchInput) initSearchSuggest(searchForm, searchInput);
 
     updateCartBadge();
     updateAuthLink();
@@ -1467,6 +1482,194 @@
         av.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`;
         av.classList.remove("has-initials");
       }
+    });
+  }
+
+  /* ---------------- Search: autosuggest + typo-tolerance + recent ----------- */
+  const RECENT_SEARCH_KEY = "vj.recentSearch";
+  function getRecentSearches() {
+    try { return JSON.parse(localStorage.getItem(RECENT_SEARCH_KEY)) || []; }
+    catch { return []; }
+  }
+  function pushRecentSearch(term) {
+    term = (term || "").trim();
+    if (!term) return;
+    const r = getRecentSearches().filter(x => x.toLowerCase() !== term.toLowerCase());
+    r.unshift(term);
+    localStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(r.slice(0, 6)));
+  }
+  // Accent/case-insensitive normalisation so "jazmin" matches "Jazmín".
+  function _normTxt(s) {
+    return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  }
+  // Levenshtein distance — small catalog, so the O(n·m) cost is negligible.
+  function _lev(a, b) {
+    const m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+      const cur = [i];
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      }
+      prev = cur;
+    }
+    return prev[n];
+  }
+  function _escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  // Rank products against a query: exact > substring > fuzzy (typo-tolerant).
+  function searchProducts(termRaw, limit = 6) {
+    const term = _normTxt(termRaw);
+    if (!term) return [];
+    const toks = term.split(/\s+/).filter(Boolean);
+    const out = [];
+    PRODUCTS.forEach(p => {
+      if (p.availableOnline === false) return;
+      const name = _normTxt(productName(p));
+      const hay = name + " " + _normTxt(catName(p.cat));
+      let score = 0;
+      if (name.startsWith(term)) score = 100;
+      else if (name.includes(term)) score = 85;
+      else if (hay.includes(term)) score = 65;
+      else {
+        const words = hay.split(/\s+/);
+        const ok = toks.every(tk => words.some(w =>
+          w.includes(tk) || (tk.length >= 3 && _lev(w, tk) <= (tk.length > 5 ? 2 : 1))
+        ));
+        if (ok) score = 45;
+      }
+      if (score > 0) out.push({ p, score });
+    });
+    out.sort((a, b) =>
+      b.score - a.score ||
+      (b.p.featured ? 1 : 0) - (a.p.featured ? 1 : 0) ||
+      a.p.price - b.p.price);
+    return out.slice(0, limit).map(x => x.p);
+  }
+  function searchCategories(termRaw, limit = 3) {
+    const term = _normTxt(termRaw);
+    if (!term) return [];
+    const lang = getLang();
+    return CATEGORIES.filter(c => {
+      const label = _normTxt(c[lang]);
+      return label.includes(term) || term.length >= 3 && _lev(label, term) <= 3;
+    }).slice(0, limit);
+  }
+
+  // Attach a live suggestion dropdown to any search form+input pair.
+  function initSearchSuggest(form, input) {
+    if (!form || !input || form._suggestWired) return;
+    form._suggestWired = true;
+    form.classList.add("has-suggest");
+    const box = document.createElement("div");
+    box.className = "search-suggest";
+    box.hidden = true;
+    form.appendChild(box);
+
+    let items = [];        // flat list mirroring the rendered rows (for keyboard nav)
+    let activeIdx = -1;
+
+    const goTerm = (term) => {
+      term = (term || "").trim();
+      if (!term) return;
+      pushRecentSearch(term);
+      location.href = "tienda.html?q=" + encodeURIComponent(term);
+    };
+
+    function thumb(p) {
+      return p.img
+        ? `<img class="ss-thumb" src="${p.img}" alt="" loading="lazy">`
+        : `<span class="ss-thumb ss-thumb--ph"></span>`;
+    }
+
+    function render() {
+      const term = input.value.trim();
+      items = [];
+      let html = "";
+      if (!term) {
+        const recent = getRecentSearches();
+        if (!recent.length) { box.hidden = true; return; }
+        html += `<div class="ss-head">${t("search.recent")}</div>`;
+        recent.forEach(r => {
+          items.push({ kind: "term", term: r });
+          html += `<button type="button" class="ss-item ss-row" data-i="${items.length - 1}">
+            <svg class="ss-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span class="ss-label">${_escapeHtml(r)}</span></button>`;
+        });
+      } else {
+        const prods = searchProducts(term, 6);
+        const cats = searchCategories(term);
+        if (!prods.length && !cats.length) {
+          html += `<div class="ss-empty">${t("search.none")}</div>`;
+        }
+        if (prods.length) {
+          html += `<div class="ss-head">${t("search.products")}</div>`;
+          prods.forEach(p => {
+            items.push({ kind: "href", href: "producto.html?id=" + p.id });
+            html += `<a class="ss-item ss-prod" data-i="${items.length - 1}" href="producto.html?id=${p.id}">
+              ${thumb(p)}
+              <span class="ss-prod-text"><span class="ss-prod-name">${_escapeHtml(productName(p))}</span>
+              <span class="ss-prod-cat">${_escapeHtml(catName(p.cat))}</span></span>
+              <span class="ss-prod-price">${formatPrice(p.price)}</span></a>`;
+          });
+        }
+        if (cats.length) {
+          html += `<div class="ss-head">${t("search.categories")}</div>`;
+          cats.forEach(c => {
+            items.push({ kind: "href", href: "tienda.html?cat=" + c.id });
+            html += `<a class="ss-item ss-row" data-i="${items.length - 1}" href="tienda.html?cat=${c.id}">
+              <svg class="ss-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              <span class="ss-label">${_escapeHtml(c[getLang()])}</span></a>`;
+          });
+        }
+        items.push({ kind: "term", term });
+        html += `<button type="button" class="ss-item ss-all" data-i="${items.length - 1}">
+          <svg class="ss-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="ss-label">${t("search.seeAll")} “<strong>${_escapeHtml(term)}</strong>”</span></button>`;
+      }
+      box.innerHTML = html;
+      box.hidden = false;
+      activeIdx = -1;
+      box.querySelectorAll("[data-i]").forEach(el => {
+        el.addEventListener("mousedown", (e) => {
+          const it = items[+el.dataset.i];
+          if (!it) return;
+          e.preventDefault();                 // beat the input's blur
+          if (it.kind === "term") goTerm(it.term);
+          else location.href = it.href;
+        });
+      });
+    }
+
+    function setActive(idx) {
+      const rows = box.querySelectorAll(".ss-item");
+      if (!rows.length) return;
+      activeIdx = (idx + rows.length) % rows.length;
+      rows.forEach((r, i) => r.classList.toggle("is-active", i === activeIdx));
+      rows[activeIdx].scrollIntoView({ block: "nearest" });
+    }
+
+    input.addEventListener("input", render);
+    input.addEventListener("focus", render);
+    input.addEventListener("blur", () => setTimeout(() => { box.hidden = true; }, 150));
+    input.addEventListener("keydown", (e) => {
+      if (box.hidden) return;
+      if (e.key === "ArrowDown") { e.preventDefault(); setActive(activeIdx + 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setActive(activeIdx - 1); }
+      else if (e.key === "Escape") { box.hidden = true; }
+      else if (e.key === "Enter" && activeIdx >= 0) {
+        const it = items[activeIdx];
+        if (it) { e.preventDefault(); it.kind === "term" ? goTerm(it.term) : (location.href = it.href); }
+      }
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      goTerm(input.value);
     });
   }
 
@@ -1533,6 +1736,11 @@
       attachAddButtons(grid);
       initRail(grid);
     }
+
+    // Hero search gets the same live autosuggest as the header search.
+    const heroForm = document.querySelector("[data-hero-search]");
+    const heroInput = document.querySelector("[data-hero-input]");
+    if (heroForm && heroInput) initSearchSuggest(heroForm, heroInput);
 
     // Marketplace shelf + department toggle
     const toggle = document.querySelector(".dept-toggle");
@@ -2412,17 +2620,30 @@
     if (db) db.addEventListener("click", async () => {
       const lang = getLang();
       const msg = lang === "va"
-        ? "Açò esborrarà definitivament el teu compte i totes les teues comandes. Esta acció no es pot desfer. Continuar?"
-        : "Esto eliminará tu cuenta y todos tus pedidos de forma permanente. Esta acción no se puede deshacer. ¿Continuar?";
+        ? "Açò eliminarà el teu compte de manera permanent i tancaràs la sessió. Esta acció no es pot desfer. Continuar?"
+        : "Esto eliminará tu cuenta de forma permanente y cerrarás sesión. Esta acción no se puede deshacer. ¿Continuar?";
       if (!confirm(msg)) return;
+      db.disabled = true;
       try {
+        // Delete the real Supabase account (cascades to the profile row).
+        const supa = window.VJ_SUPA?.client;
+        if (supa) {
+          const { error } = await supa.rpc("delete_current_user");
+          if (error) throw error;
+        }
+        // Clear the local mirror + sign out.
         const users = _readUsers();
         delete users[u.email];
         _writeUsers(users);
         await logoutUser();
-      } finally {
-        location.href = "index.html";
+      } catch (e) {
+        db.disabled = false;
+        alert((lang === "va"
+          ? "No s'ha pogut eliminar el compte: "
+          : "No se pudo eliminar la cuenta: ") + (e.message || e));
+        return;
       }
+      location.href = "index.html";
     });
   }
 
