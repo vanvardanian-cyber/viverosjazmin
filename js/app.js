@@ -1205,10 +1205,11 @@
               <span class="brand-name">Jazmín</span>
               <span class="brand-sub" data-i18n="brand.subShort">Plantas &amp; Flores</span>
             </a>
+            <form class="header-search-inline has-suggest" data-search-form role="search">
+              <svg class="hsi-ic" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" name="q" class="hsi-input" data-search-input placeholder="${t("common.search")}" autocomplete="off" aria-label="Buscar productos">
+            </form>
             <div class="header-actions">
-              <button type="button" class="icon-btn search-btn" data-search-toggle aria-label="Buscar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-              </button>
               ${langSelect("lang-select--desktop")}
               <a href="favoritos.html" class="icon-btn fav-btn" aria-label="Favoritos">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1275,15 +1276,6 @@
             </ul>
           </div>
         </nav>
-        <div class="header-search" data-search-panel hidden>
-          <form class="container header-search-form" data-search-form>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="search" name="q" data-search-input placeholder="${t("common.search")}" autocomplete="off" aria-label="Buscar productos">
-            <button type="button" class="header-search-close" data-search-close aria-label="Cerrar">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-          </form>
-        </div>
         <div class="nav-backdrop" aria-hidden="true"></div>
       </header>
     `;
@@ -1443,20 +1435,9 @@
       document.querySelectorAll("[data-lang-select].is-open").forEach(s => s.classList.remove("is-open"));
     });
 
-    // Header search: toggle the inline panel; submit → shop with ?q=
-    const searchPanel = document.querySelector("[data-search-panel]");
-    const searchInput = document.querySelector("[data-search-input]");
-    document.querySelectorAll("[data-search-toggle]").forEach(b => {
-      b.addEventListener("click", () => {
-        if (!searchPanel) return;
-        const willShow = searchPanel.hasAttribute("hidden");
-        searchPanel.toggleAttribute("hidden", !willShow);
-        if (willShow && searchInput) setTimeout(() => searchInput.focus(), 30);
-      });
-    });
-    const searchClose = document.querySelector("[data-search-close]");
-    if (searchClose && searchPanel) searchClose.addEventListener("click", () => searchPanel.setAttribute("hidden", ""));
-    const searchForm = document.querySelector("[data-search-form]");
+    // Header search: a persistent inline bar with live autosuggest.
+    const searchForm = document.querySelector(".header-search-inline[data-search-form]");
+    const searchInput = searchForm && searchForm.querySelector("[data-search-input]");
     if (searchForm && searchInput) initSearchSuggest(searchForm, searchInput);
 
     updateCartBadge();
@@ -1737,10 +1718,6 @@
       initRail(grid);
     }
 
-    // Hero search gets the same live autosuggest as the header search.
-    const heroForm = document.querySelector("[data-hero-search]");
-    const heroInput = document.querySelector("[data-hero-input]");
-    if (heroForm && heroInput) initSearchSuggest(heroForm, heroInput);
 
     // Marketplace shelf + department toggle
     const toggle = document.querySelector(".dept-toggle");
