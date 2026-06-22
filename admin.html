@@ -87,11 +87,14 @@
 
       <!-- LEFT: product list -->
       <div>
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:10px; flex-wrap:wrap;">
           <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
             Catálogo · <span id="count-total">0</span> productos
           </h4>
-          <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" style="max-width:240px; padding-top:8px; padding-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" id="optimize-imgs-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Reduce el peso de las fotos guardadas para que la web cargue más ligera">⚡ Optimizar imágenes</button>
+            <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" style="max-width:200px; padding-top:8px; padding-bottom:8px;">
+          </div>
         </div>
         <div class="apps-filter" id="admin-world-filter" style="margin-bottom:14px;">
           <button data-world="all" class="is-active">Todos</button>
@@ -598,6 +601,26 @@
       if (e.key === "Enter") { e.preventDefault(); imgUrlAdd.click(); }
     });
 
+    // Downscale + recompress a data URL via canvas so we never store multi-MB
+    // photos in the DB (that bloats every page fetch → egress). Cap 1100px / JPEG.
+    function downscaleDataURL(src, maxDim = 1100, quality = 0.82) {
+      return new Promise(resolve => {
+        if (typeof src !== "string" || !src.startsWith("data:image")) return resolve(src);
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          const longest = Math.max(width, height);
+          if (longest > maxDim) { const s = maxDim / longest; width = Math.round(width * s); height = Math.round(height * s); }
+          const c = document.createElement("canvas");
+          c.width = width; c.height = height;
+          c.getContext("2d").drawImage(img, 0, 0, width, height);
+          try { resolve(c.toDataURL("image/jpeg", quality)); } catch { resolve(src); }
+        };
+        img.onerror = () => resolve(src);
+        img.src = src;
+      });
+    }
+
     // File upload (multi-select)
     imgFile.addEventListener("change", async (e) => {
       const files = Array.from(e.target.files || []);
@@ -614,26 +637,47 @@
       }
       for (const file of toProcess) {
         if (!file.type.startsWith("image/")) continue;
-        if (file.size > 2 * 1024 * 1024) {
-          alert(`"${file.name}" pesa más de 2 MB y se ha saltado. Redúcela o usa una URL.`);
+        if (file.size > 15 * 1024 * 1024) {
+          alert(`"${file.name}" pesa más de 15 MB y se ha saltado. Usa una imagen más pequeña.`);
           continue;
         }
-        if (file.size > 512 * 1024) {
-          if (!confirm(`"${file.name}" pesa ${(file.size/1024).toFixed(0)} KB. Se recomienda bajo 500 KB. ¿Añadir igualmente?`)) continue;
-        }
-        // Encode to base64 data URL
-        await new Promise(resolve => {
+        // Read → downscale/recompress → store. Keeps each image ~150–250 KB so
+        // the products fetch stays small (low egress, fast loads).
+        const dataURL = await new Promise(resolve => {
           const reader = new FileReader();
-          reader.onload = () => {
-            addImage(reader.result);
-            resolve();
-          };
-          reader.onerror = () => resolve();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
           reader.readAsDataURL(file);
         });
+        if (dataURL) addImage(await downscaleDataURL(dataURL));
       }
       imgFile.value = "";
     });
+
+    // One-time cleanup: shrink oversized base64 images already saved in the DB.
+    async function optimizeAllImages(btn) {
+      const isHeavyB64 = s => typeof s === "string" && s.startsWith("data:") && s.length > 300 * 1024;
+      const heavy = VJ_CATALOG.list().filter(p =>
+        [p.img, ...(Array.isArray(p.images) ? p.images : [])].filter(Boolean).some(isHeavyB64));
+      if (!heavy.length) { alert("Tus imágenes ya están optimizadas. 👍"); return; }
+      if (!confirm(`Se optimizarán las imágenes de ${heavy.length} producto(s). Tardará unos segundos. ¿Continuar?`)) return;
+      const orig = btn.textContent; btn.disabled = true;
+      let done = 0;
+      for (const p of heavy) {
+        const imgs = (Array.isArray(p.images) && p.images.length) ? p.images.slice() : (p.img ? [p.img] : []);
+        const out = [];
+        for (const s of imgs) out.push((typeof s === "string" && s.startsWith("data:")) ? await downscaleDataURL(s) : s);
+        p.images = out; p.img = out[0] || p.img;
+        btn.textContent = `Optimizando… ${++done}/${heavy.length}`;
+        try { await VJ_CATALOG.saveOne(p); } catch (e) { console.error(e); }
+      }
+      btn.textContent = orig; btn.disabled = false;
+      try { await VJ_CATALOG.reload(); } catch {}
+      renderList();
+      alert(`Listo: ${done} producto(s) optimizados. Tu web ahora carga mucho más ligera. 🌿`);
+    }
+    const optBtn = document.getElementById("optimize-imgs-btn");
+    if (optBtn) optBtn.addEventListener("click", () => optimizeAllImages(optBtn));
 
     // tiny inline SVG icons
     const ICONS = {
