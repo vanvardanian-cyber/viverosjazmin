@@ -9,6 +9,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Admin-only i18n toggle + panel-actions layout (scoped to admin.html) */
+    #admin-panel-actions { display: flex; gap: 8px; align-items: center; }
+    .admin-lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: #fff; }
+    .admin-lang-btn {
+      appearance: none; border: 0; background: transparent; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: .68rem; font-weight: 700;
+      letter-spacing: .14em; padding: 7px 12px; color: var(--ink-soft);
+      transition: background .15s ease, color .15s ease;
+    }
+    .admin-lang-btn:hover { color: var(--ink); }
+    .admin-lang-btn.is-active { background: var(--ink); color: #fff; }
+  </style>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -20,32 +33,38 @@
 
     <div class="admin-bar">
       <div class="left">
-        <h2><em>Panel</em> de administración</h2>
-        <span class="badge" id="admin-badge" style="display:none;">Conectado</span>
+        <h2 data-t-html="admin_title"><em>Panel</em> de administración</h2>
+        <span class="badge" id="admin-badge" data-t="admin_connected" style="display:none;">Conectado</span>
       </div>
-      <div class="right" id="admin-panel-actions" style="display:none;">
-        <span class="muted" id="admin-user" style="font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-right:8px;"></span>
-        <button class="btn btn-outline" id="btn-logout" type="button">Cerrar sesión</button>
+      <div class="right" style="display:flex; gap:8px; align-items:center;">
+        <div class="admin-lang" id="admin-lang-toggle" role="group" aria-label="Language">
+          <button type="button" class="admin-lang-btn" data-lang="es">ES</button>
+          <button type="button" class="admin-lang-btn" data-lang="en">EN</button>
+        </div>
+        <div id="admin-panel-actions" style="display:none;">
+          <span class="muted" id="admin-user" style="font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-right:8px;"></span>
+          <button class="btn btn-outline" id="btn-logout" type="button" data-t="admin_logout">Cerrar sesión</button>
+        </div>
       </div>
     </div>
 
     <!-- ===== LOGIN GATE ===== -->
     <div id="admin-login" class="form-card" style="max-width:440px; margin: 0 auto 40px; padding:36px;">
-      <h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;font-size:1.6rem;margin:0 0 6px;">Acceso administrador</h3>
-      <p class="muted" style="font-size:.9rem; margin-bottom:24px;">Solo el equipo de Jazmín puede entrar aquí.</p>
+      <h3 data-t="login_heading" style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;font-size:1.6rem;margin:0 0 6px;">Acceso administrador</h3>
+      <p class="muted" data-t="login_subtitle" style="font-size:.9rem; margin-bottom:24px;">Solo el equipo de Jazmín puede entrar aquí.</p>
       <div class="auth-error" id="admin-error"></div>
       <form id="admin-login-form" autocomplete="on">
         <div class="form-grid">
           <div class="form-field full">
-            <label>Correo</label>
+            <label data-t="login_email">Correo</label>
             <input type="email" name="email" required autocomplete="email">
           </div>
           <div class="form-field full">
-            <label>Contraseña</label>
+            <label data-t="login_password">Contraseña</label>
             <input type="password" name="password" required autocomplete="current-password">
           </div>
         </div>
-        <button type="submit" class="btn btn-primary btn-arrow btn-block mt-24">Entrar</button>
+        <button type="submit" class="btn btn-primary btn-arrow btn-block mt-24" data-t="login_submit">Entrar</button>
       </form>
     </div>
 
@@ -54,23 +73,23 @@
 
     <nav class="admin-tabs" role="tablist">
       <button class="admin-tab is-active" data-tab="products" role="tab">
-        <span>Productos</span>
+        <span data-t="tab_products">Productos</span>
         <span class="tab-count" id="tab-products-count">0</span>
       </button>
       <button class="admin-tab" data-tab="orders" role="tab">
-        <span>Pedidos</span>
+        <span data-t="tab_orders">Pedidos</span>
         <span class="tab-count" id="tab-orders-count">0</span>
       </button>
       <button class="admin-tab" data-tab="applications" role="tab">
-        <span>Candidaturas</span>
+        <span data-t="tab_applications">Candidaturas</span>
         <span class="tab-count" id="tab-apps-count">0</span>
       </button>
       <button class="admin-tab" data-tab="questions" role="tab">
-        <span>Preguntas</span>
+        <span data-t="tab_questions">Preguntas</span>
         <span class="tab-count" id="tab-questions-count">0</span>
       </button>
       <button class="admin-tab" data-tab="messages" role="tab">
-        <span>Mensajes</span>
+        <span data-t="tab_messages">Mensajes</span>
         <span class="tab-count" id="tab-messages-count">0</span>
         <span class="tab-dot" id="tab-messages-dot" style="display:none; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:.6rem; font-weight:700; line-height:16px; text-align:center; margin-left:2px;"></span>
       </button>
@@ -79,7 +98,7 @@
     <!-- ===== PANEL: PRODUCTS ===== -->
     <div class="admin-panel is-active" data-panel="products">
 
-    <div class="admin-notice">
+    <div class="admin-notice" data-t-html="products_notice">
       <strong>Cambios en vivo.</strong> Los productos se guardan directamente en la base de datos. Cualquier cambio aquí lo verán los clientes al instante — no hay que exportar nada ni publicar nada.
     </div>
 
@@ -89,18 +108,18 @@
       <div>
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:10px; flex-wrap:wrap;">
           <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
-            Catálogo · <span id="count-total">0</span> productos
+            <span data-t="catalog_label">Catálogo</span> · <span id="count-total">0</span> <span data-t="catalog_products_word">productos</span>
           </h4>
           <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" id="publish-catalog-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Genera el archivo que leen los visitantes, para que la web pública no consulte la base de datos en cada visita">⬆️ Publicar catálogo</button>
-            <button type="button" id="optimize-imgs-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Reduce el peso de las fotos guardadas para que la web cargue más ligera">⚡ Optimizar imágenes</button>
-            <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" style="max-width:200px; padding-top:8px; padding-bottom:8px;">
+            <button type="button" id="publish-catalog-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Genera el archivo que leen los visitantes, para que la web pública no consulte la base de datos en cada visita" data-t="publish_catalog" data-t-attr="title:publish_catalog_title">⬆️ Publicar catálogo</button>
+            <button type="button" id="optimize-imgs-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Reduce el peso de las fotos guardadas para que la web cargue más ligera" data-t="optimize_images" data-t-attr="title:optimize_images_title">⚡ Optimizar imágenes</button>
+            <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" data-t-attr="placeholder:search_placeholder" style="max-width:200px; padding-top:8px; padding-bottom:8px;">
           </div>
         </div>
         <div class="apps-filter" id="admin-world-filter" style="margin-bottom:14px;">
-          <button data-world="all" class="is-active">Todos</button>
-          <button data-world="vivero">Vivero &amp; Jardín</button>
-          <button data-world="floristeria">Floristería &amp; Flores</button>
+          <button data-world="all" class="is-active" data-t="world_all">Todos</button>
+          <button data-world="vivero" data-t="world_vivero">Vivero &amp; Jardín</button>
+          <button data-world="floristeria" data-t="world_floristeria">Floristería &amp; Flores</button>
         </div>
         <div class="admin-list" id="admin-list"></div>
       </div>
@@ -114,119 +133,119 @@
 
           <div class="form-grid">
             <div class="form-field">
-              <label>Categoría</label>
+              <label data-t="f_category">Categoría</label>
               <select name="cat" id="f-cat" required></select>
             </div>
             <div class="form-field">
-              <label>ID interno</label>
-              <input type="text" name="idDisplay" id="f-idDisplay" disabled placeholder="se genera al guardar">
+              <label data-t="f_internal_id">ID interno</label>
+              <input type="text" name="idDisplay" id="f-idDisplay" disabled placeholder="se genera al guardar" data-t-attr="placeholder:f_internal_id_ph">
             </div>
 
             <div class="form-field full">
-              <label>Nombre <span class="lang-tag">ES</span></label>
+              <label data-t-html="f_name_es">Nombre <span class="lang-tag">ES</span></label>
               <input type="text" name="name_es" required maxlength="80">
             </div>
             <div class="form-field full">
-              <label>Nombre <span class="lang-tag">VAL</span></label>
+              <label data-t-html="f_name_va">Nombre <span class="lang-tag">VAL</span></label>
               <input type="text" name="name_va" required maxlength="80">
             </div>
 
             <div class="form-field full">
-              <label>Descripción <span class="lang-tag">ES</span></label>
+              <label data-t-html="f_desc_es">Descripción <span class="lang-tag">ES</span></label>
               <textarea name="desc_es" required maxlength="280"></textarea>
             </div>
             <div class="form-field full">
-              <label>Descripción <span class="lang-tag">VAL</span></label>
+              <label data-t-html="f_desc_va">Descripción <span class="lang-tag">VAL</span></label>
               <textarea name="desc_va" required maxlength="280"></textarea>
             </div>
 
             <div class="form-field">
-              <label>Precio (€)</label>
+              <label data-t="f_price">Precio (€)</label>
               <input type="number" name="price" step="0.01" min="0" required>
             </div>
             <div class="form-field">
-              <label>Stock</label>
+              <label data-t="f_stock">Stock</label>
               <input type="number" name="stock" step="1" min="0" required value="10">
             </div>
 
             <div class="form-field full">
-              <label>Origen / Procedencia</label>
-              <input type="text" name="origin" maxlength="80" placeholder="p. ej. Países Bajos · Valencia · Vivero propio">
-              <small style="color:var(--ink-soft);font-size:.72rem;">Opcional. Se muestra en la ficha del producto bajo "Origen".</small>
+              <label data-t="f_origin">Origen / Procedencia</label>
+              <input type="text" name="origin" maxlength="80" placeholder="p. ej. Países Bajos · Valencia · Vivero propio" data-t-attr="placeholder:f_origin_ph">
+              <small style="color:var(--ink-soft);font-size:.72rem;" data-t-html="f_origin_help">Opcional. Se muestra en la ficha del producto bajo "Origen".</small>
             </div>
 
             <div class="form-field full">
               <label class="checkbox-line" style="cursor:pointer; align-items:flex-start;">
                 <input type="checkbox" name="featured">
-                <span><strong>★ Destacar en portada</strong> — aparece en el carrusel «Una selección» de la página de inicio.</span>
+                <span data-t-html="f_featured"><strong>★ Destacar en portada</strong> — aparece en el carrusel «Una selección» de la página de inicio.</span>
               </label>
             </div>
 
             <div class="form-field full">
-              <label>Tamaño de maceta</label>
+              <label data-t="f_pot_size">Tamaño de maceta</label>
               <select name="potSize">
                 <option value="">—</option>
-                <option value="S">Pequeña (S)</option>
-                <option value="M">Mediana (M)</option>
-                <option value="L">Grande (L)</option>
+                <option value="S" data-t="f_pot_s">Pequeña (S)</option>
+                <option value="M" data-t="f_pot_m">Mediana (M)</option>
+                <option value="L" data-t="f_pot_l">Grande (L)</option>
               </select>
-              <small style="color:var(--ink-soft);font-size:.72rem;">En una <strong>maceta</strong>: su tamaño. En una <strong>planta</strong>: el tamaño de maceta que necesita — activa el selector «Elige tu maceta» en su ficha.</small>
+              <small style="color:var(--ink-soft);font-size:.72rem;" data-t-html="f_pot_help">En una <strong>maceta</strong>: su tamaño. En una <strong>planta</strong>: el tamaño de maceta que necesita — activa el selector «Elige tu maceta» en su ficha.</small>
             </div>
 
             <!-- Floristería attributes — feed the shop filters in the flower world -->
             <div class="form-field">
-              <label>Tipo <span class="lang-tag">Floristería</span></label>
+              <label data-t-html="f_florist_type">Tipo <span class="lang-tag">Floristería</span></label>
               <select name="floristType">
                 <option value="">—</option>
-                <option value="ramo">Ramo</option>
-                <option value="decoracion">Decoración</option>
-                <option value="flores">Flores</option>
-                <option value="planta">Planta con flor</option>
+                <option value="ramo" data-t="f_florist_ramo">Ramo</option>
+                <option value="decoracion" data-t="f_florist_decoracion">Decoración</option>
+                <option value="flores" data-t="f_florist_flores">Flores</option>
+                <option value="planta" data-t="f_florist_planta">Planta con flor</option>
               </select>
             </div>
             <div class="form-field">
-              <label>Tipo de flor</label>
-              <input type="text" name="flowerType" list="flowerTypeList" maxlength="40" placeholder="p. ej. Rosa">
+              <label data-t="f_flower_type">Tipo de flor</label>
+              <input type="text" name="flowerType" list="flowerTypeList" maxlength="40" placeholder="p. ej. Rosa" data-t-attr="placeholder:f_flower_type_ph">
               <datalist id="flowerTypeList">
                 <option value="Rosa"></option><option value="Gerbera"></option><option value="Clavel"></option><option value="Crisantemo"></option><option value="Girasol"></option><option value="Alstromeria"></option><option value="Lirio"></option><option value="Tulipán"></option><option value="Hortensia"></option><option value="Peonía"></option>
               </datalist>
             </div>
             <div class="form-field full">
-              <label>Color</label>
-              <input type="text" name="color" list="colorList" maxlength="30" placeholder="p. ej. Rojo">
+              <label data-t="f_color">Color</label>
+              <input type="text" name="color" list="colorList" maxlength="30" placeholder="p. ej. Rojo" data-t-attr="placeholder:f_color_ph">
               <datalist id="colorList">
                 <option value="Rojo"></option><option value="Blanco"></option><option value="Rosa"></option><option value="Amarillo"></option><option value="Naranja"></option><option value="Morado"></option><option value="Azul"></option><option value="Verde"></option><option value="Mixto"></option>
               </datalist>
-              <small style="color:var(--ink-soft);font-size:.72rem;">Para floristería: alimentan los filtros de la tienda (ramo, decoración, tipo de flor, color).</small>
+              <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_florist_help">Para floristería: alimentan los filtros de la tienda (ramo, decoración, tipo de flor, color).</small>
             </div>
 
             <div class="form-field full">
-              <label>Imágenes del producto (hasta 6)</label>
+              <label data-t="f_images">Imágenes del producto (hasta 6)</label>
               <div class="img-manager">
                 <div class="img-list" id="img-list">
-                  <span class="img-empty" id="img-empty">Aún no hay imágenes. Sube fotos o pega una URL.</span>
+                  <span class="img-empty" id="img-empty" data-t="f_images_empty">Aún no hay imágenes. Sube fotos o pega una URL.</span>
                 </div>
                 <div class="img-add-row">
                   <label class="btn btn-light img-upload-btn" style="cursor:pointer;">
-                    Subir foto…
+                    <span data-t="f_upload_photo">Subir foto…</span>
                     <input type="file" id="f-imgfile" accept="image/*" multiple style="display:none;">
                   </label>
                   <div class="img-url-row">
-                    <input type="url" id="f-img-url" placeholder="…o pega una URL https://…">
-                    <button type="button" class="btn btn-light btn-sm" id="f-img-url-add">Añadir</button>
+                    <input type="url" id="f-img-url" placeholder="…o pega una URL https://…" data-t-attr="placeholder:f_img_url_ph">
+                    <button type="button" class="btn btn-light btn-sm" id="f-img-url-add" data-t="f_img_url_add">Añadir</button>
                   </div>
                 </div>
-                <small style="color:var(--ink-soft);font-size:.72rem;">La primera imagen es la principal. Arrastra para reordenar. Recomendado: hasta 500 KB cada foto subida.</small>
+                <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_images_help">La primera imagen es la principal. Arrastra para reordenar. Recomendado: hasta 500 KB cada foto subida.</small>
               </div>
             </div>
             <div class="form-field full">
-              <label>Color de la ilustración (si no hay foto): <span id="seed-val" style="font-weight:600">0</span></label>
+              <label data-t-html="f_illus_color">Color de la ilustración (si no hay foto): <span id="seed-val" style="font-weight:600">0</span></label>
               <input type="range" name="imgSeed" min="0" max="360" value="0" step="5" id="f-seed">
             </div>
           </div>
 
           <div class="actions">
-            <button type="button" class="btn btn-light" id="btn-cancel" style="display:none;">Cancelar</button>
+            <button type="button" class="btn btn-light" id="btn-cancel" style="display:none;" data-t="btn_cancel">Cancelar</button>
             <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit">Añadir producto</button>
           </div>
         </form>
@@ -237,26 +256,27 @@
 
     <!-- ===== PANEL: ORDERS ===== -->
     <div class="admin-panel" data-panel="orders">
-      <div class="admin-notice">
+      <div class="admin-notice" data-t-html="orders_notice">
         <strong>Pedidos recibidos.</strong> Cada vez que un cliente tramita su cesta, el pedido aparece aquí en tiempo real.
       </div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
         <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
-          Total · <span id="orders-count">0</span> pedidos
+          <span data-t="total_label">Total</span> · <span id="orders-count">0</span> <span data-t="orders_word">pedidos</span>
         </h4>
         <div class="apps-filter" id="orders-filter">
-          <button data-status="all" class="is-active">Todos</button>
-          <button data-status="pending">Pendientes</button>
-          <button data-status="confirmed">Confirmados</button>
-          <button data-status="paid">Pagados</button>
-          <button data-status="shipped">Enviados</button>
-          <button data-status="delivered">Entregados</button>
-          <button data-status="cancelled">Cancelados</button>
+          <button data-status="all" class="is-active" data-t="filter_all_m">Todos</button>
+          <button data-status="pending" data-t="order_pending">Pendientes</button>
+          <button data-status="confirmed" data-t="order_confirmed">Confirmados</button>
+          <button data-status="paid" data-t="order_paid">Pagados</button>
+          <button data-status="shipped" data-t="order_shipped">Enviados</button>
+          <button data-status="delivered" data-t="order_delivered">Entregados</button>
+          <button data-status="cancelled" data-t="order_cancelled">Cancelados</button>
         </div>
       </div>
       <div style="margin-bottom:18px;">
         <input type="search" id="orders-search" class="search-box"
                placeholder="Buscar por nombre, email, teléfono o nº de pedido…"
+               data-t-attr="placeholder:orders_search_ph"
                style="width:100%; max-width:none; padding-top:10px; padding-bottom:10px;">
       </div>
       <div id="orders-list" class="apps-list"></div>
@@ -264,19 +284,19 @@
 
     <!-- ===== PANEL: APPLICATIONS ===== -->
     <div class="admin-panel" data-panel="applications">
-      <div class="admin-notice">
+      <div class="admin-notice" data-t-html="apps_notice">
         <strong>Candidaturas recibidas.</strong> Cuando alguien envía el formulario en <code>/trabajo.html</code>, su candidatura aparece aquí. Por ahora se guarda solo en este navegador; cuando conectemos el backend, todas las candidaturas se centralizarán.
       </div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
         <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
-          Total · <span id="apps-count">0</span> candidaturas
+          <span data-t="total_label">Total</span> · <span id="apps-count">0</span> <span data-t="apps_word">candidaturas</span>
         </h4>
         <div class="apps-filter" id="apps-filter">
-          <button data-status="all" class="is-active">Todas</button>
-          <button data-status="new">Nuevas</button>
-          <button data-status="reviewed">Revisadas</button>
-          <button data-status="contacted">Contactadas</button>
-          <button data-status="discarded">Descartadas</button>
+          <button data-status="all" class="is-active" data-t="filter_all_f">Todas</button>
+          <button data-status="new" data-t="apps_new">Nuevas</button>
+          <button data-status="reviewed" data-t="apps_reviewed">Revisadas</button>
+          <button data-status="contacted" data-t="apps_contacted">Contactadas</button>
+          <button data-status="discarded" data-t="apps_discarded">Descartadas</button>
         </div>
       </div>
       <div id="apps-list" class="apps-list"></div>
@@ -284,16 +304,16 @@
 
     <!-- ===== PANEL: QUESTIONS ===== -->
     <div class="admin-panel" data-panel="questions">
-      <div class="admin-notice">
+      <div class="admin-notice" data-t-html="questions_notice">
         <strong>Preguntas del formulario.</strong> Se muestran a las personas que aplican sin CV. Puedes añadirlas, editarlas o cambiar su orden. Los cambios aparecen al instante en el formulario público.
       </div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
         <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
-          <span id="questions-count">0</span> preguntas
+          <span id="questions-count">0</span> <span data-t="questions_word">preguntas</span>
         </h4>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-light" id="btn-q-reset" type="button" style="padding:8px 14px;font-size:.7rem;">Restaurar predeterminadas</button>
-          <button class="btn btn-primary btn-arrow" id="btn-q-add" type="button" style="padding:8px 14px;font-size:.7rem;">Añadir pregunta</button>
+          <button class="btn btn-light" id="btn-q-reset" type="button" style="padding:8px 14px;font-size:.7rem;" data-t="q_reset">Restaurar predeterminadas</button>
+          <button class="btn btn-primary btn-arrow" id="btn-q-add" type="button" style="padding:8px 14px;font-size:.7rem;" data-t="q_add">Añadir pregunta</button>
         </div>
       </div>
       <div id="questions-list" class="questions-list"></div>
@@ -307,43 +327,43 @@
             <input type="hidden" name="id">
             <div class="form-grid">
               <div class="form-field">
-                <label>Tipo</label>
+                <label data-t="q_type">Tipo</label>
                 <select name="type" id="q-type">
-                  <option value="text">Texto corto</option>
-                  <option value="textarea">Texto largo</option>
-                  <option value="dropdown">Desplegable</option>
-                  <option value="radio">Selección única</option>
-                  <option value="multiselect">Selección múltiple</option>
-                  <option value="date">Fecha</option>
+                  <option value="text" data-t="q_type_text">Texto corto</option>
+                  <option value="textarea" data-t="q_type_textarea">Texto largo</option>
+                  <option value="dropdown" data-t="q_type_dropdown">Desplegable</option>
+                  <option value="radio" data-t="q_type_radio">Selección única</option>
+                  <option value="multiselect" data-t="q_type_multiselect">Selección múltiple</option>
+                  <option value="date" data-t="q_type_date">Fecha</option>
                 </select>
               </div>
               <div class="form-field">
-                <label>¿Obligatoria?</label>
-                <label class="checkbox-line"><input type="checkbox" name="required"> Sí, debe responderse</label>
+                <label data-t="q_required">¿Obligatoria?</label>
+                <label class="checkbox-line"><input type="checkbox" name="required"> <span data-t="q_required_yes">Sí, debe responderse</span></label>
               </div>
               <div class="form-field full">
-                <label>Mostrar la pregunta</label>
+                <label data-t="q_show">Mostrar la pregunta</label>
                 <label class="checkbox-line">
                   <input type="checkbox" name="skipIfCv">
-                  <span>Saltar si el candidato sube un CV (útil para preguntas que el CV ya responde, como la experiencia)</span>
+                  <span data-t="q_skip_cv">Saltar si el candidato sube un CV (útil para preguntas que el CV ya responde, como la experiencia)</span>
                 </label>
               </div>
               <div class="form-field full">
-                <label>Pregunta <span class="lang-tag">ES</span></label>
+                <label data-t-html="q_label_es">Pregunta <span class="lang-tag">ES</span></label>
                 <input type="text" name="label_es" required maxlength="200">
               </div>
               <div class="form-field full">
-                <label>Pregunta <span class="lang-tag">VAL</span></label>
+                <label data-t-html="q_label_va">Pregunta <span class="lang-tag">VAL</span></label>
                 <input type="text" name="label_va" required maxlength="200">
               </div>
               <div class="form-field full" id="q-options-wrap" style="display:none;">
-                <label>Opciones (una por línea, formato <code>es | val</code>)</label>
+                <label data-t-html="q_options">Opciones (una por línea, formato <code>es | val</code>)</label>
                 <textarea name="options" rows="4" placeholder="Ninguna | Cap&#10;Algo (hasta 2 años) | Alguna (fins a 2 anys)"></textarea>
               </div>
             </div>
             <div class="actions" style="display:flex; gap:8px; margin-top:18px;">
-              <button type="button" class="btn btn-light" id="q-cancel" style="flex:1;">Cancelar</button>
-              <button type="submit" class="btn btn-primary btn-arrow" style="flex:1;">Guardar</button>
+              <button type="button" class="btn btn-light" id="q-cancel" style="flex:1;" data-t="btn_cancel">Cancelar</button>
+              <button type="submit" class="btn btn-primary btn-arrow" style="flex:1;" data-t="btn_save">Guardar</button>
             </div>
           </form>
         </div>
@@ -352,18 +372,18 @@
 
     <!-- ===== PANEL: MESSAGES ===== -->
     <div class="admin-panel" data-panel="messages">
-      <div class="admin-notice">
+      <div class="admin-notice" data-t-html="messages_notice">
         <strong>Mensajes de contacto.</strong> Cuando alguien escribe desde la página de Contacto, su mensaje aparece aquí en tiempo real. Los nuevos se marcan con un punto rojo en la pestaña.
       </div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
         <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
-          Total · <span id="messages-count">0</span> mensajes
+          <span data-t="total_label">Total</span> · <span id="messages-count">0</span> <span data-t="messages_word">mensajes</span>
         </h4>
         <div class="apps-filter" id="messages-filter">
-          <button data-status="all" class="is-active">Todos</button>
-          <button data-status="new">Nuevos</button>
-          <button data-status="read">Leídos</button>
-          <button data-status="archived">Archivados</button>
+          <button data-status="all" class="is-active" data-t="filter_all_m">Todos</button>
+          <button data-status="new" data-t="messages_new">Nuevos</button>
+          <button data-status="read" data-t="messages_read">Leídos</button>
+          <button data-status="archived" data-t="messages_archived">Archivados</button>
         </div>
       </div>
       <div id="messages-list" class="apps-list"></div>
@@ -381,6 +401,288 @@
 <script src="js/supabase.js"></script>
 <script src="js/app.js"></script>
 <script>
+  /* ============================================================
+     ADMIN I18N (admin.html only) — DISTINCT namespace from the
+     public site's data-i18n (which app.js scans & would clobber).
+     Attributes: data-t (textContent), data-t-html (innerHTML),
+     data-t-attr ("placeholder:key, title:key2").
+     ============================================================ */
+  const ADMIN_I18N = {
+    es: {
+      // admin bar
+      admin_title: "<em>Panel</em> de administración",
+      admin_connected: "Conectado",
+      admin_logout: "Cerrar sesión",
+      // login
+      login_heading: "Acceso administrador",
+      login_subtitle: "Solo el equipo de Jazmín puede entrar aquí.",
+      login_email: "Correo",
+      login_password: "Contraseña",
+      login_submit: "Entrar",
+      // tabs
+      tab_products: "Productos",
+      tab_orders: "Pedidos",
+      tab_applications: "Candidaturas",
+      tab_questions: "Preguntas",
+      tab_messages: "Mensajes",
+      // shared
+      total_label: "Total",
+      // products panel
+      products_notice: "<strong>Cambios en vivo.</strong> Los productos se guardan directamente en la base de datos. Cualquier cambio aquí lo verán los clientes al instante — no hay que exportar nada ni publicar nada.",
+      catalog_label: "Catálogo",
+      catalog_products_word: "productos",
+      publish_catalog: "⬆️ Publicar catálogo",
+      publish_catalog_title: "Genera el archivo que leen los visitantes, para que la web pública no consulte la base de datos en cada visita",
+      optimize_images: "⚡ Optimizar imágenes",
+      optimize_images_title: "Reduce el peso de las fotos guardadas para que la web cargue más ligera",
+      search_placeholder: "Buscar…",
+      world_all: "Todos",
+      world_vivero: "Vivero & Jardín",
+      world_floristeria: "Floristería & Flores",
+      // product form
+      f_category: "Categoría",
+      f_internal_id: "ID interno",
+      f_internal_id_ph: "se genera al guardar",
+      f_name_es: "Nombre <span class=\"lang-tag\">ES</span>",
+      f_name_va: "Nombre <span class=\"lang-tag\">VAL</span>",
+      f_desc_es: "Descripción <span class=\"lang-tag\">ES</span>",
+      f_desc_va: "Descripción <span class=\"lang-tag\">VAL</span>",
+      f_price: "Precio (€)",
+      f_stock: "Stock",
+      f_origin: "Origen / Procedencia",
+      f_origin_ph: "p. ej. Países Bajos · Valencia · Vivero propio",
+      f_origin_help: "Opcional. Se muestra en la ficha del producto bajo \"Origen\".",
+      f_featured: "<strong>★ Destacar en portada</strong> — aparece en el carrusel «Una selección» de la página de inicio.",
+      f_pot_size: "Tamaño de maceta",
+      f_pot_s: "Pequeña (S)",
+      f_pot_m: "Mediana (M)",
+      f_pot_l: "Grande (L)",
+      f_pot_help: "En una <strong>maceta</strong>: su tamaño. En una <strong>planta</strong>: el tamaño de maceta que necesita — activa el selector «Elige tu maceta» en su ficha.",
+      f_florist_type: "Tipo <span class=\"lang-tag\">Floristería</span>",
+      f_florist_ramo: "Ramo",
+      f_florist_decoracion: "Decoración",
+      f_florist_flores: "Flores",
+      f_florist_planta: "Planta con flor",
+      f_flower_type: "Tipo de flor",
+      f_flower_type_ph: "p. ej. Rosa",
+      f_color: "Color",
+      f_color_ph: "p. ej. Rojo",
+      f_florist_help: "Para floristería: alimentan los filtros de la tienda (ramo, decoración, tipo de flor, color).",
+      f_images: "Imágenes del producto (hasta 6)",
+      f_images_empty: "Aún no hay imágenes. Sube fotos o pega una URL.",
+      f_upload_photo: "Subir foto…",
+      f_img_url_ph: "…o pega una URL https://…",
+      f_img_url_add: "Añadir",
+      f_images_help: "La primera imagen es la principal. Arrastra para reordenar. Recomendado: hasta 500 KB cada foto subida.",
+      f_illus_color: "Color de la ilustración (si no hay foto): <span id=\"seed-val\" style=\"font-weight:600\">0</span>",
+      btn_cancel: "Cancelar",
+      btn_save: "Guardar",
+      // orders
+      orders_notice: "<strong>Pedidos recibidos.</strong> Cada vez que un cliente tramita su cesta, el pedido aparece aquí en tiempo real.",
+      orders_word: "pedidos",
+      filter_all_m: "Todos",
+      filter_all_f: "Todas",
+      order_pending: "Pendientes",
+      order_confirmed: "Confirmados",
+      order_paid: "Pagados",
+      order_shipped: "Enviados",
+      order_delivered: "Entregados",
+      order_cancelled: "Cancelados",
+      orders_search_ph: "Buscar por nombre, email, teléfono o nº de pedido…",
+      // applications
+      apps_notice: "<strong>Candidaturas recibidas.</strong> Cuando alguien envía el formulario en <code>/trabajo.html</code>, su candidatura aparece aquí. Por ahora se guarda solo en este navegador; cuando conectemos el backend, todas las candidaturas se centralizarán.",
+      apps_word: "candidaturas",
+      apps_new: "Nuevas",
+      apps_reviewed: "Revisadas",
+      apps_contacted: "Contactadas",
+      apps_discarded: "Descartadas",
+      // questions
+      questions_notice: "<strong>Preguntas del formulario.</strong> Se muestran a las personas que aplican sin CV. Puedes añadirlas, editarlas o cambiar su orden. Los cambios aparecen al instante en el formulario público.",
+      questions_word: "preguntas",
+      q_reset: "Restaurar predeterminadas",
+      q_add: "Añadir pregunta",
+      q_type: "Tipo",
+      q_type_text: "Texto corto",
+      q_type_textarea: "Texto largo",
+      q_type_dropdown: "Desplegable",
+      q_type_radio: "Selección única",
+      q_type_multiselect: "Selección múltiple",
+      q_type_date: "Fecha",
+      q_required: "¿Obligatoria?",
+      q_required_yes: "Sí, debe responderse",
+      q_show: "Mostrar la pregunta",
+      q_skip_cv: "Saltar si el candidato sube un CV (útil para preguntas que el CV ya responde, como la experiencia)",
+      q_label_es: "Pregunta <span class=\"lang-tag\">ES</span>",
+      q_label_va: "Pregunta <span class=\"lang-tag\">VAL</span>",
+      q_options: "Opciones (una por línea, formato <code>es | val</code>)",
+      // messages
+      messages_notice: "<strong>Mensajes de contacto.</strong> Cuando alguien escribe desde la página de Contacto, su mensaje aparece aquí en tiempo real. Los nuevos se marcan con un punto rojo en la pestaña.",
+      messages_word: "mensajes",
+      messages_new: "Nuevos",
+      messages_read: "Leídos",
+      messages_archived: "Archivados"
+    },
+    en: {
+      // admin bar
+      admin_title: "<em>Admin</em> dashboard",
+      admin_connected: "Connected",
+      admin_logout: "Log out",
+      // login
+      login_heading: "Administrator access",
+      login_subtitle: "Only the Jazmín team can sign in here.",
+      login_email: "Email",
+      login_password: "Password",
+      login_submit: "Sign in",
+      // tabs
+      tab_products: "Products",
+      tab_orders: "Orders",
+      tab_applications: "Applications",
+      tab_questions: "Questions",
+      tab_messages: "Messages",
+      // shared
+      total_label: "Total",
+      // products panel
+      products_notice: "<strong>Live changes.</strong> Products are saved straight to the database. Any change here is seen by customers instantly — there's nothing to export or publish.",
+      catalog_label: "Catalogue",
+      catalog_products_word: "products",
+      publish_catalog: "⬆️ Publish catalogue",
+      publish_catalog_title: "Generates the file visitors read, so the public site doesn't query the database on every visit",
+      optimize_images: "⚡ Optimize images",
+      optimize_images_title: "Reduces the size of stored photos so the site loads lighter",
+      search_placeholder: "Search…",
+      world_all: "All",
+      world_vivero: "Nursery & Garden",
+      world_floristeria: "Florist & Flowers",
+      // product form
+      f_category: "Category",
+      f_internal_id: "Internal ID",
+      f_internal_id_ph: "generated on save",
+      f_name_es: "Name <span class=\"lang-tag\">ES</span>",
+      f_name_va: "Name <span class=\"lang-tag\">VAL</span>",
+      f_desc_es: "Description <span class=\"lang-tag\">ES</span>",
+      f_desc_va: "Description <span class=\"lang-tag\">VAL</span>",
+      f_price: "Price (€)",
+      f_stock: "Stock",
+      f_origin: "Origin / Provenance",
+      f_origin_ph: "e.g. Netherlands · Valencia · Own nursery",
+      f_origin_help: "Optional. Shown on the product page under \"Origin\".",
+      f_featured: "<strong>★ Feature on the homepage</strong> — appears in the \"A selection\" carousel on the home page.",
+      f_pot_size: "Pot size",
+      f_pot_s: "Small (S)",
+      f_pot_m: "Medium (M)",
+      f_pot_l: "Large (L)",
+      f_pot_help: "For a <strong>pot</strong>: its size. For a <strong>plant</strong>: the pot size it needs — enables the \"Choose your pot\" selector on its page.",
+      f_florist_type: "Type <span class=\"lang-tag\">Florist</span>",
+      f_florist_ramo: "Bouquet",
+      f_florist_decoracion: "Decoration",
+      f_florist_flores: "Flowers",
+      f_florist_planta: "Flowering plant",
+      f_flower_type: "Flower type",
+      f_flower_type_ph: "e.g. Rose",
+      f_color: "Color",
+      f_color_ph: "e.g. Red",
+      f_florist_help: "For florist items: these feed the shop filters (bouquet, decoration, flower type, color).",
+      f_images: "Product images (up to 6)",
+      f_images_empty: "No images yet. Upload photos or paste a URL.",
+      f_upload_photo: "Upload photo…",
+      f_img_url_ph: "…or paste a URL https://…",
+      f_img_url_add: "Add",
+      f_images_help: "The first image is the main one. Drag to reorder. Recommended: up to 500 KB per uploaded photo.",
+      f_illus_color: "Illustration color (when there's no photo): <span id=\"seed-val\" style=\"font-weight:600\">0</span>",
+      btn_cancel: "Cancel",
+      btn_save: "Save",
+      // orders
+      orders_notice: "<strong>Orders received.</strong> Every time a customer checks out their basket, the order appears here in real time.",
+      orders_word: "orders",
+      filter_all_m: "All",
+      filter_all_f: "All",
+      order_pending: "Pending",
+      order_confirmed: "Confirmed",
+      order_paid: "Paid",
+      order_shipped: "Shipped",
+      order_delivered: "Delivered",
+      order_cancelled: "Cancelled",
+      orders_search_ph: "Search by name, email, phone or order number…",
+      // applications
+      apps_notice: "<strong>Applications received.</strong> When someone submits the form at <code>/trabajo.html</code>, their application appears here. For now it's stored only in this browser; once we connect the backend, all applications will be centralized.",
+      apps_word: "applications",
+      apps_new: "New",
+      apps_reviewed: "Reviewed",
+      apps_contacted: "Contacted",
+      apps_discarded: "Discarded",
+      // questions
+      questions_notice: "<strong>Form questions.</strong> Shown to people who apply without a CV. You can add them, edit them or change their order. Changes appear instantly in the public form.",
+      questions_word: "questions",
+      q_reset: "Restore defaults",
+      q_add: "Add question",
+      q_type: "Type",
+      q_type_text: "Short text",
+      q_type_textarea: "Long text",
+      q_type_dropdown: "Dropdown",
+      q_type_radio: "Single choice",
+      q_type_multiselect: "Multiple choice",
+      q_type_date: "Date",
+      q_required: "Required?",
+      q_required_yes: "Yes, it must be answered",
+      q_show: "Show the question",
+      q_skip_cv: "Skip if the candidate uploads a CV (useful for questions the CV already answers, like experience)",
+      q_label_es: "Question <span class=\"lang-tag\">ES</span>",
+      q_label_va: "Question <span class=\"lang-tag\">VAL</span>",
+      q_options: "Options (one per line, format <code>es | val</code>)",
+      // messages
+      messages_notice: "<strong>Contact messages.</strong> When someone writes from the Contact page, their message appears here in real time. New ones are marked with a red dot on the tab.",
+      messages_word: "messages",
+      messages_new: "New",
+      messages_read: "Read",
+      messages_archived: "Archived"
+    }
+  };
+
+  function tA(key) {
+    const l = (localStorage.getItem('vj.adminLang') === 'en') ? 'en' : 'es';
+    return (ADMIN_I18N[l] && ADMIN_I18N[l][key]) || ADMIN_I18N.es[key] || key;
+  }
+
+  function applyAdminI18n() {
+    document.querySelectorAll('[data-t]').forEach(el => {
+      el.textContent = tA(el.getAttribute('data-t'));
+    });
+    document.querySelectorAll('[data-t-html]').forEach(el => {
+      el.innerHTML = tA(el.getAttribute('data-t-html'));
+    });
+    document.querySelectorAll('[data-t-attr]').forEach(el => {
+      el.getAttribute('data-t-attr').split(',').forEach(pair => {
+        const [attr, key] = pair.split(':').map(s => s.trim());
+        if (attr && key) el.setAttribute(attr, tA(key));
+      });
+    });
+    // reflect active state on the ES|EN toggle
+    const cur = (localStorage.getItem('vj.adminLang') === 'en') ? 'en' : 'es';
+    document.querySelectorAll('#admin-lang-toggle .admin-lang-btn').forEach(btn => {
+      btn.classList.toggle('is-active', btn.getAttribute('data-lang') === cur);
+    });
+  }
+
+  (function initAdminLangToggle() {
+    function wire() {
+      const toggle = document.getElementById('admin-lang-toggle');
+      if (toggle) {
+        toggle.addEventListener('click', (e) => {
+          const btn = e.target.closest('.admin-lang-btn');
+          if (!btn) return;
+          localStorage.setItem('vj.adminLang', btn.getAttribute('data-lang') === 'en' ? 'en' : 'es');
+          applyAdminI18n();
+        });
+      }
+      applyAdminI18n();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', wire);
+    } else {
+      wire();
+    }
+  })();
+
   /* ============================================================
      ADMIN AUTH GATE (runs before everything else)
      Only emails in ADMIN_EMAILS can see the panel — being merely
