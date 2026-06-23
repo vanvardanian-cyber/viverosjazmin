@@ -672,6 +672,14 @@
     document.querySelectorAll(".lang-menu button[data-lang]").forEach(btn => {
       btn.classList.toggle("is-active", btn.dataset.lang === getLang());
     });
+    // Per-language content blocks (legal pages: show the block whose
+    // data-lang-content list includes the current lang; va falls back to es
+    // because legal blocks are tagged data-lang-content="es va").
+    const _lang = getLang();
+    document.querySelectorAll("[data-lang-content]").forEach(el => {
+      const langs = el.getAttribute("data-lang-content").split(/\s+/).filter(Boolean);
+      el.hidden = !langs.includes(_lang);
+    });
   }
 
   function catName(catId) {
