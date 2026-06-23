@@ -92,6 +92,7 @@
             Catálogo · <span id="count-total">0</span> productos
           </h4>
           <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" id="publish-catalog-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Genera el archivo que leen los visitantes, para que la web pública no consulte la base de datos en cada visita">⬆️ Publicar catálogo</button>
             <button type="button" id="optimize-imgs-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Reduce el peso de las fotos guardadas para que la web cargue más ligera">⚡ Optimizar imágenes</button>
             <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" style="max-width:200px; padding-top:8px; padding-bottom:8px;">
           </div>
@@ -678,6 +679,21 @@
     }
     const optBtn = document.getElementById("optimize-imgs-btn");
     if (optBtn) optBtn.addEventListener("click", () => optimizeAllImages(optBtn));
+
+    // Export the current catalog as data/catalog.json — the static file the
+    // public site reads, so visitor traffic never hits the database.
+    const pubBtn = document.getElementById("publish-catalog-btn");
+    if (pubBtn) pubBtn.addEventListener("click", () => {
+      const rows = (window.VJ_CATALOG.snapshot ? VJ_CATALOG.snapshot() : []);
+      if (!rows.length) { alert("No hay productos para publicar."); return; }
+      const blob = new Blob([JSON.stringify(rows)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "catalog.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      alert("✅ catalog.json descargado.\n\nSúbelo a la carpeta /data del sitio (o envíamelo) para publicar los cambios. Los visitantes leen ese archivo — no la base de datos en cada visita.");
+    });
 
     // tiny inline SVG icons
     const ICONS = {

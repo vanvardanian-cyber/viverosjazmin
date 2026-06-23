@@ -194,6 +194,30 @@
     return true;
   }
 
+  // Visitor-facing catalog load. Public pages read a STATIC snapshot
+  // (data/catalog.json) served by our own host/CDN — so ad traffic never
+  // queries the database. Only the admin (and write actions like orders) touch
+  // Supabase. Falls back to a live query if the snapshot is missing, so the
+  // site can never end up empty.
+  async function loadCatalog() {
+    const isAdmin = /(^|\/)admin\.html$/i.test(location.pathname);
+    if (!isAdmin) {
+      try {
+        const res = await fetch("data/catalog.json", { cache: "default" });
+        if (res.ok) {
+          const rows = await res.json();
+          if (Array.isArray(rows) && rows.length) {
+            PRODUCTS.length = 0;
+            rows.forEach(r => PRODUCTS.push(rowToProduct(r)));
+            document.dispatchEvent(new CustomEvent("vj:catalogchange"));
+            return true;
+          }
+        }
+      } catch (e) { /* snapshot missing → fall back to Supabase below */ }
+    }
+    return loadCatalogFromSupabase();
+  }
+
   async function saveProduct(p) {
     if (!supa) throw new Error("Supabase not initialized");
     const row = productToRow(p, PRODUCTS.findIndex(x => x.id === p.id));
@@ -227,6 +251,9 @@
     reload: loadCatalogFromSupabase,
     saveOne: saveProduct,
     removeOne: deleteProductSupa,
+    // Build a publishable static snapshot (Supabase row shape) from the current
+    // catalog, for export to data/catalog.json.
+    snapshot: () => PRODUCTS.map((p, i) => productToRow(p, i)),
     nextId: (cat) => {
       const prefix = (CATEGORIES.find(c => c.id === cat) || {}).id?.slice(0,3) || "new";
       let n = 1;
@@ -2981,9 +3008,9 @@
     initHeader();
     applyTranslations();
 
-    // Pull live catalog from Supabase. If it fails, we keep the seed
-    // array as a fallback so the site still renders something.
-    await loadCatalogFromSupabase();
+    // Load the catalog: visitors get the static snapshot (no DB hit), the
+    // admin gets live Supabase data. Falls back to a live query if needed.
+    await loadCatalog();
 
     // Sync Supabase Auth session (Google OAuth) into local VJ_AUTH state.
     // Must happen BEFORE renderAccountPage() so cuenta.html sees the user.
