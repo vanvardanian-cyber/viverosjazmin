@@ -1770,6 +1770,19 @@
         });
       });
     }
+    // Two-department cards: jump to that department in the shelf below.
+    document.querySelectorAll("[data-dept-jump]").forEach(card => {
+      if (card._wired) return;
+      card._wired = true;
+      card.addEventListener("click", () => {
+        const dep = card.dataset.deptJump;
+        const btn = document.querySelector(`.dept-toggle .dept-btn[data-dept="${dep}"]`);
+        if (btn) btn.click();
+        const shelf = document.getElementById("cat-section");
+        if (shelf) shelf.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
     renderHeroPills();
     renderShelf(activeDept());
 
