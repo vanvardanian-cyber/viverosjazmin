@@ -3378,9 +3378,11 @@ select:focus-visible { outline-offset: 0; }
   aspect-ratio: 5 / 4;
   box-shadow: 0 24px 60px rgba(31, 42, 46, 0.14);
 }
-.hero-shop-img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  /* Cinematic slow zoom/pan — a "living" hero at zero bandwidth cost. */
+.hero-shop-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Hero video loop (with the poster image as instant fallback) */
+.hero-shop-video { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--blue-3); }
+/* Kept for any static-image heroes: cinematic slow zoom, motion-safe. */
+.hero-shop-media > .hero-shop-img {
   animation: heroKenBurns 26s ease-in-out infinite alternate;
   will-change: transform;
   transform-origin: 60% 45%;
