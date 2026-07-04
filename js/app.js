@@ -1730,13 +1730,31 @@
     applyTranslations();
   }
 
-  function renderHeroPills() {
-    const wrap = document.querySelector("[data-hero-pills]");
+  // "Shop by category" — a marketplace directory of photo tiles, grouped by
+  // the two departments (vivero / floristería) so both worlds read at a glance.
+  function renderShopByCategory() {
+    const wrap = document.getElementById("shopcat-groups");
     if (!wrap) return;
     const lang = getLang();
-    wrap.innerHTML = CATEGORIES
-      .map(c => `<a class="pill" href="tienda.html?cat=${c.id}">${c[lang]}</a>`)
-      .join("");
+    const leaf = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-9M12 13c0-4 3-8 8-8 0 4-3 8-8 8zM12 15C12 11 9 8 4 8c0 4 3 7 8 7z"/></svg>`;
+    const flower = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 9V4M12 15v5M9 12H4M15 12h5M9.5 9.5 6.5 6.5M14.5 9.5 17.5 6.5M9.5 14.5 6.5 17.5M14.5 14.5 17.5 17.5"/></svg>`;
+    const tile = (href, img, label) =>
+      `<a class="cat-tile" href="${href}"><img src="${img}" alt="" loading="lazy"><span class="cat-tile-label">${label}</span></a>`;
+    const groups = [
+      { world: "vivero", label: t("home.dept.vivero"), icon: leaf },
+      { world: "floristeria", label: t("home.dept.floristeria"), icon: flower }
+    ];
+    wrap.innerHTML = groups.map(g => {
+      let tiles = CATEGORIES.filter(c => c.world === g.world)
+        .map(c => tile(`tienda.html?cat=${c.id}`, `img/cat-${c.id}.jpg`, c[lang])).join("");
+      if (g.world === "floristeria") {
+        tiles += tile("contacto.html", "img/jazmin-castello-coleccion-ramos-floristeria-castello.webp", t("nav.eventos"));
+      }
+      return `<div class="shopcat-group">
+          <h3 class="shopcat-group-title">${g.icon}<span>${g.label}</span></h3>
+          <div class="cat-grid">${tiles}</div>
+        </div>`;
+    }).join("");
   }
 
   function activeDept() {
@@ -1770,27 +1788,14 @@
         });
       });
     }
-    // Two-department cards: jump to that department in the shelf below.
-    document.querySelectorAll("[data-dept-jump]").forEach(card => {
-      if (card._wired) return;
-      card._wired = true;
-      card.addEventListener("click", () => {
-        const dep = card.dataset.deptJump;
-        const btn = document.querySelector(`.dept-toggle .dept-btn[data-dept="${dep}"]`);
-        if (btn) btn.click();
-        const shelf = document.getElementById("cat-section");
-        if (shelf) shelf.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-
-    renderHeroPills();
+    renderShopByCategory();
     renderShelf(activeDept());
 
     // Keep category-dependent text in sync when the language changes.
     if (!renderHome._langWired) {
       renderHome._langWired = true;
       document.addEventListener("vj:langchange", () => {
-        renderHeroPills();
+        renderShopByCategory();
         renderShelf(activeDept());
       });
     }

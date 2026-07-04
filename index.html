@@ -23,7 +23,9 @@
       <span class="eyebrow" data-i18n="home.hero.eyebrow">Plantas &amp; Flores · Castelló · 1992</span>
       <h1 class="hero-shop-title" data-i18n-html="home.promise"><em>Verde</em> para tu casa.<br><em>Flores</em> para tus momentos.</h1>
       <p class="hero-shop-lead" data-i18n="home.hero.lead">Vivero y floristería en el corazón de Castelló de la Plana. Macetas, ramos, flores de temporada y la planta perfecta para cada rincón.</p>
-      <div class="hero-pills" data-hero-pills aria-label="Categorías"></div>
+      <div class="hero-shop-cta">
+        <a href="tienda.html" class="btn btn-primary btn-arrow" data-i18n="home.hero.cta">Ver la tienda</a>
+      </div>
     </div>
     <div class="hero-shop-media" data-reveal="fade">
       <video class="hero-shop-video" autoplay muted loop playsinline
@@ -60,35 +62,14 @@
   </div>
 </section>
 
-<!-- ============== TWO DEPARTMENTS (one platform) ============== -->
-<section class="departments" data-reveal="up">
+<!-- ============== SHOP BY CATEGORY (two departments, one shop) ============== -->
+<section class="shopcat" data-reveal="up">
   <div class="container">
-    <div class="dept-intro">
+    <div class="shopcat-head">
       <span class="eyebrow" data-i18n="home.depts.eyebrow">Dos casas, una tienda</span>
-      <h2 class="dept-intro-h" data-i18n="home.depts.title">¿Qué buscas hoy?</h2>
+      <h2 class="shopcat-title" data-i18n="home.shopcat.title">Compra por categoría</h2>
     </div>
-    <div class="dept-cards">
-      <button type="button" class="dept-card dept-card--vivero" data-dept-jump="vivero">
-        <span class="dept-card-ic">
-          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-9M12 13c0-4 3-8 8-8 0 4-3 8-8 8zM12 15C12 11 9 8 4 8c0 4 3 7 8 7z"/></svg>
-        </span>
-        <span class="dept-card-txt">
-          <strong data-i18n="home.dept.vivero">Plantas &amp; Jardín</strong>
-          <span data-i18n="home.depts.viveroSub">Interior, exterior, árboles, macetas y sustratos</span>
-        </span>
-        <svg class="dept-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
-      <button type="button" class="dept-card dept-card--flores" data-dept-jump="floristeria">
-        <span class="dept-card-ic">
-          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 9V4M12 15v5M9 12H4M15 12h5M9.5 9.5 6.5 6.5M14.5 9.5 17.5 6.5M9.5 14.5 6.5 17.5M14.5 14.5 17.5 17.5"/></svg>
-        </span>
-        <span class="dept-card-txt">
-          <strong data-i18n="home.dept.floristeria">Flores &amp; Eventos</strong>
-          <span data-i18n="home.depts.floresSub">Ramos, flores de temporada, bodas y eventos</span>
-        </span>
-        <svg class="dept-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
-    </div>
+    <div class="shopcat-groups" id="shopcat-groups"></div>
   </div>
 </section>
 
