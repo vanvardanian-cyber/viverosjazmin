@@ -240,20 +240,33 @@ body.nav-locked { overflow: hidden; }
    used for edit/delete buttons) can't shrink the header icons. */
 .header-actions .icon-btn {
   position: relative;
-  display: inline-flex; align-items: center; justify-content: center;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
   background: transparent; border: 0; cursor: pointer;
   color: var(--ink);
-  width: 46px; height: 46px;
-  border-radius: 50%;
+  min-width: 56px; padding: 5px 8px 4px;
+  border-radius: 12px;
   text-decoration: none;
   transition: background .2s, color .2s;
 }
 .header-actions .icon-btn:hover { background: var(--blue-3); }
-.header-actions .icon-btn svg { width: 24px; height: 24px; display: block; stroke-width: 1.9; }
-
+.header-actions .icon-btn svg { width: 25px; height: 25px; display: block; stroke-width: 1.9; }
+.icon-btn-ic { position: relative; display: inline-flex; }
+.icon-btn-label {
+  font-size: .64rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--ink-soft); white-space: nowrap;
+  transition: color .2s;
+}
+.header-actions .icon-btn:hover .icon-btn-label { color: var(--ink); }
 .header-actions .cart-btn:hover { color: var(--accent); }
+.header-actions .cart-btn:hover .icon-btn-label { color: var(--accent); }
 .header-actions .fav-btn:hover { color: #c93b58; }
-.header-actions .cart-btn svg { width: 26px; height: 26px; }
+.header-actions .fav-btn:hover .icon-btn-label { color: #c93b58; }
+.header-actions .cart-btn svg { width: 27px; height: 27px; }
+@media (max-width: 600px) {
+  .header-actions .icon-btn-label { display: none; }
+  .header-actions .icon-btn { min-width: 42px; padding: 6px; }
+}
 
 /* Account button — a single pill that morphs based on auth state.
    Guest: avatar + uppercase "Entrar" label, no background.
@@ -327,11 +340,11 @@ body.nav-locked { overflow: hidden; }
 .mainnav-item { position: relative; display: flex; align-items: stretch; }
 .mainnav-link {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 15px 18px; text-decoration: none;
+  padding: 18px 22px; text-decoration: none;
   font-family: 'Inter', sans-serif;
-  font-size: .75rem; font-weight: 600; letter-spacing: .13em; text-transform: uppercase;
+  font-size: .92rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
   color: var(--ink); white-space: nowrap;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   transition: color .2s, border-color .2s;
 }
 .has-dropdown > .mainnav-link { padding-right: 6px; }
@@ -3297,6 +3310,83 @@ select:focus-visible { outline-offset: 0; }
    ========================================================= */
 
 /* ---- Hero (split: promise + search | photo) ---- */
+/* =========================================================
+   FULL-BLEED HERO — video background + overlaid headline/CTA
+   ========================================================= */
+.hero-full {
+  position: relative;
+  height: clamp(540px, 82vh, 800px);
+  overflow: hidden;
+  display: flex; align-items: center;
+  background: #1a2a20;
+}
+.hero-full-video {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.hero-full-scrim {
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(rgba(8,16,11,.42), rgba(8,16,11,.62)),
+    radial-gradient(130% 100% at 50% 42%, rgba(8,16,11,.34), transparent 62%);
+}
+.hero-full-content {
+  position: relative; z-index: 2;
+  text-align: center; color: #fff;
+  max-width: 860px; margin: 0 auto; padding: 0 24px;
+}
+.hero-full-eyebrow {
+  display: inline-block;
+  font-size: .74rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  color: rgba(255,255,255,.92); margin-bottom: 20px;
+  text-shadow: 0 1px 10px rgba(0,0,0,.35);
+}
+.hero-full-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 500; line-height: 1.04; letter-spacing: -.01em;
+  font-size: clamp(2.5rem, 6vw, 4.6rem);
+  margin: 0 0 22px; color: #fff;
+  text-shadow: 0 3px 34px rgba(0,0,0,.45);
+}
+.hero-full-title em { font-style: italic; color: #fff; }
+.hero-full-sub {
+  font-size: clamp(1rem, 1.4vw, 1.22rem); line-height: 1.55;
+  color: rgba(255,255,255,.92);
+  max-width: 580px; margin: 0 auto 32px;
+  text-shadow: 0 1px 14px rgba(0,0,0,.4);
+}
+.hero-full-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: #fff; color: var(--ink);
+  padding: 15px 32px; border-radius: 999px;
+  font-family: inherit; font-weight: 600; font-size: 1rem; letter-spacing: .01em;
+  box-shadow: 0 12px 32px rgba(0,0,0,.22);
+  transition: transform .18s, background .18s, color .18s;
+}
+.btn-hero::after {
+  content: ""; width: 16px; height: 16px; flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M12 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M12 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;
+  transition: transform .18s;
+}
+.btn-hero:hover { transform: translateY(-2px); }
+.btn-hero:hover::after { transform: translateX(3px); }
+.btn-hero--ghost {
+  background: rgba(255,255,255,.12); color: #fff;
+  border: 1.5px solid rgba(255,255,255,.7);
+  backdrop-filter: blur(2px);
+  box-shadow: none;
+}
+.btn-hero--ghost:hover { background: rgba(255,255,255,.22); }
+@media (prefers-reduced-motion: reduce) { .hero-full-video { animation: none; } }
+@media (max-width: 640px) {
+  .hero-full { height: clamp(460px, 78vh, 620px); }
+  .hero-full-actions { flex-direction: column; align-items: stretch; }
+  .btn-hero { justify-content: center; }
+}
+
 .hero-shop { padding: 40px 0 48px; }
 .hero-shop-inner {
   display: grid;

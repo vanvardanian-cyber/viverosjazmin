@@ -16,26 +16,23 @@
 
 <div data-vj-header></div>
 
-<!-- ============== HERO (compact, marketplace) ============== -->
-<section class="hero-shop">
-  <div class="container hero-shop-inner">
-    <div class="hero-shop-text" data-reveal="up">
-      <span class="eyebrow" data-i18n="home.hero.eyebrow">Plantas &amp; Flores · Castelló · 1992</span>
-      <h1 class="hero-shop-title" data-i18n-html="home.promise"><em>Verde</em> para tu casa.<br><em>Flores</em> para tus momentos.</h1>
-      <p class="hero-shop-lead" data-i18n="home.hero.lead">Vivero y floristería en el corazón de Castelló de la Plana. Macetas, ramos, flores de temporada y la planta perfecta para cada rincón.</p>
-      <div class="hero-shop-cta">
-        <a href="tienda.html" class="btn btn-primary btn-arrow" data-i18n="home.hero.cta">Ver la tienda</a>
-      </div>
-    </div>
-    <div class="hero-shop-media" data-reveal="fade">
-      <video class="hero-shop-video" autoplay muted loop playsinline
-             preload="auto" width="1280" height="720"
-             poster="img/jazmin-hero-plants-poster.jpg"
-             aria-label="Plantas verdes · Jazmín, vivero y floristería en Castelló de la Plana">
-        <source src="img/jazmin-hero-plants.mp4" type="video/mp4">
-        <img class="hero-shop-img" src="img/jazmin-hero-plants-poster.jpg"
-             alt="Plantas verdes del vivero Jazmín en Castelló de la Plana." width="1280" height="720">
-      </video>
+<!-- ============== HERO (full-bleed, video background) ============== -->
+<section class="hero-full">
+  <video class="hero-full-video" autoplay muted loop playsinline
+         preload="auto" width="1280" height="720"
+         poster="img/jazmin-hero-plants-poster.jpg"
+         aria-label="Plantas verdes · Jazmín, vivero y floristería en Castelló de la Plana">
+    <source src="img/jazmin-hero-plants.mp4" type="video/mp4">
+    <img src="img/jazmin-hero-plants-poster.jpg" alt="Plantas verdes del vivero Jazmín en Castelló de la Plana." width="1280" height="720">
+  </video>
+  <div class="hero-full-scrim"></div>
+  <div class="container hero-full-content">
+    <span class="hero-full-eyebrow" data-i18n="home.hero.eyebrow">Plantas &amp; Flores · Castelló · 1992</span>
+    <h1 class="hero-full-title" data-i18n-html="home.promise"><em>Verde</em> para tu casa.<br><em>Flores</em> para tus momentos.</h1>
+    <p class="hero-full-sub" data-i18n="home.hero.lead">Vivero y floristería en el corazón de Castelló de la Plana. Macetas, ramos, flores de temporada y la planta perfecta para cada rincón.</p>
+    <div class="hero-full-actions">
+      <a href="tienda.html" class="btn-hero" data-i18n="home.hero.cta">Ver la tienda</a>
+      <a href="#cat-section" class="btn-hero btn-hero--ghost" data-i18n="home.shopcat.title">Compra por categoría</a>
     </div>
   </div>
 </section>
@@ -272,7 +269,7 @@
     /* Accessibility: if the visitor prefers reduced motion, don't autoplay the
        hero video — leave the poster still. */
     if (prefersReduce) {
-      const hv = document.querySelector(".hero-shop-video");
+      const hv = document.querySelector(".hero-full-video");
       if (hv) { hv.removeAttribute("autoplay"); hv.pause?.(); }
     }
 
