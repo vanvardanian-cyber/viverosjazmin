@@ -1405,12 +1405,17 @@
     }
   }
   function rerenderHeader() {
-    // Header dropdowns carry language-dependent category labels
+    // Header dropdowns carry language-dependent category labels.
+    // headerHTML() returns TWO sibling top-level nodes (promo bar + header),
+    // so replace with all of wrap's children, not just the first one — and
+    // drop the old promo bar (a separate sibling) so it doesn't pile up.
     const existing = document.querySelector(".header");
+    const existingPromo = document.querySelector("[data-promobar]");
     if (existing) {
       const wrap = document.createElement("div");
       wrap.innerHTML = headerHTML();
-      existing.replaceWith(wrap.firstElementChild);
+      if (existingPromo) existingPromo.remove();
+      existing.replaceWith(...wrap.children);
     }
   }
 
