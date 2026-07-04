@@ -1127,6 +1127,30 @@
   }
   function truncate(s, n) { return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s; }
 
+  /* Compact "best-selling" card for the homepage rail — image, name,
+     from-price + free-delivery pill. No description/add-to-cart, so
+     browsing stays fast and the CTA is always "see it on the PDP". */
+  function bestsellerCardHTML(p) {
+    const liked = likeHas(p.id);
+    return `
+      <article class="bcard">
+        <a href="producto.html?id=${p.id}" class="bcard-img" aria-label="${productName(p)}">
+          ${productImgSVG(p)}
+        </a>
+        <button class="like-btn js-like ${liked ? "is-liked" : ""}" data-id="${p.id}" aria-label="${t("common.favorite")}" aria-pressed="${liked}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="${liked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="bcard-body">
+          <h3 class="bcard-name"><a href="producto.html?id=${p.id}">${productName(p)}</a></h3>
+          <div class="bcard-foot">
+            <span class="bcard-price"><span class="bcard-from">${t("common.from")}</span> ${formatPrice(p.price)}</span>
+            <span class="bcard-delivery">${t("common.freeDelivery")}</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
   function attachAddButtons(scope = document) {
     scope.querySelectorAll(".js-add").forEach(btn => {
       if (btn._wired) return;
@@ -1781,29 +1805,22 @@
 
   // "Shop by category" — a marketplace directory of photo tiles, grouped by
   // the two departments (vivero / floristería) so both worlds read at a glance.
+  /* Curated 3-tile category picker (Plants / Pots / Trees) — replaces the
+     old full grouped-by-world tile grid, which read as fixed-width "chips"
+     stuck in place whenever a row had few items. Just the most popular
+     entry points; the full category list still lives on the shop page. */
   function renderShopByCategory() {
     const wrap = document.getElementById("shopcat-groups");
     if (!wrap) return;
-    const lang = getLang();
-    const leaf = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-9M12 13c0-4 3-8 8-8 0 4-3 8-8 8zM12 15C12 11 9 8 4 8c0 4 3 7 8 7z"/></svg>`;
-    const flower = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 9V4M12 15v5M9 12H4M15 12h5M9.5 9.5 6.5 6.5M14.5 9.5 17.5 6.5M9.5 14.5 6.5 17.5M14.5 14.5 17.5 17.5"/></svg>`;
     const tile = (href, img, label) =>
       `<a class="cat-tile" href="${href}"><img src="${img}" alt="" loading="lazy"><span class="cat-tile-label">${label}</span></a>`;
-    const groups = [
-      { world: "vivero", label: t("home.dept.vivero"), icon: leaf },
-      { world: "floristeria", label: t("home.dept.floristeria"), icon: flower }
+    const picks = [
+      { cat: "interior", label: t("home.pick.plants") },
+      { cat: "macetas",  label: t("home.pick.pots") },
+      { cat: "arboles",  label: t("home.pick.trees") }
     ];
-    wrap.innerHTML = groups.map(g => {
-      let tiles = CATEGORIES.filter(c => c.world === g.world)
-        .map(c => tile(`tienda.html?cat=${c.id}`, `img/cat-${c.id}.jpg`, c[lang])).join("");
-      if (g.world === "floristeria") {
-        tiles += tile("contacto.html", "img/jazmin-castello-coleccion-ramos-floristeria-castello.webp", t("nav.eventos"));
-      }
-      return `<div class="shopcat-group">
-          <h3 class="shopcat-group-title">${g.icon}<span>${g.label}</span></h3>
-          <div class="cat-grid">${tiles}</div>
-        </div>`;
-    }).join("");
+    const tiles = picks.map(p => tile(`tienda.html?cat=${p.cat}`, `img/cat-${p.cat}.jpg`, p.label)).join("");
+    wrap.innerHTML = `<div class="cat-grid">${tiles}</div>`;
   }
 
   function activeDept() {
@@ -1814,9 +1831,9 @@
   function renderHome() {
     const grid = document.getElementById("featured-grid");
     if (grid) {
-      const featured = pickFeatured(8);
-      grid.innerHTML = featured.map(productCardHTML).join("");
-      attachAddButtons(grid);
+      const featured = pickFeatured(4);
+      grid.innerHTML = featured.map(bestsellerCardHTML).join("");
+      attachLikeButtons(grid);
       initRail(grid);
     }
 
@@ -1938,14 +1955,25 @@
     const out = flagged.slice();
     const seen = new Set(flagged.map(p => p.id));
     // Fill the remaining slots round-robin through categories, so the rail is
-    // never empty even before anything is flagged.
-    for (let i = 0; out.length < n; i++) {
-      for (const c of CATEGORIES) {
-        const candidates = PRODUCTS.filter(p => p.cat === c.id && !seen.has(p.id));
-        if (candidates[i]) { out.push(candidates[i]); seen.add(candidates[i].id); }
-        if (out.length >= n) break;
+    // never empty even before anything is flagged. Each category's candidate
+    // list is computed once and walked with its own cursor — re-filtering by
+    // "!seen" on every pass (as before) shifts indices after each push and
+    // silently skips real candidates once earlier ones in that category are used.
+    const byCat = CATEGORIES.map(c => PRODUCTS.filter(p => p.cat === c.id && !seen.has(p.id)));
+    const cursors = byCat.map(() => 0);
+    let progress = true;
+    while (out.length < n && progress) {
+      progress = false;
+      for (let ci = 0; ci < byCat.length; ci++) {
+        const list = byCat[ci];
+        const idx = cursors[ci];
+        if (idx < list.length) {
+          out.push(list[idx]);
+          cursors[ci]++;
+          progress = true;
+          if (out.length >= n) break;
+        }
       }
-      if (i > 20) break;
     }
     return out.slice(0, n);
   }
