@@ -268,6 +268,34 @@ body.nav-locked { overflow: hidden; }
   .header-actions .icon-btn { min-width: 42px; padding: 6px; }
 }
 
+/* =========================================================
+   PROMO / ANNOUNCEMENT BAR — rotating, dismissible
+   ========================================================= */
+.promobar {
+  position: relative; z-index: 60;
+  background: var(--blue-ink); color: #fff;
+  min-height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 9px 46px; font-size: .84rem;
+}
+.promobar[hidden] { display: none; }
+.promobar-track { position: relative; width: 100%; height: 1.35em; }
+.promobar-msg {
+  position: absolute; left: 0; right: 0; top: 0;
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #fff; text-decoration: none; font-weight: 500;
+  opacity: 0; visibility: hidden; transition: opacity .5s ease;
+}
+.promobar-msg.is-on { opacity: 1; visibility: visible; }
+.promobar-msg:hover { text-decoration: underline; }
+.promobar-close {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: transparent; border: 0; color: rgba(255,255,255,.85);
+  cursor: pointer; display: inline-flex; padding: 6px; border-radius: 6px; line-height: 0;
+}
+.promobar-close:hover { color: #fff; background: rgba(255,255,255,.15); }
+@media (max-width: 600px) { .promobar { font-size: .74rem; padding: 8px 40px; } }
+
 /* Account button — a single pill that morphs based on auth state.
    Guest: avatar + uppercase "Entrar" label, no background.
    Logged-in: filled pastel pill, italic initials avatar + first name. */

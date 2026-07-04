@@ -1,0 +1,13 @@
+# Cloudflare Pages headers.
+# Code + data must always revalidate so a new deploy shows up immediately for
+# every visitor (prevents the "new CSS + old JS/HTML" mismatch that broke the
+# hero). Revalidation is cheap: unchanged files return 304 with no body.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Media is large and its filenames are stable, so let it cache for a day.
+/img/*
+  Cache-Control: public, max-age=86400
+
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate

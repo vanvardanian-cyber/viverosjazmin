@@ -1230,6 +1230,16 @@
         </div>
       </div>`;
     return `
+      <div class="promobar" data-promobar hidden>
+        <div class="promobar-track">
+          <a class="promobar-msg is-on" href="tienda.html"><span data-i18n="promo.free">🚚 Envío gratis en Castelló desde 40€</span></a>
+          <a class="promobar-msg" href="tienda.html?cat=flores"><span data-i18n="promo.season">🌷 Flores de temporada recién llegadas</span></a>
+          <a class="promobar-msg" href="contacto.html"><span data-i18n="promo.events">💐 ¿Boda o evento? Presupuesto sin compromiso →</span></a>
+        </div>
+        <button type="button" class="promobar-close" data-promo-close aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
       <header class="header header--tiered">
         <div class="header-top">
           <div class="container header-top-inner">
@@ -1404,8 +1414,36 @@
     }
   }
 
+  /* Promo/announcement bar — shows unless dismissed (remembered), rotates
+     through the messages, and closes with memory. */
+  let _promoTimer = null;
+  function initPromoBar() {
+    const bar = document.querySelector("[data-promobar]");
+    if (!bar) return;
+    if (localStorage.getItem("vj.promoDismissed") === "1") { bar.remove(); return; }
+    bar.hidden = false;
+    const msgs = Array.from(bar.querySelectorAll(".promobar-msg"));
+    if (_promoTimer) { clearInterval(_promoTimer); _promoTimer = null; }
+    if (msgs.length > 1) {
+      let i = 0;
+      _promoTimer = setInterval(() => {
+        msgs[i].classList.remove("is-on");
+        i = (i + 1) % msgs.length;
+        msgs[i].classList.add("is-on");
+      }, 4500);
+    }
+    const close = bar.querySelector("[data-promo-close]");
+    if (close) close.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.setItem("vj.promoDismissed", "1");
+      if (_promoTimer) { clearInterval(_promoTimer); _promoTimer = null; }
+      bar.remove();
+    });
+  }
+
   /* ---------------- Header / Nav ---------------- */
   function initHeader() {
+    initPromoBar();
     const tog = document.querySelector(".menu-toggle");
     const nav = document.querySelector(".header-nav");
     const backdrop = document.querySelector(".nav-backdrop");
