@@ -47,7 +47,8 @@ function rowToProduct(row) {
     // Floristería filter attributes (optional)
     floristType: row.florist_type || "",
     flowerType: row.flower_type || "",
-    color: row.color || ""
+    color: row.color || "",
+    videoUrl: row.video_url || ""
   };
 }
 function productToRow(p, sortOrder) {
@@ -76,6 +77,7 @@ function productToRow(p, sortOrder) {
     florist_type: (p.floristType || "").trim() || null,
     flower_type:  (p.flowerType  || "").trim() || null,
     color:        (p.color       || "").trim() || null,
+    video_url:    (p.videoUrl    || "").trim() || null,
     updated_at: new Date().toISOString()
   };
   if (sortOrder != null) row.sort_order = sortOrder;

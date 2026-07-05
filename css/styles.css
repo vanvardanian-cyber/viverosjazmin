@@ -1643,6 +1643,19 @@ body.vj-no-scroll { overflow: hidden; }
 @media (max-width: 540px) {
   .product-gallery-thumbs { grid-template-columns: repeat(5, 1fr); }
 }
+.product-video {
+  margin-top: 14px;
+  aspect-ratio: 16/9;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: #000;
+}
+.product-video iframe,
+.product-video video {
+  width: 100%; height: 100%;
+  display: block;
+  border: 0;
+}
 .detail-cat {
   font-size: .68rem; color: var(--blue-deep); letter-spacing: .22em; text-transform: uppercase; font-weight: 600;
   margin-bottom: 10px;
@@ -3387,7 +3400,9 @@ select:focus-visible { outline-offset: 0; }
    ========================================================= */
 .hero-full {
   position: relative;
-  height: clamp(540px, 82vh, 800px);
+  /* Shorter than a full viewport on purpose — the trust strip below should
+     peek in on load, hinting there's more to see without scrolling. */
+  height: clamp(440px, 62vh, 640px);
   overflow: hidden;
   display: flex; align-items: center;
   background: #1a2a20;
@@ -3454,7 +3469,7 @@ select:focus-visible { outline-offset: 0; }
 .btn-hero--ghost:hover { background: rgba(255,255,255,.22); }
 @media (prefers-reduced-motion: reduce) { .hero-full-video { animation: none; } }
 @media (max-width: 640px) {
-  .hero-full { height: clamp(460px, 78vh, 620px); }
+  .hero-full { height: clamp(400px, 60vh, 540px); }
   .hero-full-actions { flex-direction: column; align-items: stretch; }
   .btn-hero { justify-content: center; }
 }

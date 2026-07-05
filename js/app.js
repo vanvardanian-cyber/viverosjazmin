@@ -811,6 +811,27 @@
       </div>`;
   }
 
+  /* Product video — a YouTube/Vimeo link or a direct .mp4/.webm/.ogg file
+     link (set in the admin product form). No file upload/storage involved,
+     so this can't repeat the base64-image egress problem. */
+  function productVideoHTML(p) {
+    const url = (p.videoUrl || "").trim();
+    if (!url) return "";
+    const title = t("product.video");
+    let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
+    if (m) {
+      return `<div class="product-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+    }
+    m = url.match(/vimeo\.com\/(\d+)/i);
+    if (m) {
+      return `<div class="product-video"><iframe src="https://player.vimeo.com/video/${m[1]}" title="${title}" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+    }
+    if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) {
+      return `<div class="product-video"><video src="${escapeHtmlSafe(url)}" controls playsinline></video></div>`;
+    }
+    return "";
+  }
+
   function wireProductGallery(scope) {
     const gallery = scope.querySelector(".product-gallery");
     if (!gallery) return;
@@ -2178,7 +2199,7 @@
           <a href="tienda.html?cat=${p.cat}">${catName(p.cat)}</a>
         </div>
         <div class="product-detail">
-          <div class="product-detail-img">${productGalleryHTML(p)}</div>
+          <div class="product-detail-img">${productGalleryHTML(p)}${productVideoHTML(p)}</div>
           <div class="product-detail-info">
             <div class="detail-cat">${catName(p.cat)}</div>
             <h1>${productName(p)}</h1>

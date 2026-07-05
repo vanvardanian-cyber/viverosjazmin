@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=3a092786">
+  <link rel="stylesheet" href="css/styles.css?v=a378438d">
   <style>
     /* Admin-only i18n toggle + panel-actions layout (scoped to admin.html) */
     #admin-panel-actions { display: flex; gap: 8px; align-items: center; }
@@ -21,6 +21,12 @@
     }
     .admin-lang-btn:hover { color: var(--ink); }
     .admin-lang-btn.is-active { background: var(--ink); color: #fff; }
+    /* The site header's ES/VA/EN dropdown controls the PUBLIC pages only —
+       it has no effect on admin content (a separate i18n system, on purpose,
+       to avoid double-translation collisions). Showing it here just confused
+       people into clicking the wrong language control, so hide it: the
+       ES|EN pill above is the only language switch that does anything here. */
+    .header .lang-select { display: none !important; }
   </style>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
 </head>
@@ -239,6 +245,11 @@
               </div>
             </div>
             <div class="form-field full">
+              <label data-t="f_video">Vídeo del producto (opcional)</label>
+              <input type="url" name="videoUrl" id="f-video-url" data-t-attr="placeholder:f_video_ph">
+              <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_video_help">Enlace de YouTube, Vimeo, o a un archivo .mp4 directo.</small>
+            </div>
+            <div class="form-field full">
               <label data-t-html="f_illus_color">Color de la ilustración (si no hay foto): <span id="seed-val" style="font-weight:600">0</span></label>
               <input type="range" name="imgSeed" min="0" max="360" value="0" step="5" id="f-seed">
             </div>
@@ -396,10 +407,10 @@
 
 <div data-vj-footer></div>
 
-<script src="js/data.js?v=003041dc"></script>
+<script src="js/data.js?v=4f8d0222"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js"></script>
-<script src="js/app.js?v=1d83c982"></script>
+<script src="js/supabase.js?v=e654d638"></script>
+<script src="js/app.js?v=7d5f2486"></script>
 <script>
   /* ============================================================
      ADMIN I18N (admin.html only) — DISTINCT namespace from the
@@ -474,6 +485,9 @@
       f_img_url_ph: "…o pega una URL https://…",
       f_img_url_add: "Añadir",
       f_images_help: "La primera imagen es la principal. Arrastra para reordenar. Recomendado: hasta 500 KB cada foto subida.",
+      f_video: "Vídeo del producto (opcional)",
+      f_video_ph: "https://youtube.com/… , https://vimeo.com/… o enlace .mp4",
+      f_video_help: "Enlace de YouTube, Vimeo, o a un archivo .mp4 directo.",
       f_illus_color: "Color de la ilustración (si no hay foto): <span id=\"seed-val\" style=\"font-weight:600\">0</span>",
       btn_cancel: "Cancelar",
       btn_save: "Guardar",
@@ -588,6 +602,9 @@
       f_img_url_ph: "…or paste a URL https://…",
       f_img_url_add: "Add",
       f_images_help: "The first image is the main one. Drag to reorder. Recommended: up to 500 KB per uploaded photo.",
+      f_video: "Product video (optional)",
+      f_video_ph: "https://youtube.com/… , https://vimeo.com/… or a direct .mp4 link",
+      f_video_help: "A YouTube or Vimeo link, or a direct .mp4 file link.",
       f_illus_color: "Illustration color (when there's no photo): <span id=\"seed-val\" style=\"font-weight:600\">0</span>",
       btn_cancel: "Cancel",
       btn_save: "Save",
@@ -1094,6 +1111,7 @@
       form.elements.floristType.value = p.floristType || "";
       form.elements.flowerType.value = p.flowerType || "";
       form.elements.color.value = p.color || "";
+      form.elements.videoUrl.value = p.videoUrl || "";
       // Load images: prefer new array, fall back to single legacy img
       currentImages = Array.isArray(p.images) && p.images.length
         ? p.images.slice(0, MAX_IMAGES)
@@ -1152,6 +1170,7 @@
         floristType: (fd.get("floristType") || "").trim(),
         flowerType: (fd.get("flowerType") || "").trim(),
         color: (fd.get("color") || "").trim(),
+        videoUrl: (fd.get("videoUrl") || "").trim(),
         name: { es: (fd.get("name_es")||"").trim(), va: (fd.get("name_va")||"").trim() },
         desc: { es: (fd.get("desc_es")||"").trim(), va: (fd.get("desc_va")||"").trim() }
       };
