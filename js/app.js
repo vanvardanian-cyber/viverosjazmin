@@ -1358,10 +1358,11 @@
                 <a class="mainnav-link" href="contacto.html" data-i18n="nav.eventos">Eventos</a>
                 <button type="button" class="dd-toggle" aria-label="Abrir submenú">${chevron}</button>
                 <div class="dropdown">
-                  <a href="contacto.html?tipo=boda"    data-i18n="contact.type.boda">Boda</a>
-                  <a href="contacto.html?tipo=evento"  data-i18n="contact.type.evento">Evento o celebración</a>
-                  <a href="contacto.html?tipo=funeral" data-i18n="contact.type.funeral">Funeral / duelo</a>
-                  <a href="contacto.html?tipo=empresa" data-i18n="contact.type.empresa">Empresa / negocio</a>
+                  <a href="contacto.html?tipo=boda"     data-i18n="contact.type.boda">Boda</a>
+                  <a href="contacto.html?tipo=bautizo"  data-i18n="contact.type.bautizo">Bautizo</a>
+                  <a href="contacto.html?tipo=comunion" data-i18n="contact.type.comunion">Primera comunión</a>
+                  <a href="contacto.html?tipo=evento"   data-i18n="contact.type.evento">Evento o celebración</a>
+                  <a href="contacto.html?tipo=funeral"  data-i18n="contact.type.funeral">Funeral / duelo</a>
                 </div>
               </li>
               <li class="mainnav-item"><a class="mainnav-link" href="sobre.html"    data-i18n="nav.about">Sobre nosotros</a></li>
@@ -3075,10 +3076,42 @@
     return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
   }
 
+  /* Contact page dressed for the occasion (?tipo=boda|bautizo|comunion|evento|funeral):
+     each event gets its own hero photo and heading, though the form itself is the same.
+     We re-point the heading's i18n keys rather than writing text, so the event wording
+     survives a language switch (applyTranslations reads whatever key is on the element). */
+  const EVENT_PHOTOS = {
+    boda:     "img/jazmin-hero-flowers-poster.jpg",
+    bautizo:  "img/jazmin-castello-ramos-hechos-a-mano-floristeria.webp",
+    comunion: "img/cat-flores.jpg",
+    evento:   "img/jazmin-castello-coleccion-ramos-floristeria-castello.webp",
+    funeral:  "img/floristeria-vivero-jazmin-castellon-ramos-plantas-decoracion.webp"
+  };
+  function applyContactEventTheme() {
+    const tipo = (new URLSearchParams(location.search).get("tipo") || "").toLowerCase();
+    const photoSrc = EVENT_PHOTOS[tipo];
+    if (!photoSrc) return;                       // unknown/absent tipo → default page
+    const head    = document.querySelector(".page-head");
+    const photo   = document.querySelector(".page-head-photo");
+    const eyebrow = document.querySelector(".page-head .eyebrow");
+    const h1      = document.querySelector(".page-head h1");
+    const sub     = document.querySelector(".page-head p");
+    if (photo) { photo.src = photoSrc; photo.alt = ""; }   // decorative; the h1 carries the meaning
+    if (head)  head.classList.add("page-head--event", "page-head--" + tipo);
+    if (eyebrow) eyebrow.setAttribute("data-i18n", "contact.type." + tipo);
+    if (h1)      h1.setAttribute("data-i18n-html", "event." + tipo + ".h1");
+    if (sub)     sub.setAttribute("data-i18n", "event." + tipo + ".sub");
+    // Preselect the matching enquiry type so the visitor doesn't re-pick it
+    const sel = document.querySelector('#contact-form [name="type"]');
+    if (sel) sel.value = tipo;
+    applyTranslations();
+  }
+
   function renderContactForm() {
     const form = document.getElementById("contact-form");
     const ok = document.getElementById("contact-success");
     if (!form) return;
+    applyContactEventTheme();
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(form);

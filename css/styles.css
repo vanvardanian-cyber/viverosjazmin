@@ -1966,6 +1966,10 @@ body.vj-no-scroll { overflow: hidden; }
   font-weight: 500;
 }
 
+/* Contact page dressed per event type — the funeral hero is deliberately
+   quieter (desaturated, slightly darker) so it never reads as celebratory. */
+.page-head--funeral .page-head-photo { filter: saturate(.55) brightness(.88); }
+
 /* ---------- About / SEO band (sits quietly above the footer) ---------- */
 .about-seo {
   border-top: 1px solid var(--line);
