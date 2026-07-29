@@ -490,6 +490,22 @@
 
   function cookieTexts() {
     const lang = getLang();
+    if (lang === "en") return {
+      title: "Cookies",
+      body:  "We use essential cookies for the cart, language and your session. We don't run advertising tracking. You can accept the optional ones (analytics) or reject them at any time.",
+      accept: "Accept all",
+      reject: "Reject all",
+      config: "Customise",
+      save:   "Save selection",
+      essential: "Essential (always on)",
+      essentialDesc: "Without these cookies the cart and sign-in wouldn't work.",
+      analytics: "Analytics (anonymous)",
+      analyticsDesc: "Help us understand which pages are useful. Aggregated stats, without identifying you.",
+      marketing: "Marketing",
+      marketingDesc: "Third-party personalisation and advertising. Not currently used.",
+      more: "More information",
+      changeLink: "Cookie settings"
+    };
     return lang === "va" ? {
       title: "Galetes",
       body:  "Utilitzem galetes essencials per a la cistella, l'idioma i la teua sessió. No fem rastreig publicitari. Pots acceptar les opcionals (anàlisi) o rebutjar-les en qualsevol moment.",
@@ -1347,6 +1363,9 @@
                   <a class="dropdown-all" href="tienda.html?world=floristeria">${all} →</a>
                 </div>
               </li>
+              <li class="mainnav-item">
+                <a class="mainnav-link" href="contacto.html?tipo=boda" data-i18n="nav.bodas">Bodas</a>
+              </li>
               <li class="mainnav-item has-dropdown">
                 <a class="mainnav-link" href="tienda.html?cat=macetas" data-i18n="nav.decoracion">Decoración</a>
                 <button type="button" class="dd-toggle" aria-label="Abrir submenú">${chevron}</button>
@@ -1399,7 +1418,7 @@
               <h4 data-i18n="world.floristeria" style="margin-top:20px;">Floristería &amp; Flores</h4>
               <ul>
                 ${CATEGORIES.filter(c => c.world === "floristeria").map(c => `<li><a href="tienda.html?cat=${c.id}">${c[lang]}</a></li>`).join("")}
-                <li><a href="contacto.html">${lang === "va" ? "Bodes, esdeveniments i funerals" : "Bodas, eventos y funerales"}</a></li>
+                <li><a href="contacto.html" data-i18n="footer.occasions">Bodas, eventos y funerales</a></li>
               </ul>
             </div>
             <div>
@@ -1408,7 +1427,7 @@
                 <li><a href="sobre.html" data-i18n="nav.about"></a></li>
                 <li><a href="contacto.html" data-i18n="nav.contact"></a></li>
                 <li><a href="carrito.html" data-i18n="nav.cart"></a></li>
-                <li><a href="trabajo.html">${lang === "va" ? "Treballa amb nosaltres" : "Trabaja con nosotros"}</a></li>
+                <li><a href="trabajo.html" data-i18n="footer.jobs">Trabaja con nosotros</a></li>
               </ul>
             </div>
             <div>
@@ -2748,7 +2767,9 @@
     const db = scope.querySelector("#delete-acct-btn");
     if (db) db.addEventListener("click", async () => {
       const lang = getLang();
-      const msg = lang === "va"
+      const msg = lang === "en"
+        ? "This will permanently delete your account and sign you out. This action cannot be undone. Continue?"
+        : lang === "va"
         ? "Açò eliminarà el teu compte de manera permanent i tancaràs la sessió. Esta acció no es pot desfer. Continuar?"
         : "Esto eliminará tu cuenta de forma permanente y cerrarás sesión. Esta acción no se puede deshacer. ¿Continuar?";
       if (!confirm(msg)) return;
@@ -2767,7 +2788,9 @@
         await logoutUser();
       } catch (e) {
         db.disabled = false;
-        alert((lang === "va"
+        alert((lang === "en"
+          ? "Could not delete the account: "
+          : lang === "va"
           ? "No s'ha pogut eliminar el compte: "
           : "No se pudo eliminar la cuenta: ") + (e.message || e));
         return;
