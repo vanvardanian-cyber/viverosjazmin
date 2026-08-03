@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=54e9d018">
+  <link rel="stylesheet" href="css/styles.css?v=6731f9c0">
   <style>
     /* Admin-only i18n toggle + panel-actions layout (scoped to admin.html) */
     #admin-panel-actions { display: flex; gap: 8px; align-items: center; }
@@ -137,6 +137,8 @@
           <input type="hidden" name="id">
           <input type="hidden" name="originalId">
 
+          <div class="form-section">
+          <h5 class="form-section-title" data-t="sec_basic">Información básica</h5>
           <div class="form-grid">
             <div class="form-field">
               <label data-t="f_category">Categoría</label>
@@ -164,7 +166,12 @@
               <label data-t-html="f_desc_va">Descripción <span class="lang-tag">VAL</span></label>
               <textarea name="desc_va" required maxlength="280"></textarea>
             </div>
+          </div>
+          </div>
 
+          <div class="form-section">
+          <h5 class="form-section-title" data-t="sec_pricing">Precio e inventario</h5>
+          <div class="form-grid">
             <div class="form-field">
               <label data-t="f_price">Precio (€)</label>
               <input type="number" name="price" step="0.01" min="0" required>
@@ -186,7 +193,12 @@
                 <span data-t-html="f_featured"><strong>★ Destacar en portada</strong> — aparece en el carrusel «Una selección» de la página de inicio.</span>
               </label>
             </div>
+          </div>
+          </div>
 
+          <div class="form-section">
+          <h5 class="form-section-title" data-t="sec_attrs">Atributos y filtros</h5>
+          <div class="form-grid">
             <div class="form-field full">
               <label data-t="f_pot_size">Tamaño de maceta</label>
               <select name="potSize">
@@ -224,7 +236,12 @@
               </datalist>
               <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_florist_help">Para floristería: alimentan los filtros de la tienda (ramo, decoración, tipo de flor, color).</small>
             </div>
+          </div>
+          </div>
 
+          <div class="form-section">
+          <h5 class="form-section-title" data-t="sec_media">Fotos y vídeo</h5>
+          <div class="form-grid">
             <div class="form-field full">
               <label data-t="f_images">Imágenes del producto (hasta 6)</label>
               <div class="img-manager">
@@ -254,8 +271,10 @@
               <input type="range" name="imgSeed" min="0" max="360" value="0" step="5" id="f-seed">
             </div>
           </div>
+          </div>
 
-          <div class="actions">
+          <div class="actions form-savebar">
+            <span class="unsaved-dot" id="unsaved-indicator" hidden><span class="dot"></span><span data-t="unsaved_changes">Cambios sin guardar</span></span>
             <button type="button" class="btn btn-light" id="btn-cancel" style="display:none;" data-t="btn_cancel">Cancelar</button>
             <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit">Añadir producto</button>
           </div>
@@ -439,7 +458,7 @@
       // shared
       total_label: "Total",
       // products panel
-      products_notice: "<strong>Cambios en vivo.</strong> Los productos se guardan directamente en la base de datos. Cualquier cambio aquí lo verán los clientes al instante — no hay que exportar nada ni publicar nada.",
+      products_notice: "<strong>Guardado al instante, publicado solo.</strong> Los cambios se guardan directamente en la base de datos y la web pública se actualiza automáticamente en menos de una hora. ¿Prisa? El botón «Run workflow» en GitHub → Actions → Publish catalog lo publica en 2 minutos.",
       catalog_label: "Catálogo",
       catalog_products_word: "productos",
       publish_catalog: "⬆️ Publicar catálogo",
@@ -488,6 +507,21 @@
       f_video: "Vídeo del producto (opcional)",
       f_video_ph: "https://youtube.com/… , https://vimeo.com/… o enlace .mp4",
       f_video_help: "Enlace de YouTube, Vimeo, o a un archivo .mp4 directo.",
+      sec_basic: "Información básica",
+      sec_pricing: "Precio e inventario",
+      sec_attrs: "Atributos y filtros",
+      sec_media: "Fotos y vídeo",
+      act_duplicate: "Duplicar producto",
+      act_feature: "Destacar en portada",
+      stock_out: "Agotado",
+      stock_low: "poco stock",
+      unsaved_changes: "Cambios sin guardar",
+      toast_saved: "Producto guardado ✓",
+      toast_deleted: "Producto eliminado",
+      toast_featured: "Añadido a la portada ★",
+      toast_unfeatured: "Quitado de la portada",
+      form_title_copy: "Añadir producto · copia",
+      btn_add_product: "Añadir producto",
       f_illus_color: "Color de la ilustración (si no hay foto): <span id=\"seed-val\" style=\"font-weight:600\">0</span>",
       btn_cancel: "Cancelar",
       btn_save: "Guardar",
@@ -556,7 +590,7 @@
       // shared
       total_label: "Total",
       // products panel
-      products_notice: "<strong>Live changes.</strong> Products are saved straight to the database. Any change here is seen by customers instantly — there's nothing to export or publish.",
+      products_notice: "<strong>Saved instantly, published automatically.</strong> Changes are saved straight to the database and the public site updates itself within the hour. In a hurry? The «Run workflow» button in GitHub → Actions → Publish catalog publishes in 2 minutes.",
       catalog_label: "Catalogue",
       catalog_products_word: "products",
       publish_catalog: "⬆️ Publish catalogue",
@@ -605,6 +639,21 @@
       f_video: "Product video (optional)",
       f_video_ph: "https://youtube.com/… , https://vimeo.com/… or a direct .mp4 link",
       f_video_help: "A YouTube or Vimeo link, or a direct .mp4 file link.",
+      sec_basic: "Basic information",
+      sec_pricing: "Price & inventory",
+      sec_attrs: "Attributes & filters",
+      sec_media: "Photos & video",
+      act_duplicate: "Duplicate product",
+      act_feature: "Feature on homepage",
+      stock_out: "Out of stock",
+      stock_low: "low stock",
+      unsaved_changes: "Unsaved changes",
+      toast_saved: "Product saved ✓",
+      toast_deleted: "Product deleted",
+      toast_featured: "Added to homepage ★",
+      toast_unfeatured: "Removed from homepage",
+      form_title_copy: "Add product · copy",
+      btn_add_product: "Add product",
       f_illus_color: "Illustration color (when there's no photo): <span id=\"seed-val\" style=\"font-weight:600\">0</span>",
       btn_cancel: "Cancel",
       btn_save: "Save",
@@ -1017,8 +1066,20 @@
     // tiny inline SVG icons
     const ICONS = {
       edit:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-      trash:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
+      trash:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+      copy:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`
     };
+
+    /* Small confirmation toast (platform-style feedback) */
+    let _toastTimer = null;
+    function showToast(msg) {
+      let t = document.getElementById("admin-toast");
+      if (!t) { t = document.createElement("div"); t.id = "admin-toast"; t.className = "admin-toast"; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.classList.add("is-show");
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.remove("is-show"), 2200);
+    }
 
     function catName(id) {
       const c = CATEGORIES.find(c => c.id === id);
@@ -1060,17 +1121,28 @@
             }
           </div>
           <div>
-            <div class="name">${escapeHtml(p.name.es)}${p.featured ? ` <span class="feat-star" title="Destacado en portada">★</span>` : ""}</div>
+            <div class="name">${escapeHtml(p.name.es)}</div>
             <div class="meta">${escapeHtml(p.id)} · ${escapeHtml(catName(p.cat))}</div>
           </div>
           <div class="col-cat"><span class="world-badge world-${worldOf(p.cat)}">${worldShort(p.cat)}</span></div>
+          <div class="col-stock">${stockBadge(p)}</div>
           <div class="col-price">${fmtPrice(p.price)}</div>
           <div class="actions">
+            <button class="icon-btn star ${p.featured ? "is-on" : ""}" data-act="feat" title="${tA('act_feature')}">★</button>
+            <button class="icon-btn" data-act="dup" title="${tA('act_duplicate')}">${ICONS.copy}</button>
             <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>
             <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
           </div>
         </div>
       `).join("");
+    }
+
+    /* Color-coded stock pill: green in stock, amber when low, red when out */
+    function stockBadge(p) {
+      const n = Number(p.stock) || 0;
+      if (n <= 0) return `<span class="stock-badge out">${tA('stock_out')}</span>`;
+      if (n <= 2)  return `<span class="stock-badge low">${n} · ${tA('stock_low')}</span>`;
+      return `<span class="stock-badge ok">${n}</span>`;
     }
 
     function clearForm() {
@@ -1088,6 +1160,7 @@
       imgUrlInput.value = "";
       currentImages = [];
       renderImageList();
+      markClean();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -1125,6 +1198,7 @@
       titleEl.innerHTML = `<em>Editar</em> · ${escapeHtml(p.name.es)}`;
       submitBtn.textContent = "Guardar cambios";
       cancelBtn.style.display = "";
+      markClean();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -1133,12 +1207,44 @@
       if (!btn) return;
       const id = btn.closest(".admin-row").dataset.id;
       if (btn.dataset.act === "edit") loadForEdit(id);
+      if (btn.dataset.act === "feat") {
+        // One-click "feature on homepage" toggle, saved straight to the DB
+        const p = VJ_CATALOG.list().find(x => x.id === id);
+        if (!p) return;
+        btn.disabled = true;
+        try {
+          await VJ_CATALOG.saveOne({ ...p, featured: !p.featured });
+          renderList();
+          showToast(tA(!p.featured ? 'toast_featured' : 'toast_unfeatured'));
+        } catch (err) {
+          btn.disabled = false;
+          alert("Error: " + (err.message || err));
+        }
+      }
+      if (btn.dataset.act === "dup") {
+        // Duplicate: prefill the form as a NEW product with this one's data.
+        // Nothing touches the DB until the admin hits save.
+        const p = VJ_CATALOG.list().find(x => x.id === id);
+        if (!p) return;
+        loadForEdit(id);
+        editingId = null;
+        form.elements.id.value = "";
+        form.elements.originalId.value = "";
+        document.getElementById("f-idDisplay").value = "";
+        form.elements.name_es.value = p.name.es + " (copia)";
+        if (p.name.va) form.elements.name_va.value = p.name.va + " (còpia)";
+        titleEl.innerHTML = tA('form_title_copy');
+        submitBtn.textContent = tA('btn_add_product');
+        cancelBtn.style.display = "";
+        markDirty();
+      }
       if (btn.dataset.act === "del") {
         if (!confirm(`¿Eliminar "${VJ_CATALOG.list().find(p=>p.id===id)?.name.es}"?`)) return;
         try {
           await VJ_CATALOG.removeOne(id);
           renderList();
           if (editingId === id) clearForm();
+          showToast(tA('toast_deleted'));
         } catch (err) {
           alert("No se pudo eliminar: " + (err.message || err));
         }
@@ -1148,6 +1254,14 @@
     cancelBtn.addEventListener("click", clearForm);
     search.addEventListener("input", renderList);
     seedSlider.addEventListener("input", e => seedVal.textContent = e.target.value);
+
+    /* Unsaved-changes indicator in the sticky save bar */
+    const unsavedEl = document.getElementById("unsaved-indicator");
+    function markDirty() { if (unsavedEl) unsavedEl.hidden = false; }
+    function markClean() { if (unsavedEl) unsavedEl.hidden = true; }
+    form.addEventListener("input", markDirty);
+    form.addEventListener("change", markDirty);
+    document.getElementById("img-list").addEventListener("click", markDirty);
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -1183,6 +1297,8 @@
         renderList();
         clearForm();
         submitBtn.textContent = "✓ Guardado";
+        showToast(tA('toast_saved'));
+        markClean();
         setTimeout(() => { submitBtn.textContent = original; submitBtn.disabled = false; }, 1200);
       } catch (err) {
         submitBtn.disabled = false; submitBtn.textContent = original;
