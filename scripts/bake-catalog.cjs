@@ -56,8 +56,29 @@ function shrink(dataURL) {
 }
 
 (async () => {
+  const headers = { apikey: KEY, Authorization: "Bearer " + KEY };
+  const metaPath = path.join(__dirname, "..", "data", "catalog.meta.json");
+
+  // Cheap change check first (~1 KB instead of the full ~MB catalog): hash the
+  // id + updated_at of every product. Adds, deletes and edits all change it.
+  // Only when the fingerprint differs do we download the full rows — so the
+  // hourly schedule costs almost no Supabase egress when nothing changed.
+  const fpRes = await fetch(`${PROJECT}/rest/v1/products?select=id,updated_at&order=id.asc`, { headers });
+  if (!fpRes.ok) { console.error("HTTP", fpRes.status, await fpRes.text()); process.exit(1); }
+  const fpRows = await fpRes.json();
+  const fingerprint = require("crypto").createHash("sha256")
+    .update(JSON.stringify(fpRows.map(r => [r.id, r.updated_at])))
+    .digest("hex");
+  try {
+    const prev = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+    if (prev.fingerprint === fingerprint && fs.existsSync(path.join(__dirname, "..", "data", "catalog.json"))) {
+      console.log(JSON.stringify({ unchanged: true, rows: fpRows.length }));
+      return;
+    }
+  } catch {} // no/invalid meta file → do the full bake
+
   const url = `${PROJECT}/rest/v1/products?select=*&order=sort_order.asc`;
-  const res = await fetch(url, { headers: { apikey: KEY, Authorization: "Bearer " + KEY } });
+  const res = await fetch(url, { headers });
   if (!res.ok) { console.error("HTTP", res.status, await res.text()); process.exit(1); }
   const rows = await res.json();
   let before = 0, after = 0;
@@ -77,6 +98,7 @@ function shrink(dataURL) {
   const outPath = path.join(__dirname, "..", "data", "catalog.json");
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(rows));
+  fs.writeFileSync(metaPath, JSON.stringify({ fingerprint, rows: rows.length }));
   console.log(JSON.stringify({
     rows: rows.length,
     fileKB: Math.round(fs.statSync(outPath).size / 1024),

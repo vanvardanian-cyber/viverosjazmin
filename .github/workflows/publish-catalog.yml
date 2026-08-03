@@ -36,12 +36,12 @@ jobs:
 
       - name: Commit & push if changed
         run: |
-          if git diff --quiet -- data/catalog.json; then
+          if git diff --quiet -- data/catalog.json data/catalog.meta.json && [ -z "$(git status --porcelain data/)" ]; then
             echo "Catalog unchanged — nothing to publish."
             exit 0
           fi
           git config user.name "jazmin-catalog-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/catalog.json
+          git add data/catalog.json data/catalog.meta.json
           git commit -m "Publish catalog (auto): sync snapshot from Supabase"
           git push
