@@ -200,7 +200,12 @@
   // Supabase. Falls back to a live query if the snapshot is missing, so the
   // site can never end up empty.
   async function loadCatalog() {
-    const isAdmin = /(^|\/)admin\.html$/i.test(location.pathname);
+    // Admin must read LIVE Supabase, never the frozen snapshot — otherwise
+    // saves/deletes don't show. Detect the admin page by its own markup
+    // (present regardless of whether the URL is /admin or /admin.html, since
+    // Cloudflare serves the clean URL and redirects the .html form to it).
+    const isAdmin = !!document.getElementById("admin-login")
+      || /(^|\/)admin(\.html)?\/?$/i.test(location.pathname);
     if (!isAdmin) {
       try {
         const res = await fetch("data/catalog.json", { cache: "default" });
