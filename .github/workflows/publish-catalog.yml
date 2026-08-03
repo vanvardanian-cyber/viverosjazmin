@@ -1,0 +1,47 @@
+# Auto-publisher: copies the live Supabase product catalog into
+# data/catalog.json (the static snapshot customers read from the CDN).
+#
+# Runs every hour, and can be run on demand from the GitHub UI:
+#   Actions → "Publish catalog" → Run workflow
+#
+# Commits ONLY when the catalog actually changed, so the history stays clean.
+# Pushes with the built-in GITHUB_TOKEN still trigger the Cloudflare Pages
+# deploy (the no-retrigger rule only applies to other GitHub Actions).
+name: Publish catalog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 * * * *"   # hourly at :07
+
+concurrency:
+  group: publish-catalog
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Bake catalog from live Supabase
+        run: node scripts/bake-catalog.cjs
+
+      - name: Commit & push if changed
+        run: |
+          if git diff --quiet -- data/catalog.json; then
+            echo "Catalog unchanged — nothing to publish."
+            exit 0
+          fi
+          git config user.name "jazmin-catalog-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/catalog.json
+          git commit -m "Publish catalog (auto): sync snapshot from Supabase"
+          git push
