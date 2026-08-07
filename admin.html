@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=6731f9c0">
+  <link rel="stylesheet" href="css/styles.css?v=054fefe6">
   <style>
     /* Admin-only i18n toggle + panel-actions layout (scoped to admin.html) */
     #admin-panel-actions { display: flex; gap: 8px; align-items: center; }
@@ -154,8 +154,9 @@
               <input type="text" name="name_es" required maxlength="80">
             </div>
             <div class="form-field full">
-              <label data-t-html="f_name_va">Nombre <span class="lang-tag">VAL</span></label>
-              <input type="text" name="name_va" required maxlength="80">
+              <label data-t-html="f_name_va">Nombre <span class="lang-tag">VAL</span> <span class="opt-tag" data-t="opt_tag">opcional</span></label>
+              <input type="text" name="name_va" maxlength="80">
+              <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_va_help">Si lo dejas vacío, se muestra el texto en español.</small>
             </div>
 
             <div class="form-field full">
@@ -163,8 +164,9 @@
               <textarea name="desc_es" required maxlength="280"></textarea>
             </div>
             <div class="form-field full">
-              <label data-t-html="f_desc_va">Descripción <span class="lang-tag">VAL</span></label>
-              <textarea name="desc_va" required maxlength="280"></textarea>
+              <label data-t-html="f_desc_va">Descripción <span class="lang-tag">VAL</span> <span class="opt-tag" data-t="opt_tag">opcional</span></label>
+              <textarea name="desc_va" maxlength="280"></textarea>
+              <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_va_help">Si lo dejas vacío, se muestra el texto en español.</small>
             </div>
           </div>
           </div>
@@ -474,9 +476,11 @@
       f_internal_id: "ID interno",
       f_internal_id_ph: "se genera al guardar",
       f_name_es: "Nombre <span class=\"lang-tag\">ES</span>",
-      f_name_va: "Nombre <span class=\"lang-tag\">VAL</span>",
+      f_name_va: "Nombre <span class=\"lang-tag\">VAL</span> <span class=\"opt-tag\">opcional</span>",
       f_desc_es: "Descripción <span class=\"lang-tag\">ES</span>",
-      f_desc_va: "Descripción <span class=\"lang-tag\">VAL</span>",
+      f_desc_va: "Descripción <span class=\"lang-tag\">VAL</span> <span class=\"opt-tag\">opcional</span>",
+      opt_tag: "opcional",
+      f_va_help: "Si lo dejas vacío, se muestra el texto en español.",
       f_price: "Precio (€)",
       f_stock: "Stock",
       f_origin: "Origen / Procedencia",
@@ -606,9 +610,11 @@
       f_internal_id: "Internal ID",
       f_internal_id_ph: "generated on save",
       f_name_es: "Name <span class=\"lang-tag\">ES</span>",
-      f_name_va: "Name <span class=\"lang-tag\">VAL</span>",
+      f_name_va: "Name <span class=\"lang-tag\">VAL</span> <span class=\"opt-tag\">optional</span>",
       f_desc_es: "Description <span class=\"lang-tag\">ES</span>",
-      f_desc_va: "Description <span class=\"lang-tag\">VAL</span>",
+      f_desc_va: "Description <span class=\"lang-tag\">VAL</span> <span class=\"opt-tag\">optional</span>",
+      opt_tag: "optional",
+      f_va_help: "If left empty, the Spanish text is shown.",
       f_price: "Price (€)",
       f_stock: "Stock",
       f_origin: "Origin / Provenance",
