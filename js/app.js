@@ -877,14 +877,15 @@
     if (mainBtn) {
       mainBtn.addEventListener("click", () => {
         if (!imgs.length) return;
-        openLightbox(imgs, parseInt(mainBtn.dataset.galleryOpen, 10) || 0);
+        openLightbox(imgs, parseInt(mainBtn.dataset.galleryOpen, 10) || 0, mainImg ? mainImg.alt : "");
       });
     }
   }
 
   /* ---------------- Lightbox / fullscreen image viewer ---------------- */
-  function openLightbox(images, startIdx) {
+  function openLightbox(images, startIdx, altText) {
     if (!Array.isArray(images) || images.length === 0) return;
+    const _lbAlt = String(altText || "").replace(/"/g, "&quot;");
     let idx = Math.max(0, Math.min(startIdx || 0, images.length - 1));
     const multi = images.length > 1;
 
@@ -905,7 +906,7 @@
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>` : ""}
       <div class="vj-lightbox-stage">
-        <img src="${images[idx]}" alt="" />
+        <img src="${images[idx]}" alt="${_lbAlt}" />
       </div>
       ${multi ? `<div class="vj-lightbox-counter"><span data-current>${idx + 1}</span> / ${images.length}</div>` : ""}
     `;
@@ -2199,6 +2200,55 @@
     });
   }
 
+  /* Per-product SEO: page title, meta description, canonical URL and Product
+     JSON-LD (price, availability, brand) for Google rich results. Runs at
+     render time — Googlebot executes JS, so it sees all of this; scrapers
+     that don't run JS get the static fallbacks in producto.html's head.
+     Images stored as data: URIs are omitted from JSON-LD (schema.org wants
+     fetchable URLs, and inlining base64 would bloat the page). */
+  function applyProductSeo(p) {
+    const name = productName(p);
+    const desc = (productDesc(p) || "").replace(/\s+/g, " ").trim();
+    document.title = `${name} · Viveros Jazmín`;
+    let metaText = `${name} en Viveros Jazmín, floristería y vivero en Castelló de la Plana. ${desc}`;
+    if (metaText.length > 158) metaText = metaText.slice(0, 155).replace(/\s+\S*$/, "") + "…";
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) { meta = document.createElement("meta"); meta.name = "description"; document.head.appendChild(meta); }
+    meta.content = metaText;
+    const canonicalUrl = `https://jazmin-group.com/producto.html?id=${encodeURIComponent(p.id)}`;
+    let canon = document.querySelector('link[rel="canonical"]');
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = canonicalUrl;
+    const webImgs = (Array.isArray(p.images) ? p.images : (p.img ? [p.img] : []))
+      .filter(s => typeof s === "string" && /^https?:/i.test(s));
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": name,
+      "description": desc,
+      "sku": p.id,
+      "brand": { "@type": "Brand", "name": "Viveros Jazmín" },
+      "offers": {
+        "@type": "Offer",
+        "url": canonicalUrl,
+        "priceCurrency": "EUR",
+        "price": (Math.round(p.price * 100) / 100).toFixed(2),
+        "availability": p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "itemCondition": "https://schema.org/NewCondition",
+        "seller": { "@type": "Organization", "name": "Viveros Jazmín" }
+      }
+    };
+    if (webImgs.length) data.image = webImgs;
+    let ld = document.getElementById("vj-product-jsonld");
+    if (!ld) {
+      ld = document.createElement("script");
+      ld.type = "application/ld+json";
+      ld.id = "vj-product-jsonld";
+      document.head.appendChild(ld);
+    }
+    ld.textContent = JSON.stringify(data);
+  }
+
   function renderProductPage() {
     const root = document.getElementById("product-root");
     if (!root) return;
@@ -2212,6 +2262,7 @@
           <a href="tienda.html" class="btn btn-primary mt-16">${t("common.back")}</a></div>`;
         return;
       }
+      applyProductSeo(p);
       const inStock = p.stock > 0;
       // Size-matched pots for the planter picker (plants only, with a pot size set)
       const pots = (p.cat !== "macetas" && p.potSize)
