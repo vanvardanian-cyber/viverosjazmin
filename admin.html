@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=054fefe6">
+  <link rel="stylesheet" href="css/styles.css?v=de3f973d">
   <style>
     /* Admin-only i18n toggle + panel-actions layout (scoped to admin.html) */
     #admin-panel-actions { display: flex; gap: 8px; align-items: center; }
@@ -98,6 +98,11 @@
         <span data-t="tab_messages">Mensajes</span>
         <span class="tab-count" id="tab-messages-count">0</span>
         <span class="tab-dot" id="tab-messages-dot" style="display:none; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:.6rem; font-weight:700; line-height:16px; text-align:center; margin-left:2px;"></span>
+      </button>
+      <button class="admin-tab" data-tab="reviews" role="tab">
+        <span data-t="tab_reviews">Reseñas</span>
+        <span class="tab-count" id="tab-reviews-count">0</span>
+        <span class="tab-dot" id="tab-reviews-dot" style="display:none; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:.6rem; font-weight:700; line-height:16px; text-align:center; margin-left:2px;"></span>
       </button>
     </nav>
 
@@ -421,6 +426,25 @@
       <div id="messages-list" class="apps-list"></div>
     </div>
 
+    <!-- ===== PANEL: REVIEWS ===== -->
+    <div class="admin-panel" data-panel="reviews">
+      <div class="admin-notice" data-t-html="reviews_notice">
+        <strong>Reseñas de productos.</strong> Las reseñas nuevas llegan como «pendientes» y no se ven en la web hasta que las apruebas aquí.
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:16px; flex-wrap:wrap;">
+        <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
+          <span data-t="total_label">Total</span> · <span id="reviews-count">0</span> <span data-t="reviews_word">reseñas</span>
+        </h4>
+        <div class="apps-filter" id="reviews-filter">
+          <button data-status="all" class="is-active" data-t="filter_all_m">Todos</button>
+          <button data-status="pending" data-t="rev_pending">Pendientes</button>
+          <button data-status="approved" data-t="rev_approved">Aprobadas</button>
+          <button data-status="rejected" data-t="rev_rejected">Rechazadas</button>
+        </div>
+      </div>
+      <div id="reviews-admin-list" class="apps-list"></div>
+    </div>
+
     </div><!-- /#admin-content -->
 
   </div>
@@ -428,10 +452,10 @@
 
 <div data-vj-footer></div>
 
-<script src="js/data.js?v=32fe4c28"></script>
+<script src="js/data.js?v=1409c3ad"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=e654d638"></script>
-<script src="js/app.js?v=3759c2e0"></script>
+<script src="js/app.js?v=4e63d740"></script>
 <script>
   /* ============================================================
      ADMIN I18N (admin.html only) — DISTINCT namespace from the
@@ -569,6 +593,17 @@
       q_options: "Opciones (una por línea, formato <code>es | val</code>)",
       // messages
       messages_notice: "<strong>Mensajes de contacto.</strong> Cuando alguien escribe desde la página de Contacto, su mensaje aparece aquí en tiempo real. Los nuevos se marcan con un punto rojo en la pestaña.",
+      tab_reviews: "Reseñas",
+      reviews_notice: "<strong>Reseñas de productos.</strong> Las reseñas nuevas llegan como «pendientes» y no se ven en la web hasta que las apruebas aquí.",
+      reviews_word: "reseñas",
+      rev_pending: "Pendiente",
+      rev_approved: "Aprobada",
+      rev_rejected: "Rechazada",
+      rev_approve: "✓ Aprobar",
+      rev_reject: "Rechazar",
+      rev_delete: "Eliminar",
+      rev_done: "Reseña actualizada",
+      rev_empty: "No hay reseñas todavía.",
       messages_word: "mensajes",
       messages_new: "Nuevos",
       messages_read: "Leídos",
@@ -703,6 +738,17 @@
       q_options: "Options (one per line, format <code>es | val</code>)",
       // messages
       messages_notice: "<strong>Contact messages.</strong> When someone writes from the Contact page, their message appears here in real time. New ones are marked with a red dot on the tab.",
+      tab_reviews: "Reviews",
+      reviews_notice: "<strong>Product reviews.</strong> New reviews arrive as \"pending\" and are not shown on the site until you approve them here.",
+      reviews_word: "reviews",
+      rev_pending: "Pending",
+      rev_approved: "Approved",
+      rev_rejected: "Rejected",
+      rev_approve: "✓ Approve",
+      rev_reject: "Reject",
+      rev_delete: "Delete",
+      rev_done: "Review updated",
+      rev_empty: "No reviews yet.",
       messages_word: "messages",
       messages_new: "New",
       messages_read: "Read",
@@ -1342,22 +1388,122 @@
       if (name === "questions")    renderQuestions();
       if (name === "orders")       renderOrders();
       if (name === "messages")     loadMessages().then(renderMessages);
+      if (name === "reviews")      loadReviewsAdmin().then(renderReviewsAdmin);
     }));
 
     let ordersCache   = [];   // declared early so updateTabCounts can read it
     let appsCache     = [];   // job applications (Supabase + local backup)
     let messagesCache = [];   // contact messages (Supabase + local backup)
+    let reviewsCache  = [];   // product reviews (Supabase; moderated here)
     function updateTabCounts() {
       document.getElementById("tab-products-count").textContent = VJ_CATALOG.list().length;
       document.getElementById("tab-apps-count").textContent     = appsCache.length;
       document.getElementById("tab-questions-count").textContent= VJ_JOBS.questions().length;
       document.getElementById("tab-orders-count").textContent   = ordersCache.length;
       document.getElementById("tab-messages-count").textContent = messagesCache.length;
+      document.getElementById("tab-reviews-count").textContent  = reviewsCache.length;
+      const pendingRev = reviewsCache.filter(r => r.status === "pending").length;
+      const revDot = document.getElementById("tab-reviews-dot");
+      if (revDot) { revDot.style.display = pendingRev ? "" : "none"; revDot.textContent = pendingRev; }
       updateMessagesBadge();
     }
     updateTabCounts();
     document.addEventListener("vj:applicationschange", updateTabCounts);
     document.addEventListener("vj:jobsquestionschange", updateTabCounts);
+
+    /* ============================================================
+       REVIEWS PANEL (moderation)
+       ============================================================ */
+    let reviewsActiveStatus = "all";
+    const reviewsFilterEl = document.getElementById("reviews-filter");
+    if (reviewsFilterEl) reviewsFilterEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      reviewsActiveStatus = b.dataset.status;
+      reviewsFilterEl.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b));
+      renderReviewsAdmin();
+    }));
+
+    async function loadReviewsAdmin() {
+      const supa = window.VJ_SUPA?.client;
+      if (!supa) return;
+      try {
+        const { data, error } = await supa.from("reviews").select("*").order("created_at", { ascending: false });
+        if (error) throw error;
+        reviewsCache = data || [];
+      } catch (e) {
+        console.warn("Reviews fetch failed (¿migración pendiente?):", e.message || e);
+        reviewsCache = [];
+      }
+      updateTabCounts();
+    }
+
+    function revStars(n) {
+      return `<span style="color:#d9a441;letter-spacing:1px;">${"★".repeat(n)}</span><span style="color:#d9d7cd;letter-spacing:1px;">${"★".repeat(5 - n)}</span>`;
+    }
+
+    function renderReviewsAdmin() {
+      const listEl = document.getElementById("reviews-admin-list");
+      if (!listEl) return;
+      let items = reviewsCache;
+      if (reviewsActiveStatus !== "all") items = items.filter(r => r.status === reviewsActiveStatus);
+      document.getElementById("reviews-count").textContent = reviewsCache.length;
+      if (!items.length) {
+        listEl.innerHTML = `<div class="muted" style="padding:32px 0; text-align:center;">${tA('rev_empty')}</div>`;
+        return;
+      }
+      const statusPill = (s) => {
+        const map = { pending: ["#FBEED3", "#9A6A0B"], approved: ["#E4EFDA", "#466A2E"], rejected: ["#F8DEDA", "#A03B2E"] };
+        const [bg, fg] = map[s] || map.pending;
+        return `<span style="background:${bg};color:${fg};font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.08em;">${tA('rev_' + s)}</span>`;
+      };
+      listEl.innerHTML = items.map(r => {
+        const prod = VJ_CATALOG.list().find(p => p.id === r.product_id);
+        const prodName = prod ? prod.name.es : r.product_id;
+        return `
+        <div class="app-card" data-rev="${r.id}" style="padding:16px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+            <strong style="font-size:.92rem;">${escapeHtml(prodName)}</strong>
+            ${revStars(r.rating)}
+            ${statusPill(r.status)}
+            <span class="muted" style="font-size:.75rem;margin-left:auto;">${escapeHtml(r.author)} · ${new Date(r.created_at).toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" })}</span>
+          </div>
+          ${r.body ? `<p class="muted" style="font-size:.87rem;line-height:1.55;margin:0 0 12px;">${escapeHtml(r.body)}</p>` : ""}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${r.status !== "approved" ? `<button class="btn btn-primary" style="padding:7px 14px;font-size:.72rem;" data-rev-act="approve">${tA('rev_approve')}</button>` : ""}
+            ${r.status !== "rejected" ? `<button class="btn btn-light" style="padding:7px 14px;font-size:.72rem;" data-rev-act="reject">${tA('rev_reject')}</button>` : ""}
+            <button class="btn btn-light" style="padding:7px 14px;font-size:.72rem;color:#A03B2E;" data-rev-act="delete">${tA('rev_delete')}</button>
+          </div>
+        </div>`;
+      }).join("");
+
+      listEl.querySelectorAll("[data-rev-act]").forEach(btn => btn.addEventListener("click", async () => {
+        const card = btn.closest("[data-rev]");
+        const id = card.dataset.rev;
+        const act = btn.dataset.revAct;
+        const supa = window.VJ_SUPA?.client;
+        if (!supa) return;
+        btn.disabled = true;
+        try {
+          if (act === "delete") {
+            if (!confirm(tA('rev_delete') + "?")) { btn.disabled = false; return; }
+            const { error } = await supa.from("reviews").delete().eq("id", id);
+            if (error) throw error;
+          } else {
+            const { error } = await supa.from("reviews")
+              .update({ status: act === "approve" ? "approved" : "rejected" }).eq("id", id);
+            if (error) throw error;
+          }
+          await loadReviewsAdmin();
+          renderReviewsAdmin();
+          showToast(tA('rev_done'));
+        } catch (e) {
+          btn.disabled = false;
+          alert("Error: " + (e.message || e));
+        }
+      }));
+    }
+
+    // Load review counts at boot so the pending-dot shows without opening the tab
+    loadReviewsAdmin();
 
     /* ============================================================
        ORDERS PANEL (Supabase)

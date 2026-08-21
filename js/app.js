@@ -2249,12 +2249,156 @@
     ld.textContent = JSON.stringify(data);
   }
 
+  /* 0–5 rating as stars: gray base row + gold overlay clipped to the value. */
+  function starsHTML(value, size = 15) {
+    const pct = Math.max(0, Math.min(5, Number(value) || 0)) / 5 * 100;
+    const star = `<svg viewBox="0 0 24 24" width="${size}" height="${size}"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>`;
+    const five = star.repeat(5);
+    return `<span class="stars"><span class="stars-bg">${five}</span><span class="stars-fill" style="width:${pct}%">${five}</span></span>`;
+  }
+
+  /* Product attribute chips — every field the admin fills surfaces here.
+     Only non-empty attributes render, so a bare product shows nothing. */
+  function attrChipsHTML(p) {
+    const ic = (d) => `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+    const chips = [];
+    if (p.origin)     chips.push(ic('<path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/>') + escapeHtmlSafe(p.origin));
+    if (p.potSize)    chips.push(ic('<path d="M5 9h14l-1.5 11h-11z"/><path d="M4 9h16"/>') + `${t("product.attr.pot")} ${escapeHtmlSafe(p.potSize)}`);
+    if (p.flowerType) chips.push(ic('<circle cx="12" cy="12" r="3"/><path d="M12 9V4M12 15v5M9 12H4M15 12h5"/>') + escapeHtmlSafe(p.flowerType));
+    if (p.color)      chips.push(ic('<path d="M12 2.7 5.6 9a9 9 0 1 0 12.8 0z"/>') + escapeHtmlSafe(p.color));
+    if (!chips.length) return "";
+    return `<div class="attr-chips">${chips.map(c => `<span class="attr-chip">${c}</span>`).join("")}</div>`;
+  }
+
   function renderProductPage() {
     const root = document.getElementById("product-root");
     if (!root) return;
     const id = new URLSearchParams(location.search).get("id");
     const p = PRODUCTS.find(x => x.id === id);
     let selectedPlanter = null;   // chosen pot id (for the planter picker)
+    let reviewsCache = null;      // {list, avg, count, unavailable} after first fetch
+
+    async function fetchReviews() {
+      if (reviewsCache) return reviewsCache;
+      const supa = window.VJ_SUPA?.client;
+      if (!supa) return (reviewsCache = { list: [], avg: 0, count: 0, unavailable: true });
+      try {
+        const { data, error } = await supa.from("reviews")
+          .select("id,author,rating,body,created_at")
+          .eq("product_id", p.id).eq("status", "approved")
+          .order("created_at", { ascending: false }).limit(50);
+        if (error) throw error;
+        const count = data.length;
+        const avg = count ? data.reduce((s, r) => s + r.rating, 0) / count : 0;
+        reviewsCache = { list: data, avg, count };
+      } catch (e) {
+        // reviews table missing (migration not run) or offline → degrade quietly
+        reviewsCache = { list: [], avg: 0, count: 0, unavailable: true };
+      }
+      return reviewsCache;
+    }
+
+    async function renderReviews() {
+      const section = document.getElementById("reviews");
+      const body = document.getElementById("reviews-body");
+      const ratingRow = document.getElementById("rating-row");
+      if (!section || !body) return;
+      const r = await fetchReviews();
+      if (r.unavailable) { section.hidden = true; return; }
+      section.hidden = false;
+
+      // Stars row under the product title (links down to the reviews)
+      if (ratingRow) {
+        ratingRow.hidden = false;
+        ratingRow.innerHTML = r.count
+          ? `${starsHTML(r.avg)}<span class="rating-num">${r.avg.toFixed(1)}</span><span class="rating-count">${r.count} ${t(r.count === 1 ? "product.reviews.one" : "product.reviews.word")}</span>`
+          : `${starsHTML(0)}<span class="rating-count">${t("product.reviews.beFirst")}</span>`;
+      }
+
+      // Rich results: attach the aggregate rating to the Product JSON-LD
+      if (r.count) {
+        const ld = document.getElementById("vj-product-jsonld");
+        if (ld) {
+          try {
+            const d = JSON.parse(ld.textContent);
+            d.aggregateRating = { "@type": "AggregateRating", "ratingValue": r.avg.toFixed(1), "reviewCount": r.count };
+            ld.textContent = JSON.stringify(d);
+          } catch {}
+        }
+      }
+
+      const lang = langTag(getLang());
+      const cards = r.list.map(rv => `
+        <div class="review-card">
+          <div class="review-card-top">
+            <span class="review-author">${escapeHtmlSafe(rv.author)}</span>
+            ${starsHTML(rv.rating, 13)}
+            <span class="review-date">${new Date(rv.created_at).toLocaleDateString(lang, { year: "numeric", month: "short", day: "numeric" })}</span>
+          </div>
+          ${rv.body ? `<p class="review-body">${escapeHtmlSafe(rv.body)}</p>` : ""}
+        </div>`).join("");
+
+      const summary = r.count ? `
+        <div class="reviews-agg">
+          <span class="reviews-agg-num">${r.avg.toFixed(1)}</span>
+          <div>${starsHTML(r.avg, 18)}<div class="rating-count">${r.count} ${t(r.count === 1 ? "product.reviews.one" : "product.reviews.word")}</div></div>
+        </div>` : `<p class="muted" style="margin:0 0 18px;">${t("product.reviews.none")}</p>`;
+
+      const formHTML = currentUser() ? `
+        <div class="review-form" id="review-form">
+          <h3 class="review-form-title">${t("product.reviews.write")}</h3>
+          <div class="star-input" id="star-input" data-value="5">
+            ${[1,2,3,4,5].map(n => `<button type="button" data-star="${n}" aria-label="${n}★">★</button>`).join("")}
+          </div>
+          <textarea id="review-text" maxlength="600" rows="4" placeholder="${t("product.reviews.placeholder")}"></textarea>
+          <button type="button" class="btn btn-primary" id="review-submit">${t("product.reviews.submit")}</button>
+        </div>` : `
+        <p class="review-login"><a href="entrar.html">${t("product.reviews.login")}</a></p>`;
+
+      body.innerHTML = summary + `<div class="reviews-list">${cards}</div>` + formHTML;
+
+      // Star picker: clicking star N selects 1..N
+      const starInput = document.getElementById("star-input");
+      if (starInput) {
+        const paint = () => {
+          const v = parseInt(starInput.dataset.value, 10);
+          starInput.querySelectorAll("button").forEach(b => b.classList.toggle("is-on", parseInt(b.dataset.star, 10) <= v));
+        };
+        paint();
+        starInput.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+          starInput.dataset.value = b.dataset.star; paint();
+        }));
+      }
+      const submitBtn = document.getElementById("review-submit");
+      if (submitBtn) submitBtn.addEventListener("click", async () => {
+        const supa = window.VJ_SUPA?.client;
+        if (!supa) return;
+        submitBtn.disabled = true;
+        try {
+          const { data: userData } = await supa.auth.getUser();
+          const user = userData && userData.user;
+          if (!user) { location.href = "entrar.html"; return; }
+          const author = (currentUser()?.name || user.user_metadata?.name || (user.email || "").split("@")[0] || "Cliente").trim();
+          const rating = parseInt(document.getElementById("star-input").dataset.value, 10) || 5;
+          const text = (document.getElementById("review-text").value || "").trim();
+          const { error } = await supa.from("reviews").insert({
+            product_id: p.id, user_id: user.id, author, rating, body: text || null, status: "pending"
+          });
+          if (error) {
+            submitBtn.disabled = false;
+            const msg = /duplicate|unique/i.test(error.message || "")
+              ? t("product.reviews.already") : (error.message || "Error");
+            alert(msg);
+            return;
+          }
+          document.getElementById("review-form").innerHTML =
+            `<p class="review-pending">${t("product.reviews.pending")}</p>`;
+        } catch (e) {
+          submitBtn.disabled = false;
+          alert(e.message || e);
+        }
+      });
+    }
 
     function render() {
       if (!p) {
@@ -2279,6 +2423,7 @@
           <div class="product-detail-info">
             <div class="detail-cat">${catName(p.cat)}</div>
             <h1>${productName(p)}</h1>
+            <a class="rating-row" href="#reviews" id="rating-row" hidden></a>
             <div class="detail-price" id="detail-price">${formatPrice(p.price)}</div>
             <span class="stock-pill ${inStock ? "" : "out"}">
               ${inStock
@@ -2286,18 +2431,7 @@
                 : t("common.outOfStock")}
             </span>
             <p class="detail-desc">${productDesc(p)}</p>
-            ${p.origin ? `
-              <div class="detail-meta">
-                <div class="detail-meta-row">
-                  <span class="detail-meta-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-                  </span>
-                  <div>
-                    <span class="detail-meta-label">${t("product.origin")}</span>
-                    <span class="detail-meta-value">${escapeHtmlSafe(p.origin)}</span>
-                  </div>
-                </div>
-              </div>` : ""}
+            ${attrChipsHTML(p)}
             ${pots.length ? `
             <div class="planter-pick">
               <div class="planter-pick-title">${t("product.choosePot")}</div>
@@ -2332,10 +2466,32 @@
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="${likeHas(p.id) ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="detail-like-label">${likeHas(p.id) ? t("product.liked") : t("product.like")}</span>
               </button>
-              <a class="btn btn-ghost" href="tienda.html">${t("common.continue")}</a>
             </div>
+            <ul class="detail-reassure">
+              <li><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="19" r="1.6"/><circle cx="18.5" cy="19" r="1.6"/></svg>${t("home.trust.delivery")}</li>
+              <li><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5M4 9v11h16V9M4 9h16M9 20v-6h6v6"/></svg>${t("home.trust.pickup")}</li>
+              <li><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-5 7-9 7-9s7 4 7 9a7 7 0 0 1-7 7zM11 20v-9"/></svg>${t("home.trust.since")}</li>
+            </ul>
+            <details class="pdp-acc">
+              <summary>${t("product.ship.title")}</summary>
+              <div class="pdp-acc-body">${t("product.ship.body")}</div>
+            </details>
+            <details class="pdp-acc">
+              <summary>${t("product.guarantee.title")}</summary>
+              <div class="pdp-acc-body">${t("product.guarantee.body")}</div>
+            </details>
           </div>
         </div>
+
+        <section class="reviews-section" id="reviews" hidden>
+          <h2 class="pdp-section-title">${t("product.reviews")}</h2>
+          <div id="reviews-body"></div>
+        </section>
+
+        <section class="related-section" id="related-section" hidden>
+          <h2 class="pdp-section-title">${t("common.related")}</h2>
+          <div class="product-grid product-grid--compact" id="related-grid"></div>
+        </section>
       `;
       const qty = root.querySelector("#qty");
       root.querySelector(".js-inc").addEventListener("click", () => {
@@ -2377,16 +2533,25 @@
         if (nowLiked && !currentUser()) maybeShowRegisterToast();
       });
 
-      // related
-      const related = PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+      // Related products: same category first, padded with the rest of the shop
+      let related = PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id);
+      if (related.length < 4) {
+        const seen = new Set(related.map(x => x.id));
+        related = related.concat(PRODUCTS.filter(x => x.id !== p.id && !seen.has(x.id)));
+      }
+      related = related.slice(0, 4);
+      const relSection = document.getElementById("related-section");
       const relRoot = document.getElementById("related-grid");
-      if (relRoot) {
+      if (relRoot && related.length) {
+        relSection.hidden = false;
         relRoot.innerHTML = related.map(productCardHTML).join("");
         attachAddButtons(relRoot);
       }
+
+      renderReviews();
     }
     render();
-    document.addEventListener("vj:langchange", render);
+    document.addEventListener("vj:langchange", () => { render(); });
   }
 
   function renderFavoritosPage() {
