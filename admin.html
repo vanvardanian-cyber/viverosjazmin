@@ -137,7 +137,7 @@
 
       <!-- RIGHT: form -->
       <aside class="admin-form-wrap">
-        <h3 id="form-title">Añadir producto</h3>
+        <h3 id="form-title" data-t="btn_add_product">Añadir producto</h3>
         <form id="product-form" autocomplete="off">
           <input type="hidden" name="id">
           <input type="hidden" name="originalId">
@@ -283,7 +283,7 @@
           <div class="actions form-savebar">
             <span class="unsaved-dot" id="unsaved-indicator" hidden><span class="dot"></span><span data-t="unsaved_changes">Cambios sin guardar</span></span>
             <button type="button" class="btn btn-light" id="btn-cancel" style="display:none;" data-t="btn_cancel">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit">Añadir producto</button>
+            <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit" data-t="btn_add_product">Añadir producto</button>
           </div>
         </form>
       </aside>
@@ -312,7 +312,7 @@
       </div>
       <div style="margin-bottom:18px;">
         <input type="search" id="orders-search" class="search-box"
-               placeholder="Buscar por nombre, email, teléfono o nº de pedido…"
+               placeholder="Buscar por nombre, email, teléfono o nº de pedido…" data-t-attr="placeholder:orders_search_ph"
                data-t-attr="placeholder:orders_search_ph"
                style="width:100%; max-width:none; padding-top:10px; padding-bottom:10px;">
       </div>
@@ -359,7 +359,7 @@
       <div class="q-editor" id="q-editor" hidden>
         <div class="q-editor-backdrop"></div>
         <div class="q-editor-panel">
-          <h3 id="q-editor-title">Nueva pregunta</h3>
+          <h3 id="q-editor-title" data-t="q_new_title">Nueva pregunta</h3>
           <form id="q-form">
             <input type="hidden" name="id">
             <div class="form-grid">
@@ -395,7 +395,7 @@
               </div>
               <div class="form-field full" id="q-options-wrap" style="display:none;">
                 <label data-t-html="q_options">Opciones (una por línea, formato <code>es | val</code>)</label>
-                <textarea name="options" rows="4" placeholder="Ninguna | Cap&#10;Algo (hasta 2 años) | Alguna (fins a 2 anys)"></textarea>
+                <textarea name="options" rows="4" placeholder="Ninguna | Cap&#10;Algo (hasta 2 años) | Alguna (fins a 2 anys)" data-t-attr="placeholder:q_options_ph"></textarea>
               </div>
             </div>
             <div class="actions" style="display:flex; gap:8px; margin-top:18px;">
@@ -607,7 +607,53 @@
       messages_word: "mensajes",
       messages_new: "Nuevos",
       messages_read: "Leídos",
-      messages_archived: "Archivados"
+      messages_archived: "Archivados",
+      world_vivero_short: "Vivero",
+      world_floristeria_short: "Floristería",
+      publish_done: "✅ catalog.json descargado.\n\nSe publicará solo en menos de una hora. ¿Prisa? GitHub → Actions → Publish catalog → Run workflow.",
+      apps_status_new: "Nueva",
+      apps_status_reviewed: "Revisada",
+      apps_status_contacted: "Contactada",
+      apps_status_discarded: "Descartada",
+      msg_status_new: "Nuevo",
+      msg_status_read: "Leído",
+      msg_status_archived: "Archivado",
+      q_required_pill: "Obligatoria",
+      err_no_admin: "Esta cuenta no tiene permisos de administración.",
+      err_bad_credentials: "Credenciales no válidas.",
+      img_url_invalid: "Por favor pega una URL válida (que empiece por https://).",
+      img_max_reached: "Ya tienes {max} imágenes. Quita alguna antes de añadir más.",
+      img_only_first: "Solo se añadirán las primeras {n} (máximo {max} por producto).",
+      img_too_big: "\"{name}\" pesa más de 15 MB y se ha saltado. Usa una imagen más pequeña.",
+      opt_already: "Tus imágenes ya están optimizadas. 👍",
+      opt_confirm: "Se optimizarán las imágenes de {n} producto(s). Tardará unos segundos. ¿Continuar?",
+      opt_done: "Listo: {n} producto(s) optimizados. Tu web ahora carga mucho más ligera. 🌿",
+      no_results: "Sin resultados.",
+      btn_save_changes: "Guardar cambios",
+      form_title_edit: "Editar",
+      confirm_delete_product: "¿Eliminar \"{name}\"?",
+      confirm_delete_order: "¿Eliminar este pedido definitivamente?",
+      confirm_delete_app: "¿Eliminar esta candidatura definitivamente?",
+      confirm_delete_msg: "¿Eliminar este mensaje definitivamente?",
+      confirm_delete_question: "¿Eliminar esta pregunta?",
+      confirm_restore_questions: "Esto restaurará las 3 preguntas predeterminadas. ¿Continuar?",
+      q_new_title: "Nueva pregunta",
+      q_edit_title: "Editar pregunta",
+      q_empty: "No hay preguntas configuradas.",
+      q_options_ph: "Ninguna | Cap\nAlgo (hasta 2 años) | Alguna (fins a 2 anys)",
+      delivery_ship: "Envío a domicilio",
+      delivery_pickup: "Recogida en tienda",
+      no_name: "(Sin nombre)",
+      label_message: "Mensaje",
+      cv_download: "↓ Descargar CV",
+      empty_orders: "Aún no hay pedidos.",
+      empty_orders_filter: "Ningún pedido coincide con la búsqueda o el filtro.",
+      empty_apps: "Aún no hay candidaturas.",
+      empty_apps_filter: "Ninguna candidatura con este estado.",
+      empty_msgs: "Aún no hay mensajes.",
+      empty_msgs_filter: "Ningún mensaje con este estado.",
+      act_delete: "Eliminar",
+      act_edit: "Editar",
     },
     en: {
       // admin bar
@@ -752,13 +798,66 @@
       messages_word: "messages",
       messages_new: "New",
       messages_read: "Read",
-      messages_archived: "Archived"
+      messages_archived: "Archived",
+      world_vivero_short: "Nursery",
+      world_floristeria_short: "Florist",
+      publish_done: "✅ catalog.json downloaded.\n\nIt publishes itself within the hour. In a hurry? GitHub → Actions → Publish catalog → Run workflow.",
+      apps_status_new: "New",
+      apps_status_reviewed: "Reviewed",
+      apps_status_contacted: "Contacted",
+      apps_status_discarded: "Discarded",
+      msg_status_new: "New",
+      msg_status_read: "Read",
+      msg_status_archived: "Archived",
+      q_required_pill: "Required",
+      err_no_admin: "This account doesn't have administrator permissions.",
+      err_bad_credentials: "Invalid credentials.",
+      img_url_invalid: "Please paste a valid URL (starting with https://).",
+      img_max_reached: "You already have {max} images. Remove one before adding more.",
+      img_only_first: "Only the first {n} will be added ({max} max per product).",
+      img_too_big: "\"{name}\" is over 15 MB and was skipped. Use a smaller image.",
+      opt_already: "Your images are already optimised. 👍",
+      opt_confirm: "Images of {n} product(s) will be optimised. This takes a few seconds. Continue?",
+      opt_done: "Done: {n} product(s) optimised. Your site now loads much lighter. 🌿",
+      no_results: "No results.",
+      btn_save_changes: "Save changes",
+      form_title_edit: "Edit",
+      confirm_delete_product: "Delete \"{name}\"?",
+      confirm_delete_order: "Delete this order permanently?",
+      confirm_delete_app: "Delete this application permanently?",
+      confirm_delete_msg: "Delete this message permanently?",
+      confirm_delete_question: "Delete this question?",
+      confirm_restore_questions: "This will restore the 3 default questions. Continue?",
+      q_new_title: "New question",
+      q_edit_title: "Edit question",
+      q_empty: "No questions configured.",
+      q_options_ph: "None | Cap\nSome (up to 2 years) | Alguna (fins a 2 anys)",
+      delivery_ship: "Home delivery",
+      delivery_pickup: "Store pickup",
+      no_name: "(No name)",
+      label_message: "Message",
+      cv_download: "↓ Download CV",
+      empty_orders: "No orders yet.",
+      empty_orders_filter: "No order matches the search or filter.",
+      empty_apps: "No applications yet.",
+      empty_apps_filter: "No application with this status.",
+      empty_msgs: "No messages yet.",
+      empty_msgs_filter: "No message with this status.",
+      act_delete: "Delete",
+      act_edit: "Edit",
     }
   };
 
   function tA(key) {
     const l = (localStorage.getItem('vj.adminLang') === 'en') ? 'en' : 'es';
     return (ADMIN_I18N[l] && ADMIN_I18N[l][key]) || ADMIN_I18N.es[key] || key;
+  }
+
+  /* tA() with {placeholder} interpolation, for strings that embed values. */
+  function tAf(key, vars) {
+    let s = tA(key);
+    for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+    return s;
   }
 
   function applyAdminI18n() {
@@ -790,6 +889,8 @@
           if (!btn) return;
           localStorage.setItem('vj.adminLang', btn.getAttribute('data-lang') === 'en' ? 'en' : 'es');
           applyAdminI18n();
+          // JS-rendered content (lists, labels, option maps) must re-render too
+          document.dispatchEvent(new CustomEvent('vj:adminlangchange'));
         });
       }
       applyAdminI18n();
@@ -842,7 +943,7 @@
     async function denyAndSignOut(reason) {
       try { await supa.auth.signOut(); } catch {}
       showLogin();
-      errEl.textContent = reason || "Esta cuenta no tiene permisos de administración.";
+      errEl.textContent = reason || tA('err_no_admin');
       errEl.classList.add("is-show");
     }
 
@@ -853,7 +954,7 @@
       if (!user) { showLogin(); return; }
       // User is signed in to Supabase — but are they admin?
       if (!isAdminEmail(user.email)) {
-        await denyAndSignOut("Esta cuenta no tiene permisos de administración.");
+        await denyAndSignOut(tA('err_no_admin'));
         return;
       }
       showPanel(user);
@@ -866,7 +967,7 @@
       const email = (fd.get("email") || "").trim();
       // Pre-check: don't bother contacting Supabase with non-admin emails
       if (!isAdminEmail(email)) {
-        errEl.textContent = "Esta cuenta no tiene permisos de administración.";
+        errEl.textContent = tA('err_no_admin');
         errEl.classList.add("is-show");
         return;
       }
@@ -875,13 +976,13 @@
         password: fd.get("password")
       });
       if (error) {
-        errEl.textContent = "Credenciales no válidas.";
+        errEl.textContent = tA('err_bad_credentials');
         errEl.classList.add("is-show");
         return;
       }
       // Double-check after sign-in (paranoia in case of pre-check bypass)
       if (!isAdminEmail(data.user?.email)) {
-        await denyAndSignOut("Esta cuenta no tiene permisos de administración.");
+        await denyAndSignOut(tA('err_no_admin'));
         return;
       }
       showPanel(data.user);
@@ -927,7 +1028,7 @@
 
     function renderImageList() {
       if (currentImages.length === 0) {
-        imgListEl.innerHTML = `<span class="img-empty">Aún no hay imágenes. Sube fotos o pega una URL.</span>`;
+        imgListEl.innerHTML = `<span class="img-empty">${tA('f_images_empty')}</span>`;
         return;
       }
       imgListEl.innerHTML = currentImages.map((src, i) => `
@@ -987,14 +1088,19 @@
 
     // populate category dropdown
     const catSel = document.getElementById("f-cat");
-    const WORLD_LABELS = { vivero: "Vivero & Jardín", floristeria: "Floristería & Flores" };
-    catSel.innerHTML = ["vivero", "floristeria"].map(w =>
-      `<optgroup label="${WORLD_LABELS[w]}">` +
-      CATEGORIES.filter(c => c.world === w).map(c => `<option value="${c.id}">${c.es}</option>`).join("") +
-      `</optgroup>`
-    ).join("");
+    const worldLabels = () => ({ vivero: tA('world_vivero'), floristeria: tA('world_floristeria') });
+    function fillCategorySelect() {
+      const keep = catSel.value;
+      catSel.innerHTML = ["vivero", "floristeria"].map(w =>
+        `<optgroup label="${worldLabels()[w]}">` +
+        CATEGORIES.filter(c => c.world === w).map(c => `<option value="${c.id}">${catName(c.id)}</option>`).join("") +
+        `</optgroup>`
+      ).join("");
+      if (keep) catSel.value = keep;
+    }
+    fillCategorySelect();
     const worldOf = (id) => (CATEGORIES.find(c => c.id === id) || {}).world || "";
-    const worldShort = (id) => worldOf(id) === "floristeria" ? "Floristería" : worldOf(id) === "vivero" ? "Vivero" : "—";
+    const worldShort = (id) => worldOf(id) === "floristeria" ? tA('world_floristeria_short') : worldOf(id) === "vivero" ? tA('world_vivero_short') : "—";
 
     // World quick-filter for the product list (Todos / Vivero / Floristería)
     let activeWorldFilter = "all";
@@ -1012,7 +1118,7 @@
       const v = (imgUrlInput.value || "").trim();
       if (!v) return;
       if (!/^https?:\/\//.test(v)) {
-        alert("Por favor pega una URL válida (que empiece por https://).");
+        alert(tA('img_url_invalid'));
         return;
       }
       addImage(v);
@@ -1048,18 +1154,18 @@
       if (!files.length) return;
       const slotsLeft = MAX_IMAGES - currentImages.length;
       if (slotsLeft <= 0) {
-        alert(`Ya tienes ${MAX_IMAGES} imágenes. Quita alguna antes de añadir más.`);
+        alert(tAf('img_max_reached', { max: MAX_IMAGES }));
         imgFile.value = "";
         return;
       }
       const toProcess = files.slice(0, slotsLeft);
       if (files.length > slotsLeft) {
-        alert(`Solo se añadirán las primeras ${slotsLeft} (máximo ${MAX_IMAGES} por producto).`);
+        alert(tAf('img_only_first', { n: slotsLeft, max: MAX_IMAGES }));
       }
       for (const file of toProcess) {
         if (!file.type.startsWith("image/")) continue;
         if (file.size > 15 * 1024 * 1024) {
-          alert(`"${file.name}" pesa más de 15 MB y se ha saltado. Usa una imagen más pequeña.`);
+          alert(tAf('img_too_big', { name: file.name }));
           continue;
         }
         // Read → downscale/recompress → store. Keeps each image ~150–250 KB so
@@ -1080,8 +1186,8 @@
       const isHeavyB64 = s => typeof s === "string" && s.startsWith("data:") && s.length > 300 * 1024;
       const heavy = VJ_CATALOG.list().filter(p =>
         [p.img, ...(Array.isArray(p.images) ? p.images : [])].filter(Boolean).some(isHeavyB64));
-      if (!heavy.length) { alert("Tus imágenes ya están optimizadas. 👍"); return; }
-      if (!confirm(`Se optimizarán las imágenes de ${heavy.length} producto(s). Tardará unos segundos. ¿Continuar?`)) return;
+      if (!heavy.length) { alert(tA('opt_already')); return; }
+      if (!confirm(tAf('opt_confirm', { n: heavy.length }))) return;
       const orig = btn.textContent; btn.disabled = true;
       let done = 0;
       for (const p of heavy) {
@@ -1112,7 +1218,7 @@
       a.download = "catalog.json";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-      alert("✅ catalog.json descargado.\n\nSúbelo a la carpeta /data del sitio (o envíamelo) para publicar los cambios. Los visitantes leen ese archivo — no la base de datos en cada visita.");
+      alert(tA('publish_done'));
     });
 
     // tiny inline SVG icons
@@ -1133,9 +1239,12 @@
       _toastTimer = setTimeout(() => t.classList.remove("is-show"), 2200);
     }
 
+    // Category labels follow the admin toggle, not the public site language.
+    function adminLangCode() { return localStorage.getItem('vj.adminLang') === 'en' ? 'en' : 'es'; }
     function catName(id) {
       const c = CATEGORIES.find(c => c.id === id);
-      return c ? c.es : id;
+      if (!c) return id;
+      return c[adminLangCode()] || c.es;
     }
     function fmtPrice(n) {
       return new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR" }).format(n);
@@ -1161,7 +1270,7 @@
       }
       countEl.textContent = VJ_CATALOG.list().length;
       if (items.length === 0) {
-        list.innerHTML = `<div class="muted" style="padding:32px 0; text-align:center;">Sin resultados.</div>`;
+        list.innerHTML = `<div class="muted" style="padding:32px 0; text-align:center;">${tA('no_results')}</div>`;
         return;
       }
       list.innerHTML = items.map(p => `
@@ -1182,8 +1291,8 @@
           <div class="actions">
             <button class="icon-btn star ${p.featured ? "is-on" : ""}" data-act="feat" title="${tA('act_feature')}">★</button>
             <button class="icon-btn" data-act="dup" title="${tA('act_duplicate')}">${ICONS.copy}</button>
-            <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>
-            <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+            <button class="icon-btn" data-act="edit" title="${tA('act_edit')}">${ICONS.edit}</button>
+            <button class="icon-btn danger" data-act="del" title="${tA('act_delete')}">${ICONS.trash}</button>
           </div>
         </div>
       `).join("");
@@ -1203,8 +1312,8 @@
       form.elements.id.value = "";
       form.elements.originalId.value = "";
       document.getElementById("f-idDisplay").value = "";
-      titleEl.innerHTML = "Añadir producto";
-      submitBtn.textContent = "Añadir producto";
+      titleEl.innerHTML = tA('btn_add_product');
+      submitBtn.textContent = tA('btn_add_product');
       cancelBtn.style.display = "none";
       seedVal.textContent = "0";
       seedSlider.value = 0;
@@ -1247,8 +1356,8 @@
       const seed = Number(p.imgSeed) || 0;
       form.elements.imgSeed.value = seed;
       seedVal.textContent = seed;
-      titleEl.innerHTML = `<em>Editar</em> · ${escapeHtml(p.name.es)}`;
-      submitBtn.textContent = "Guardar cambios";
+      titleEl.innerHTML = `<em>${tA('form_title_edit')}</em> · ${escapeHtml(p.name.es)}`;
+      submitBtn.textContent = tA('btn_save_changes');
       cancelBtn.style.display = "";
       markClean();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1291,7 +1400,7 @@
         markDirty();
       }
       if (btn.dataset.act === "del") {
-        if (!confirm(`¿Eliminar "${VJ_CATALOG.list().find(p=>p.id===id)?.name.es}"?`)) return;
+        if (!confirm(tAf('confirm_delete_product', { name: VJ_CATALOG.list().find(p=>p.id===id)?.name.es || '' }))) return;
         try {
           await VJ_CATALOG.removeOne(id);
           renderList();
@@ -1371,6 +1480,19 @@
     // Initial render
     renderList();
     document.addEventListener("vj:catalogchange", () => { renderList(); updateTabCounts(); });
+
+    /* Switching the admin language must also redraw everything built in JS —
+       product rows, status pills, the category select and the open panels. */
+    document.addEventListener("vj:adminlangchange", () => {
+      fillCategorySelect();
+      renderList();
+      const active = document.querySelector(".admin-tab.is-active")?.dataset.tab;
+      if (active === "orders")       renderOrders();
+      if (active === "applications") renderApps();
+      if (active === "questions")    renderQuestions();
+      if (active === "messages")     renderMessages();
+      if (active === "reviews" && typeof renderReviewsAdmin === "function") renderReviewsAdmin();
+    });
 
     /* ============================================================
        TAB SWITCHING
@@ -1514,14 +1636,15 @@
     const ordersSearchEl = document.getElementById("orders-search");
     let ordersActiveStatus = "all";
 
-    const ORDER_STATUS = {
-      pending:    "Pendiente",
-      confirmed:  "Confirmado",
-      paid:       "Pagado",
-      shipped:    "Enviado",
-      delivered:  "Entregado",
-      cancelled:  "Cancelado"
-    };
+    // Built fresh on each render so it follows the admin language toggle.
+    const orderStatusLabels = () => ({
+      pending:   tA('order_pending'),
+      confirmed: tA('order_confirmed'),
+      paid:      tA('order_paid'),
+      shipped:   tA('order_shipped'),
+      delivered: tA('order_delivered'),
+      cancelled: tA('order_cancelled')
+    });
 
     ordersFilterEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
       ordersActiveStatus = b.dataset.status;
@@ -1555,7 +1678,7 @@
       }
 
       if (list.length === 0) {
-        ordersListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${ordersCache.length === 0 ? "Aún no hay pedidos." : "Ningún pedido coincide con la búsqueda o el filtro."}</h3></div>`;
+        ordersListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${ordersCache.length === 0 ? tA('empty_orders') : tA('empty_orders_filter')}</h3></div>`;
         return;
       }
 
@@ -1572,16 +1695,17 @@
             <span>${new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(line)}</span>
           </div>`;
         }).join("");
-        const deliveryLabel = o.delivery_method === "ship" ? "Envío a domicilio" : "Recogida en tienda";
+        const STATUS = orderStatusLabels();
+        const deliveryLabel = o.delivery_method === "ship" ? tA('delivery_ship') : tA('delivery_pickup');
         return `
           <article class="app-card" data-id="${o.id}">
             <header class="app-card-head">
               <div>
-                <div class="app-name">${escapeHtml(o.customer_name || "(Sin nombre)")} · ${total}</div>
+                <div class="app-name">${escapeHtml(o.customer_name || tA('no_name'))} · ${total}</div>
                 <div class="app-meta">${escapeHtml(o.customer_email)} · ${escapeHtml(o.customer_phone || "—")} · <span class="ref">${o.id}</span></div>
               </div>
               <div class="app-side">
-                <span class="status-pill status-${o.status}">${ORDER_STATUS[o.status]||o.status}</span>
+                <span class="status-pill status-${o.status}">${STATUS[o.status]||o.status}</span>
                 <span class="app-date">${date} · ${time}</span>
               </div>
             </header>
@@ -1593,9 +1717,9 @@
             <footer class="app-card-foot">
               <label class="muted" style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;">Estado:</label>
               <select data-act="status" class="status-select">
-                ${Object.entries(ORDER_STATUS).map(([k,v]) => `<option value="${k}" ${k===o.status?'selected':''}>${v}</option>`).join("")}
+                ${Object.entries(STATUS).map(([k,v]) => `<option value="${k}" ${k===o.status?'selected':''}>${v}</option>`).join("")}
               </select>
-              <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+              <button class="icon-btn danger" data-act="del" title="${tA('act_delete')}">${ICONS.trash}</button>
             </footer>
           </article>
         `;
@@ -1617,7 +1741,7 @@
       const btn = e.target.closest("button[data-act='del']");
       if (!btn) return;
       const id = btn.closest(".app-card").dataset.id;
-      if (!confirm("¿Eliminar este pedido definitivamente?")) return;
+      if (!confirm(tA('confirm_delete_order'))) return;
       const supa = window.VJ_SUPA.client;
       const { error } = await supa.from("orders").delete().eq("id", id);
       if (error) { alert("Error: " + error.message); return; }
@@ -1651,12 +1775,12 @@
     const appsCount  = document.getElementById("apps-count");
     let appsActiveStatus = "all";
 
-    const STATUS_LABELS = {
-      new:       "Nueva",
-      reviewed:  "Revisada",
-      contacted: "Contactada",
-      discarded: "Descartada"
-    };
+    const statusLabels = () => ({
+      new:       tA('apps_status_new'),
+      reviewed:  tA('apps_status_reviewed'),
+      contacted: tA('apps_status_contacted'),
+      discarded: tA('apps_status_discarded')
+    });
 
     // Map a Supabase row to the shape the UI expects (created_at → createdAt)
     function rowToApp(r) {
@@ -1711,11 +1835,12 @@
       appsCount.textContent = total;
       if (appsActiveStatus !== "all") apps = apps.filter(a => a.status === appsActiveStatus);
       if (apps.length === 0) {
-        appsList.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${total === 0 ? "Aún no hay candidaturas." : "Ninguna candidatura con este estado."}</h3></div>`;
+        appsList.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${total === 0 ? tA('empty_apps') : tA('empty_apps_filter')}</h3></div>`;
         return;
       }
       const qs = VJ_JOBS.questions();
       const qById = Object.fromEntries(qs.map(q => [q.id, q]));
+      const APP_ST = statusLabels();
       appsList.innerHTML = apps.map(a => {
         const date = new Date(a.createdAt).toLocaleDateString("es-ES", { day:"numeric", month:"short", year:"numeric" });
         const time = new Date(a.createdAt).toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
@@ -1726,31 +1851,31 @@
           return `<div class="app-answer"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(valStr || "—")}</span></div>`;
         }).join("");
         const cvLink = a.cv && a.cv.dataUrl
-          ? `<a class="btn btn-light" download="${escapeHtml(a.cv.filename||'cv.pdf')}" href="${a.cv.dataUrl}" style="padding:8px 14px;font-size:.72rem;">↓ Descargar CV (${(a.cv.size/1024).toFixed(0)} KB)</a>`
+          ? `<a class="btn btn-light" download="${escapeHtml(a.cv.filename||'cv.pdf')}" href="${a.cv.dataUrl}" style="padding:8px 14px;font-size:.72rem;">${tA('cv_download')} (${(a.cv.size/1024).toFixed(0)} KB)</a>`
           : '';
         return `
           <article class="app-card" data-id="${a.id}">
             <header class="app-card-head">
               <div>
-                <div class="app-name">${escapeHtml(a.name || "(Sin nombre)")}</div>
+                <div class="app-name">${escapeHtml(a.name || tA('no_name'))}</div>
                 <div class="app-meta">${escapeHtml(a.email)} · ${escapeHtml(a.phone)} · <span class="ref">${a.id}</span></div>
               </div>
               <div class="app-side">
-                <span class="status-pill status-${a.status}">${STATUS_LABELS[a.status]||a.status}</span>
+                <span class="status-pill status-${a.status}">${APP_ST[a.status]||a.status}</span>
                 <span class="app-date">${date} · ${time}</span>
               </div>
             </header>
             <div class="app-card-body">
               ${a.cv ? `<div class="app-row cv"><strong>CV adjunto</strong> ${cvLink}</div>` : ""}
-              ${a.message ? `<div class="app-row"><strong>Mensaje</strong><p>${escapeHtml(a.message)}</p></div>` : ""}
+              ${a.message ? `<div class="app-row"><strong>${tA('label_message')}</strong><p>${escapeHtml(a.message)}</p></div>` : ""}
               ${answersHtml ? `<div class="app-answers">${answersHtml}</div>` : ""}
             </div>
             <footer class="app-card-foot">
               <label class="muted" style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;">Estado:</label>
               <select data-act="status" class="status-select">
-                ${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${k===a.status?'selected':''}>${v}</option>`).join("")}
+                ${Object.entries(APP_ST).map(([k,v]) => `<option value="${k}" ${k===a.status?'selected':''}>${v}</option>`).join("")}
               </select>
-              <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+              <button class="icon-btn danger" data-act="del" title="${tA('act_delete')}">${ICONS.trash}</button>
             </footer>
           </article>
         `;
@@ -1777,7 +1902,7 @@
       const btn = e.target.closest("button[data-act='del']");
       if (!btn) return;
       const id = btn.closest(".app-card").dataset.id;
-      if (!confirm("¿Eliminar esta candidatura definitivamente?")) return;
+      if (!confirm(tA('confirm_delete_app'))) return;
       try {
         const supa = window.VJ_SUPA?.client;
         if (supa) {
@@ -1798,7 +1923,7 @@
     const messagesCountEl  = document.getElementById("messages-count");
     let messagesActiveStatus = "all";
 
-    const MSG_STATUS = { new: "Nuevo", read: "Leído", archived: "Archivado" };
+    const msgStatus = () => ({ new: tA('msg_status_new'), read: tA('msg_status_read'), archived: tA('msg_status_archived') });
     const MSG_TYPE   = {
       general: "Consulta general", boda: "Boda", evento: "Evento",
       funeral: "Funeral", empresa: "Empresa", otro: "Otro"
@@ -1854,9 +1979,10 @@
       messagesCountEl.textContent = messagesCache.length;
       if (messagesActiveStatus !== "all") list = list.filter(m => m.status === messagesActiveStatus);
       if (list.length === 0) {
-        messagesListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${messagesCache.length === 0 ? "Aún no hay mensajes." : "Ningún mensaje con este estado."}</h3></div>`;
+        messagesListEl.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${messagesCache.length === 0 ? tA('empty_msgs') : tA('empty_msgs_filter')}</h3></div>`;
         return;
       }
+      const MSG_ST = msgStatus();
       messagesListEl.innerHTML = list.map(m => {
         const date = new Date(m.createdAt).toLocaleDateString("es-ES", { day:"numeric", month:"short", year:"numeric" });
         const time = new Date(m.createdAt).toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
@@ -1865,24 +1991,24 @@
           <article class="app-card" data-id="${m.id}">
             <header class="app-card-head">
               <div>
-                <div class="app-name">${escapeHtml(m.name || "(Sin nombre)")} · <span style="font-weight:500;color:var(--blue-deep);">${escapeHtml(typeLabel)}</span></div>
+                <div class="app-name">${escapeHtml(m.name || tA('no_name'))} · <span style="font-weight:500;color:var(--blue-deep);">${escapeHtml(typeLabel)}</span></div>
                 <div class="app-meta">${escapeHtml(m.email || "—")}${m.phone ? " · " + escapeHtml(m.phone) : ""} · <span class="ref">${m.id}</span></div>
               </div>
               <div class="app-side">
-                <span class="status-pill status-${m.status}">${MSG_STATUS[m.status] || m.status}</span>
+                <span class="status-pill status-${m.status}">${MSG_ST[m.status] || m.status}</span>
                 <span class="app-date">${date} · ${time}</span>
               </div>
             </header>
             <div class="app-card-body">
-              ${m.message ? `<div class="app-row"><strong>Mensaje</strong><p>${escapeHtml(m.message)}</p></div>` : ""}
+              ${m.message ? `<div class="app-row"><strong>${tA('label_message')}</strong><p>${escapeHtml(m.message)}</p></div>` : ""}
               ${m.email ? `<div class="app-row"><a class="btn btn-light" href="mailto:${escapeHtml(m.email)}" style="padding:8px 14px;font-size:.72rem;">Responder por email</a></div>` : ""}
             </div>
             <footer class="app-card-foot">
               <label class="muted" style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;">Estado:</label>
               <select data-act="status" class="status-select">
-                ${Object.entries(MSG_STATUS).map(([k,v]) => `<option value="${k}" ${k===m.status?'selected':''}>${v}</option>`).join("")}
+                ${Object.entries(MSG_ST).map(([k,v]) => `<option value="${k}" ${k===m.status?'selected':''}>${v}</option>`).join("")}
               </select>
-              <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+              <button class="icon-btn danger" data-act="del" title="${tA('act_delete')}">${ICONS.trash}</button>
             </footer>
           </article>
         `;
@@ -1926,7 +2052,7 @@
       const btn = e.target.closest("button[data-act='del']");
       if (!btn) return;
       const id = btn.closest(".app-card").dataset.id;
-      if (!confirm("¿Eliminar este mensaje definitivamente?")) return;
+      if (!confirm(tA('confirm_delete_msg'))) return;
       try {
         const supa = window.VJ_SUPA?.client;
         if (supa) {
@@ -1951,16 +2077,16 @@
     const qType = document.getElementById("q-type");
     let qEditingId = null;
 
-    const Q_TYPE_LABELS = {
-      text: "Texto", textarea: "Texto largo", dropdown: "Desplegable",
-      radio: "Selección única", multiselect: "Selección múltiple", date: "Fecha"
-    };
+    const qTypeLabels = () => ({
+      text: tA('q_type_text'), textarea: tA('q_type_textarea'), dropdown: tA('q_type_dropdown'),
+      radio: tA('q_type_radio'), multiselect: tA('q_type_multiselect'), date: tA('q_type_date')
+    });
 
     function renderQuestions() {
       const qs = VJ_JOBS.questions();
       qCount.textContent = qs.length;
       if (qs.length === 0) {
-        qList.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">No hay preguntas configuradas.</h3></div>`;
+        qList.innerHTML = `<div class="empty-state"><h3 style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;">${tA('q_empty')}</h3></div>`;
         return;
       }
       qList.innerHTML = qs.map((q, i) => `
@@ -1971,11 +2097,11 @@
           </div>
           <div class="q-info">
             <div class="q-label">${escapeHtml(q.label.es)}</div>
-            <div class="q-meta">${Q_TYPE_LABELS[q.type]||q.type} ${q.required ? '· <span class="pill-req">Obligatoria</span>' : ''}${q.skipIfCv ? ' · <span class="pill-skip">Solo sin CV</span>' : ''}${(q.options||[]).length ? ' · ' + (q.options.length) + ' opciones' : ''}</div>
+            <div class="q-meta">${qTypeLabels()[q.type]||q.type} ${q.required ? `· <span class="pill-req">${tA('q_required_pill')}</span>` : ''}${q.skipIfCv ? ' · <span class="pill-skip">Solo sin CV</span>' : ''}${(q.options||[]).length ? ' · ' + (q.options.length) + ' opciones' : ''}</div>
           </div>
           <div class="actions">
             <button class="icon-btn" data-act="edit" title="Editar">${ICONS.edit}</button>
-            <button class="icon-btn danger" data-act="del" title="Eliminar">${ICONS.trash}</button>
+            <button class="icon-btn danger" data-act="del" title="${tA('act_delete')}">${ICONS.trash}</button>
           </div>
         </div>
       `).join("");
@@ -1991,7 +2117,7 @@
       const qs  = VJ_JOBS.questions();
       if (act === "edit") openQEditor(id);
       else if (act === "del") {
-        if (confirm("¿Eliminar esta pregunta?")) {
+        if (confirm(tA('confirm_delete_question'))) {
           VJ_JOBS.saveQuestions(qs.filter(q => q.id !== id));
           renderQuestions();
         }
@@ -2007,7 +2133,7 @@
 
     document.getElementById("btn-q-add").addEventListener("click", () => openQEditor(null));
     document.getElementById("btn-q-reset").addEventListener("click", () => {
-      if (confirm("Esto restaurará las 3 preguntas predeterminadas. ¿Continuar?")) {
+      if (confirm(tA('confirm_restore_questions'))) {
         VJ_JOBS.resetQuestions(); renderQuestions();
       }
     });
@@ -2019,7 +2145,7 @@
       if (id) {
         const q = VJ_JOBS.questions().find(x => x.id === id);
         if (!q) return;
-        titleEl.textContent = "Editar pregunta";
+        titleEl.textContent = tA('q_edit_title');
         qForm.elements.id.value = q.id;
         qForm.elements.type.value = q.type;
         qForm.elements.label_es.value = q.label.es;
@@ -2028,7 +2154,7 @@
         qForm.elements.skipIfCv.checked = !!q.skipIfCv;
         qForm.elements.options.value = (q.options||[]).map(o => `${o.es} | ${o.va}`).join("\n");
       } else {
-        titleEl.textContent = "Nueva pregunta";
+        titleEl.textContent = tA('q_new_title');
         qForm.elements.id.value = "";
       }
       updateOptionsVisibility();
