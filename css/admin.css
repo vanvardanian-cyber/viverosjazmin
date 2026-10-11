@@ -1,0 +1,271 @@
+/* =========================================================
+   Admin shell — persistent sidebar + top bar + content column.
+   Loaded only by admin.html. Public pages never see this file.
+   Nav items reuse the .admin-tab / .admin-panel classes so the
+   panel-switching JS in admin.html keeps working unchanged.
+   ========================================================= */
+:root {
+  --admin-side-w: 236px;
+  --admin-topbar-h: 60px;
+  --admin-side-bg: #EEF4F8;            /* between --blue-2 and --blue-3 */
+}
+
+body.admin-body { background: var(--bg); }
+
+/* The public header/footer are not mounted on admin, but app.js still
+   creates the cookie banner at boot — the shop owner doesn't need it here. */
+#vj-cookie-banner, .cookie-banner { display: none !important; }
+
+/* ---------- Shell grid ---------- */
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--admin-side-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+/* Logged out: no sidebar, no search — just the top bar and the login card */
+body.admin-locked .admin-shell { grid-template-columns: minmax(0, 1fr); }
+body.admin-locked .admin-side,
+body.admin-locked .admin-side-backdrop,
+body.admin-locked .admin-menu-btn,
+body.admin-locked .admin-gsearch { display: none; }
+
+/* ---------- Sidebar ---------- */
+.admin-side {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 18px 14px 16px;
+  background: var(--admin-side-bg);
+  border-right: 1px solid var(--line);
+  scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+}
+.admin-brand { display: flex; align-items: center; gap: 12px; padding: 2px 8px 16px; }
+.admin-brand-mark {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--blue); color: var(--ink); text-decoration: none;
+  font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.45rem; line-height: 1;
+}
+.admin-brand-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; line-height: 1.2; }
+.admin-brand-text strong {
+  font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500;
+  font-size: 1.15rem; color: var(--ink);
+}
+.admin-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--blue-deep);
+}
+.admin-badge::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-tag); box-shadow: 0 0 0 3px rgba(110,138,107,.18);
+}
+
+.admin-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.admin-nav-group {
+  padding: 16px 12px 6px;
+  font-family: 'Inter', sans-serif; font-size: .6rem; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--blue-deep);
+}
+/* Override the old horizontal underline-tab look from styles.css */
+.admin-nav .admin-tab {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 9px 12px; margin: 0; border: 0; border-radius: 8px;
+  background: transparent; color: var(--ink-soft); cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: .86rem; font-weight: 500;
+  letter-spacing: 0; text-transform: none; white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+}
+.admin-nav .admin-tab:hover { background: rgba(255,255,255,.7); color: var(--ink); }
+.admin-nav .admin-tab.is-active { background: #fff; color: var(--ink); font-weight: 600; box-shadow: var(--shadow-sm); }
+.admin-nav .nav-ico { display: inline-flex; width: 18px; height: 18px; flex-shrink: 0; color: var(--blue-deep); }
+.admin-nav .nav-ico svg { width: 18px; height: 18px; }
+.admin-nav .admin-tab.is-active .nav-ico { color: var(--blue-ink); }
+.admin-nav .nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.admin-nav .admin-tab .tab-count {
+  background: rgba(45,72,86,.08); color: var(--ink-soft);
+  font-size: .66rem; font-weight: 600; padding: 2px 7px; border-radius: 999px;
+  letter-spacing: 0; font-feature-settings: 'tnum';
+}
+.admin-nav .admin-tab.is-active .tab-count { background: var(--blue-ink); color: #fff; }
+.tab-dot {
+  display: inline-block; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: #c0392b; color: #fff; font-size: .6rem; font-weight: 700; line-height: 16px; text-align: center;
+}
+
+.admin-side-foot { margin-top: 8px; padding: 14px 12px 2px; border-top: 1px solid rgba(31,42,46,.08); }
+.admin-side-link { font-size: .8rem; font-weight: 600; color: var(--blue-ink); text-decoration: none; }
+.admin-side-link:hover { text-decoration: underline; }
+
+/* ---------- Main column ---------- */
+.admin-main { min-width: 0; display: flex; flex-direction: column; }
+.admin-topbar {
+  position: sticky; top: 0; z-index: 40;
+  height: var(--admin-topbar-h);
+  display: flex; align-items: center; gap: 14px; padding: 0 28px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.admin-side-backdrop { display: none; }   /* only ever shown by the ≤900px rule */
+.admin-menu-btn {
+  display: none; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line);
+  background: #fff; color: var(--ink); cursor: pointer; flex-shrink: 0;
+}
+.admin-menu-btn svg { width: 18px; height: 18px; }
+
+/* Global search */
+.admin-gsearch { position: relative; flex: 1; max-width: 560px; }
+.admin-gsearch > svg {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; color: var(--ink-soft); pointer-events: none;
+}
+.admin-gsearch input {
+  width: 100%; height: 38px; padding: 0 12px 0 38px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--blue-3);
+  font: inherit; font-size: .9rem; color: var(--ink); outline: none;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.admin-gsearch input::placeholder { color: var(--ink-soft); }
+.admin-gsearch input:focus { background: #fff; border-color: var(--blue-deep); box-shadow: 0 0 0 3px rgba(74,111,130,.15); }
+.admin-gsearch-results {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 45;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: var(--shadow-lg); padding: 6px; max-height: 70vh; overflow-y: auto;
+}
+.admin-gsearch-results[hidden] { display: none; }
+.gs-hint { margin: 0; padding: 12px; font-size: .82rem; color: var(--ink-soft); }
+.gs-group + .gs-group { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--line); }
+.gs-group-label {
+  padding: 8px 12px 4px;
+  font-size: .6rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--blue-deep);
+}
+.gs-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; text-align: left; padding: 9px 12px; border: 0; border-radius: 8px;
+  background: transparent; cursor: pointer; font: inherit; color: var(--ink);
+}
+.gs-item:hover, .gs-item:focus-visible { background: var(--blue-3); outline: none; }
+.gs-title { font-weight: 500; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gs-meta { font-size: .74rem; color: var(--ink-soft); white-space: nowrap; font-feature-settings: 'tnum'; }
+
+.admin-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+#admin-panel-actions { display: flex; align-items: center; gap: 10px; }
+.admin-user {
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: .74rem; letter-spacing: .04em; color: var(--ink-soft);
+}
+#btn-logout { padding: 8px 14px; font-size: .72rem; }
+
+/* ES | EN pill — the only language control on admin (separate from the public i18n) */
+.admin-lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: #fff; }
+.admin-lang-btn {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .14em; padding: 7px 12px; color: var(--ink-soft);
+  transition: background .15s ease, color .15s ease;
+}
+.admin-lang-btn:hover { color: var(--ink); }
+.admin-lang-btn.is-active { background: var(--ink); color: #fff; }
+
+/* Page body */
+.admin-page { width: 100%; max-width: 1400px; margin: 0 auto; padding: 28px 28px 64px; }
+.admin-page-head { margin-bottom: 18px; }
+.admin-page-title { margin: 0; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500; font-size: 1.9rem; }
+
+/* Login screen (body.admin-locked) — centred card, nothing else */
+body.admin-locked .admin-page {
+  display: flex; align-items: center; justify-content: center;
+  min-height: calc(100vh - var(--admin-topbar-h));
+}
+.admin-login-card { width: 100%; max-width: 440px; padding: 36px; border-radius: 12px; box-shadow: var(--shadow-md); }
+
+/* ---------- Overview (home) ---------- */
+.admin-ov-sub { margin: -8px 0 22px; color: var(--ink-soft); font-size: .95rem; }
+.ov-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.ov-stat {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+  cursor: pointer; text-align: left; font: inherit; color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
+}
+.ov-stat:hover { border-color: var(--blue-deep); box-shadow: var(--shadow-sm); }
+.ov-stat-n { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 1.9rem; line-height: 1; font-feature-settings: 'tnum'; }
+.ov-stat-l { font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.ov-stat.is-warn { background: #FFFBF2; border-color: #F1E2BC; }
+.ov-stat.is-warn .ov-stat-n { color: #9A6A0B; }
+
+.ov-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+.ov-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ov-card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.ov-card-head h3 {
+  margin: 0; font-family: 'Inter', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft);
+}
+.ov-link { padding: 0; border: 0; background: transparent; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 600; color: var(--blue-ink); }
+.ov-link:hover { text-decoration: underline; }
+.ov-list { display: flex; flex-direction: column; }
+.ov-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.ov-row:last-child { border-bottom: 0; }
+.ov-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.ov-row-main .muted { font-size: .74rem; }
+.ov-row-main .ref { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .7rem; }
+.ov-row-amt { white-space: nowrap; font-feature-settings: 'tnum'; }
+.ov-row--btn { width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; font: inherit; color: var(--ink); }
+.ov-row--btn:last-child { border-bottom: 0; }
+.ov-row--btn:hover { background: var(--blue-3); }
+.ov-row--btn .ov-row-main { flex-direction: row; gap: 6px; align-items: baseline; }
+.ov-dot { width: 8px; height: 8px; border-radius: 50%; background: #e8a33d; flex-shrink: 0; }
+.ov-arrow { color: var(--blue-deep); }
+.ov-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.ov-actions .btn { padding: 9px 14px; font-size: .72rem; }
+.ov-empty { margin: 0; padding: 18px; font-size: .86rem; color: var(--ink-soft); }
+.ov-clear { color: #466A2E; }
+
+/* ---------- Existing panels inside the shell ---------- */
+/* The sticky product form used to hang below the public header (--header-h);
+   the admin top bar is the only thing above it now. */
+.admin-form-wrap {
+  top: calc(var(--admin-topbar-h) + 20px);
+  max-height: calc(100vh - var(--admin-topbar-h) - 40px);
+}
+@media (min-width: 721px) { .admin-form-wrap .img-list { grid-template-columns: repeat(4, 1fr); } }
+.form-savebar .unsaved-dot[hidden] { display: none; }
+/* A record opened from the global search gets a short highlight ring */
+.app-card.is-flash, .admin-row.is-flash { box-shadow: 0 0 0 3px var(--blue); transition: box-shadow .3s; }
+
+/* The list/form split loses 236px to the sidebar, so it stacks earlier than before (1080px) */
+@media (max-width: 1320px) {
+  .admin-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .admin-form-wrap { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 1100px) { .ov-grid { grid-template-columns: 1fr; } }
+
+/* ---------- Mobile: sidebar becomes an off-canvas drawer ---------- */
+@media (max-width: 900px) {
+  .admin-shell { grid-template-columns: minmax(0, 1fr); }
+  .admin-side {
+    position: fixed; top: 0; left: 0; bottom: 0; height: 100dvh; z-index: 60;
+    width: min(84vw, var(--admin-side-w));
+    transform: translateX(-105%); visibility: hidden;          /* closed: out of the tab order too */
+    transition: transform .25s ease, visibility 0s linear .25s;
+  }
+  body.admin-side-open .admin-side { transform: none; visibility: visible; transition-delay: 0s; box-shadow: var(--shadow-lg); }
+  body.admin-side-open { overflow: hidden; }
+  .admin-side-backdrop:not([hidden]) { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(31,42,46,.45); }
+  .admin-menu-btn { display: inline-flex; }
+  .admin-gsearch input { font-size: 16px; }                    /* iOS: no focus-zoom */
+  .admin-topbar { padding: 0 16px; gap: 10px; }
+  .admin-page { padding: 20px 16px 56px; }
+  .admin-page-title { font-size: 1.6rem; }
+  .admin-user { display: none; }
+}
+
+/* Phones: the top bar keeps menu + search + ES|EN; logout lives in the drawer */
+.admin-side-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.admin-side-logout { display: none; border: 0; background: transparent; padding: 0; cursor: pointer; font: inherit; font-size: .8rem; font-weight: 600; color: var(--ink-soft); }
+@media (max-width: 600px) {
+  #admin-panel-actions { display: none; }
+  .admin-side-logout { display: inline; }
+  .admin-lang-btn { padding: 7px 9px; }
+}

@@ -8,54 +8,100 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=a65cef8a">
-  <style>
-    /* Admin-only i18n toggle + panel-actions layout (scoped to admin.html) */
-    #admin-panel-actions { display: flex; gap: 8px; align-items: center; }
-    .admin-lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: #fff; }
-    .admin-lang-btn {
-      appearance: none; border: 0; background: transparent; cursor: pointer;
-      font-family: 'Inter', sans-serif; font-size: .68rem; font-weight: 700;
-      letter-spacing: .14em; padding: 7px 12px; color: var(--ink-soft);
-      transition: background .15s ease, color .15s ease;
-    }
-    .admin-lang-btn:hover { color: var(--ink); }
-    .admin-lang-btn.is-active { background: var(--ink); color: #fff; }
-    /* The site header's ES/VA/EN dropdown controls the PUBLIC pages only —
-       it has no effect on admin content (a separate i18n system, on purpose,
-       to avoid double-translation collisions). Showing it here just confused
-       people into clicking the wrong language control, so hide it: the
-       ES|EN pill above is the only language switch that does anything here. */
-    .header .lang-select { display: none !important; }
-  </style>
+  <link rel="stylesheet" href="css/styles.css?v=bdb399f6">
+  <link rel="stylesheet" href="css/admin.css?v=809cdf9c">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
 </head>
-<body>
+<body class="admin-body admin-locked">
 
-<div data-vj-header></div>
+<div class="admin-shell" id="admin-shell">
 
-<section class="section section--tight">
-  <div class="container">
-
-    <div class="admin-bar">
-      <div class="left">
-        <h2 data-t-html="admin_title"><em>Panel</em> de administración</h2>
-        <span class="badge" id="admin-badge" data-t="admin_connected" style="display:none;">Conectado</span>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="admin-side" id="admin-side">
+    <div class="admin-brand">
+      <a class="admin-brand-mark" href="/" target="_blank" rel="noopener" aria-label="Jazmín">J</a>
+      <div class="admin-brand-text">
+        <strong>Jazmín</strong>
+        <span class="admin-badge" id="admin-badge" data-t="admin_connected" style="display:none;">Conectado</span>
       </div>
-      <div class="right" style="display:flex; gap:8px; align-items:center;">
+    </div>
+    <nav class="admin-nav" aria-label="Navegación del panel" data-t-attr="aria-label:nav_aria_label">
+      <button class="admin-tab is-active" data-tab="overview" aria-current="page">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <span class="nav-label" data-t="nav_overview">Resumen</span>
+      </button>
+
+      <div class="admin-nav-group" data-t="nav_group_products">Productos</div>
+      <button class="admin-tab" data-tab="products">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>
+        <span class="nav-label" data-t="nav_catalog">Catálogo</span>
+        <span class="tab-count" id="tab-products-count">0</span>
+      </button>
+
+      <div class="admin-nav-group" data-t="nav_group_customers">Clientes</div>
+      <button class="admin-tab" data-tab="orders">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+        <span class="nav-label" data-t="nav_orders">Pedidos</span>
+        <span class="tab-count" id="tab-orders-count">0</span>
+      </button>
+      <button class="admin-tab" data-tab="messages">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg></span>
+        <span class="nav-label" data-t="nav_messages">Mensajes</span>
+        <span class="tab-count" id="tab-messages-count">0</span>
+        <span class="tab-dot" id="tab-messages-dot" style="display:none;"></span>
+      </button>
+      <button class="admin-tab" data-tab="reviews">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg></span>
+        <span class="nav-label" data-t="nav_reviews">Reseñas</span>
+        <span class="tab-count" id="tab-reviews-count">0</span>
+        <span class="tab-dot" id="tab-reviews-dot" style="display:none;"></span>
+      </button>
+
+      <div class="admin-nav-group" data-t="nav_group_hiring">Empleo</div>
+      <button class="admin-tab" data-tab="applications">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
+        <span class="nav-label" data-t="nav_applications">Candidaturas</span>
+        <span class="tab-count" id="tab-apps-count">0</span>
+      </button>
+      <button class="admin-tab" data-tab="questions">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
+        <span class="nav-label" data-t="nav_questions">Preguntas</span>
+        <span class="tab-count" id="tab-questions-count">0</span>
+      </button>
+    </nav>
+    <div class="admin-side-foot">
+      <a class="admin-side-link" href="/" target="_blank" rel="noopener"><span data-t="nav_view_site">Ver la web</span> →</a>
+      <button type="button" class="admin-side-link admin-side-logout" id="btn-logout-side" data-t="admin_logout">Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="admin-side-backdrop" id="admin-side-backdrop" hidden></div>
+
+  <!-- ===== MAIN COLUMN ===== -->
+  <div class="admin-main">
+
+    <header class="admin-topbar">
+      <button type="button" class="admin-menu-btn" id="admin-menu-btn" aria-label="Abrir menú" data-t-attr="aria-label:menu_open" aria-controls="admin-side" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <div class="admin-gsearch" id="admin-gsearch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="admin-global-search" placeholder="Buscar productos, pedidos, mensajes…" data-t-attr="placeholder:global_search_ph" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="admin-gsearch-results">
+        <div class="admin-gsearch-results" id="admin-gsearch-results" hidden></div>
+      </div>
+      <div class="admin-topbar-right">
         <div class="admin-lang" id="admin-lang-toggle" role="group" aria-label="Language">
           <button type="button" class="admin-lang-btn" data-lang="es">ES</button>
           <button type="button" class="admin-lang-btn" data-lang="en">EN</button>
         </div>
         <div id="admin-panel-actions" style="display:none;">
-          <span class="muted" id="admin-user" style="font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-right:8px;"></span>
+          <span class="admin-user" id="admin-user"></span>
           <button class="btn btn-outline" id="btn-logout" type="button" data-t="admin_logout">Cerrar sesión</button>
         </div>
       </div>
-    </div>
+    </header>
+
+    <main class="admin-page">
 
     <!-- ===== LOGIN GATE ===== -->
-    <div id="admin-login" class="form-card" style="max-width:440px; margin: 0 auto 40px; padding:36px;">
+    <div id="admin-login" class="form-card admin-login-card">
       <h3 data-t="login_heading" style="font-family:'Playfair Display',serif;font-style:italic;font-weight:500;font-size:1.6rem;margin:0 0 6px;">Acceso administrador</h3>
       <p class="muted" data-t="login_subtitle" style="font-size:.9rem; margin-bottom:24px;">Solo el equipo de Jazmín puede entrar aquí.</p>
       <div class="auth-error" id="admin-error"></div>
@@ -77,37 +123,41 @@
     <!-- ===== WRAPPER for everything that requires login ===== -->
     <div id="admin-content" style="display:none;">
 
-    <nav class="admin-tabs" role="tablist">
-      <button class="admin-tab is-active" data-tab="products" role="tab">
-        <span data-t="tab_products">Productos</span>
-        <span class="tab-count" id="tab-products-count">0</span>
-      </button>
-      <button class="admin-tab" data-tab="orders" role="tab">
-        <span data-t="tab_orders">Pedidos</span>
-        <span class="tab-count" id="tab-orders-count">0</span>
-      </button>
-      <button class="admin-tab" data-tab="applications" role="tab">
-        <span data-t="tab_applications">Candidaturas</span>
-        <span class="tab-count" id="tab-apps-count">0</span>
-      </button>
-      <button class="admin-tab" data-tab="questions" role="tab">
-        <span data-t="tab_questions">Preguntas</span>
-        <span class="tab-count" id="tab-questions-count">0</span>
-      </button>
-      <button class="admin-tab" data-tab="messages" role="tab">
-        <span data-t="tab_messages">Mensajes</span>
-        <span class="tab-count" id="tab-messages-count">0</span>
-        <span class="tab-dot" id="tab-messages-dot" style="display:none; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:.6rem; font-weight:700; line-height:16px; text-align:center; margin-left:2px;"></span>
-      </button>
-      <button class="admin-tab" data-tab="reviews" role="tab">
-        <span data-t="tab_reviews">Reseñas</span>
-        <span class="tab-count" id="tab-reviews-count">0</span>
-        <span class="tab-dot" id="tab-reviews-dot" style="display:none; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:.6rem; font-weight:700; line-height:16px; text-align:center; margin-left:2px;"></span>
-      </button>
-    </nav>
+    <div class="admin-page-head">
+      <h1 class="admin-page-title" id="admin-page-title">Resumen</h1>
+    </div>
+
+    <!-- ===== PANEL: OVERVIEW (home) ===== -->
+    <div class="admin-panel is-active" data-panel="overview">
+      <p class="admin-ov-sub" data-t="ov_subtitle">Lo que necesita tu atención hoy.</p>
+      <div class="ov-stats" id="ov-stats"></div>
+      <div class="ov-grid">
+        <section class="ov-card">
+          <header class="ov-card-head">
+            <h3 data-t="ov_recent_orders">Últimos pedidos</h3>
+            <button type="button" class="ov-link" data-goto="orders" data-t="ov_view_all">Ver todos</button>
+          </header>
+          <div class="ov-list" id="ov-recent-orders"></div>
+        </section>
+        <section class="ov-card">
+          <header class="ov-card-head">
+            <h3 data-t="ov_quick_actions">Acciones rápidas</h3>
+          </header>
+          <div class="ov-actions">
+            <button type="button" class="btn btn-primary" data-ov-act="add" data-t="ov_add_product">Añadir producto</button>
+            <button type="button" class="btn btn-light" data-ov-act="publish" data-t="ov_publish">Publicar catálogo</button>
+            <a class="btn btn-light" href="/" target="_blank" rel="noopener" data-t="nav_view_site">Ver la web</a>
+          </div>
+          <header class="ov-card-head">
+            <h3 data-t="ov_attention">Pendiente de atender</h3>
+          </header>
+          <div class="ov-list" id="ov-attention"></div>
+        </section>
+      </div>
+    </div>
 
     <!-- ===== PANEL: PRODUCTS ===== -->
-    <div class="admin-panel is-active" data-panel="products">
+    <div class="admin-panel" data-panel="products">
 
     <div class="admin-notice" data-t-html="products_notice">
       <strong>Cambios en vivo.</strong> Los productos se guardan directamente en la base de datos. Cualquier cambio aquí lo verán los clientes al instante — no hay que exportar nada ni publicar nada.
@@ -121,7 +171,7 @@
           <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
             <span data-t="catalog_label">Catálogo</span> · <span id="count-total">0</span> <span data-t="catalog_products_word">productos</span>
           </h4>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <button type="button" id="publish-catalog-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Genera el archivo que leen los visitantes, para que la web pública no consulte la base de datos en cada visita" data-t="publish_catalog" data-t-attr="title:publish_catalog_title">⬆️ Publicar catálogo</button>
             <button type="button" id="optimize-imgs-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Reduce el peso de las fotos guardadas para que la web cargue más ligera" data-t="optimize_images" data-t-attr="title:optimize_images_title">⚡ Optimizar imágenes</button>
             <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" data-t-attr="placeholder:search_placeholder" style="max-width:200px; padding-top:8px; padding-bottom:8px;">
@@ -447,10 +497,9 @@
 
     </div><!-- /#admin-content -->
 
-  </div>
-</section>
-
-<div data-vj-footer></div>
+    </main>
+  </div><!-- /.admin-main -->
+</div><!-- /.admin-shell -->
 
 <script src="js/data.js?v=1409c3ad"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -654,6 +703,40 @@
       empty_msgs_filter: "Ningún mensaje con este estado.",
       act_delete: "Eliminar",
       act_edit: "Editar",
+
+      // shell: sidebar / top bar / overview
+      nav_overview: "Resumen",
+      nav_group_products: "Productos",
+      nav_group_customers: "Clientes",
+      nav_group_hiring: "Empleo",
+      nav_catalog: "Catálogo",
+      nav_orders: "Pedidos",
+      nav_messages: "Mensajes",
+      nav_reviews: "Reseñas",
+      nav_applications: "Candidaturas",
+      nav_questions: "Preguntas",
+      nav_view_site: "Ver la web",
+      nav_aria_label: "Navegación del panel",
+      menu_open: "Abrir menú",
+      menu_close: "Cerrar menú",
+      global_search_ph: "Buscar productos, pedidos, mensajes…",
+      global_search_hint: "Escribe para buscar en toda la tienda",
+      ov_subtitle: "Lo que necesita tu atención hoy.",
+      ov_products: "Productos",
+      ov_low_stock: "Poco stock",
+      ov_out_of_stock: "Agotados",
+      ov_pending_orders: "Pedidos pendientes",
+      ov_new_messages: "Mensajes nuevos",
+      ov_pending_reviews: "Reseñas pendientes",
+      ov_new_apps: "Candidaturas nuevas",
+      ov_quick_actions: "Acciones rápidas",
+      ov_add_product: "Añadir producto",
+      ov_publish: "Publicar catálogo",
+      ov_recent_orders: "Últimos pedidos",
+      ov_view_all: "Ver todos",
+      ov_attention: "Pendiente de atender",
+      ov_none: "Nada por aquí todavía.",
+      ov_all_clear: "Todo al día. 🌿",
     },
     en: {
       // admin bar
@@ -845,6 +928,40 @@
       empty_msgs_filter: "No message with this status.",
       act_delete: "Delete",
       act_edit: "Edit",
+
+      // shell: sidebar / top bar / overview
+      nav_overview: "Overview",
+      nav_group_products: "Products",
+      nav_group_customers: "Customers",
+      nav_group_hiring: "Hiring",
+      nav_catalog: "Catalogue",
+      nav_orders: "Orders",
+      nav_messages: "Messages",
+      nav_reviews: "Reviews",
+      nav_applications: "Applications",
+      nav_questions: "Form questions",
+      nav_view_site: "View site",
+      nav_aria_label: "Admin navigation",
+      menu_open: "Open menu",
+      menu_close: "Close menu",
+      global_search_ph: "Search products, orders, messages…",
+      global_search_hint: "Type to search the whole store",
+      ov_subtitle: "What needs your attention today.",
+      ov_products: "Products",
+      ov_low_stock: "Low stock",
+      ov_out_of_stock: "Out of stock",
+      ov_pending_orders: "Pending orders",
+      ov_new_messages: "New messages",
+      ov_pending_reviews: "Pending reviews",
+      ov_new_apps: "New applications",
+      ov_quick_actions: "Quick actions",
+      ov_add_product: "Add product",
+      ov_publish: "Publish catalogue",
+      ov_recent_orders: "Recent orders",
+      ov_view_all: "View all",
+      ov_attention: "Needs attention",
+      ov_none: "Nothing here yet.",
+      ov_all_clear: "All caught up. 🌿",
     }
   };
 
@@ -875,6 +992,7 @@
     });
     // reflect active state on the ES|EN toggle
     const cur = (localStorage.getItem('vj.adminLang') === 'en') ? 'en' : 'es';
+    document.documentElement.lang = cur;
     document.querySelectorAll('#admin-lang-toggle .admin-lang-btn').forEach(btn => {
       btn.classList.toggle('is-active', btn.getAttribute('data-lang') === cur);
     });
@@ -902,6 +1020,27 @@
     }
   })();
 
+  /* Mobile: the sidebar is an off-canvas drawer below 900px (css/admin.css) */
+  (function initAdminDrawer() {
+    const btn  = document.getElementById('admin-menu-btn');
+    const side = document.getElementById('admin-side');
+    const bd   = document.getElementById('admin-side-backdrop');
+    if (!btn || !side) return;
+    function set(open) {
+      document.body.classList.toggle('admin-side-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      if (bd) bd.hidden = !open;
+    }
+    btn.addEventListener('click', () => set(!document.body.classList.contains('admin-side-open')));
+    if (bd) bd.addEventListener('click', () => set(false));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+    const mq = window.matchMedia('(max-width: 900px)');
+    mq.addEventListener('change', e => { if (!e.matches) set(false); });
+    window.__closeAdminDrawer = () => set(false);
+    // The drawer's logout just presses the real one in the top bar
+    document.getElementById('btn-logout-side')?.addEventListener('click', () => document.getElementById('btn-logout')?.click());
+  })();
+
   /* ============================================================
      ADMIN AUTH GATE (runs before everything else)
      Only emails in ADMIN_EMAILS can see the panel — being merely
@@ -926,12 +1065,14 @@
     }
 
     function showLogin() {
+      document.body.classList.add("admin-locked");   // hides sidebar + search (css/admin.css)
       loginCard.style.display = "";
       contentEl.style.display = "none";
       badge.style.display = "none";
       actions.style.display = "none";
     }
     function showPanel(user) {
+      document.body.classList.remove("admin-locked");
       loginCard.style.display = "none";
       contentEl.style.display = "";
       badge.style.display = "";
@@ -1009,7 +1150,8 @@
     const cancelBtn = document.getElementById("btn-cancel");
     const titleEl = document.getElementById("form-title");
     const seedSlider = document.getElementById("f-seed");
-    const seedVal = document.getElementById("seed-val");
+    // #seed-val sits inside a data-t-html label, so the language toggle re-creates it — always re-query
+    function setSeedVal(v) { const el = document.getElementById("seed-val"); if (el) el.textContent = v; }
     let editingId = null;
 
     // ============================================================
@@ -1306,6 +1448,16 @@
       return `<span class="stock-badge ok">${n}</span>`;
     }
 
+    // Below 1320px the form stacks under the list (css/admin.css), so "top of page" is the wrong target
+    function revealForm() {
+      const wrap = form.closest(".admin-form-wrap");
+      if (wrap && getComputedStyle(wrap).position === "static") {
+        wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
     function clearForm() {
       form.reset();
       editingId = null;
@@ -1315,14 +1467,14 @@
       titleEl.innerHTML = tA('btn_add_product');
       submitBtn.textContent = tA('btn_add_product');
       cancelBtn.style.display = "none";
-      seedVal.textContent = "0";
+      setSeedVal("0");
       seedSlider.value = 0;
       imgFile.value = "";
       imgUrlInput.value = "";
       currentImages = [];
       renderImageList();
       markClean();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      revealForm();
     }
 
     function loadForEdit(id) {
@@ -1355,12 +1507,12 @@
       renderImageList();
       const seed = Number(p.imgSeed) || 0;
       form.elements.imgSeed.value = seed;
-      seedVal.textContent = seed;
+      setSeedVal(seed);
       titleEl.innerHTML = `<em>${tA('form_title_edit')}</em> · ${escapeHtml(p.name.es)}`;
       submitBtn.textContent = tA('btn_save_changes');
       cancelBtn.style.display = "";
       markClean();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      revealForm();
     }
 
     list.addEventListener("click", async (e) => {
@@ -1414,7 +1566,7 @@
 
     cancelBtn.addEventListener("click", clearForm);
     search.addEventListener("input", renderList);
-    seedSlider.addEventListener("input", e => seedVal.textContent = e.target.value);
+    seedSlider.addEventListener("input", e => setSeedVal(e.target.value));
 
     /* Unsaved-changes indicator in the sticky save bar */
     const unsavedEl = document.getElementById("unsaved-indicator");
@@ -1486,7 +1638,10 @@
     document.addEventListener("vj:adminlangchange", () => {
       fillCategorySelect();
       renderList();
+      setPageTitle();
+      setSeedVal(seedSlider.value);
       const active = document.querySelector(".admin-tab.is-active")?.dataset.tab;
+      if (active === "overview")     renderOverview();
       if (active === "orders")       renderOrders();
       if (active === "applications") renderApps();
       if (active === "questions")    renderQuestions();
@@ -1499,19 +1654,40 @@
        ============================================================ */
     const tabs   = document.querySelectorAll(".admin-tab");
     const panels = document.querySelectorAll(".admin-panel");
-    const panelActions = document.getElementById("admin-panel-actions");
-    tabs.forEach(tab => tab.addEventListener("click", () => {
-      const name = tab.dataset.tab;
-      tabs.forEach(t => t.classList.toggle("is-active", t === tab));
+    const PAGE_TITLE_KEY = {
+      overview: "nav_overview", products: "nav_catalog", orders: "nav_orders",
+      messages: "nav_messages", reviews: "nav_reviews",
+      applications: "nav_applications", questions: "nav_questions"
+    };
+    function activeTab() {
+      return document.querySelector(".admin-tab.is-active")?.dataset.tab || "overview";
+    }
+    function setPageTitle() {
+      const el = document.getElementById("admin-page-title");
+      if (el) el.textContent = tA(PAGE_TITLE_KEY[activeTab()] || activeTab());
+    }
+    // Sidebar items, overview tiles and the global search all land here.
+    // Returns the panel's load promise so callers can act once it has rendered.
+    function activateTab(name) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle("is-active", on);
+        if (on) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+      });
       panels.forEach(p => p.classList.toggle("is-active", p.dataset.panel === name));
-      // Only products panel shows the Reset/Export buttons
-      panelActions.style.display = (name === "products") ? "" : "none";
-      if (name === "applications") loadApps().then(renderApps);
+      setPageTitle();
+      window.__closeAdminDrawer && window.__closeAdminDrawer();
+      window.scrollTo({ top: 0 });
+      let done = Promise.resolve();
+      if (name === "overview")     renderOverview();
+      if (name === "applications") done = loadApps().then(renderApps);
       if (name === "questions")    renderQuestions();
       if (name === "orders")       renderOrders();
-      if (name === "messages")     loadMessages().then(renderMessages);
-      if (name === "reviews")      loadReviewsAdmin().then(renderReviewsAdmin);
-    }));
+      if (name === "messages")     done = loadMessages().then(renderMessages);
+      if (name === "reviews")      done = loadReviewsAdmin().then(renderReviewsAdmin);
+      return done;
+    }
+    tabs.forEach(tab => tab.addEventListener("click", () => activateTab(tab.dataset.tab)));
 
     let ordersCache   = [];   // declared early so updateTabCounts can read it
     let appsCache     = [];   // job applications (Supabase + local backup)
@@ -1528,6 +1704,7 @@
       const revDot = document.getElementById("tab-reviews-dot");
       if (revDot) { revDot.style.display = pendingRev ? "" : "none"; revDot.textContent = pendingRev; }
       updateMessagesBadge();
+      renderOverview();
     }
     updateTabCounts();
     document.addEventListener("vj:applicationschange", updateTabCounts);
@@ -1637,14 +1814,16 @@
     let ordersActiveStatus = "all";
 
     // Built fresh on each render so it follows the admin language toggle.
-    const orderStatusLabels = () => ({
-      pending:   tA('order_pending'),
-      confirmed: tA('order_confirmed'),
-      paid:      tA('order_paid'),
-      shipped:   tA('order_shipped'),
-      delivered: tA('order_delivered'),
-      cancelled: tA('order_cancelled')
-    });
+    function orderStatusLabels() {
+      return {
+        pending:   tA('order_pending'),
+        confirmed: tA('order_confirmed'),
+        paid:      tA('order_paid'),
+        shipped:   tA('order_shipped'),
+        delivered: tA('order_delivered'),
+        cancelled: tA('order_cancelled')
+      };
+    }
 
     ordersFilterEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
       ordersActiveStatus = b.dataset.status;
@@ -2210,6 +2389,188 @@
     document.addEventListener("vj:jobsquestionschange", () => {
       if (document.querySelector('[data-panel="questions"].is-active')) renderQuestions();
     });
+
+    /* ============================================================
+       OVERVIEW (home) — KPI tiles, recent orders, what needs attention.
+       Re-rendered by updateTabCounts() every time a cache changes, so it
+       only reads the caches and the DOM — no fetches of its own.
+       ============================================================ */
+    function renderOverview() {
+      const statsEl = document.getElementById("ov-stats");
+      if (!statsEl) return;
+      const products = VJ_CATALOG.list();
+      const stockOf  = p => Number(p.stock) || 0;
+      const low      = products.filter(p => stockOf(p) > 0 && stockOf(p) <= 2).length;
+      const out      = products.filter(p => stockOf(p) <= 0).length;
+      const pendOrd  = ordersCache.filter(o => o.status === "pending").length;
+      const newMsgs  = messagesCache.filter(m => m.status === "new").length;
+      const pendRev  = reviewsCache.filter(r => r.status === "pending").length;
+      const newApps  = appsCache.filter(a => a.status === "new").length;
+
+      const tiles = [
+        { key: "ov_products",        n: products.length, tab: "products" },
+        { key: "ov_low_stock",       n: low,      tab: "products",     warn: low > 0 },
+        { key: "ov_out_of_stock",    n: out,      tab: "products",     warn: out > 0 },
+        { key: "ov_pending_orders",  n: pendOrd,  tab: "orders",       warn: pendOrd > 0 },
+        { key: "ov_new_messages",    n: newMsgs,  tab: "messages",     warn: newMsgs > 0 },
+        { key: "ov_pending_reviews", n: pendRev,  tab: "reviews",      warn: pendRev > 0 },
+        { key: "ov_new_apps",        n: newApps,  tab: "applications", warn: newApps > 0 },
+      ];
+      statsEl.innerHTML = tiles.map(t => `
+        <button type="button" class="ov-stat${t.warn ? " is-warn" : ""}" data-goto="${t.tab}">
+          <span class="ov-stat-n">${t.n}</span>
+          <span class="ov-stat-l">${tA(t.key)}</span>
+        </button>`).join("");
+
+      const recentEl = document.getElementById("ov-recent-orders");
+      if (recentEl) {
+        const STATUS = orderStatusLabels();
+        const recent = ordersCache.slice(0, 5);
+        recentEl.innerHTML = recent.length ? recent.map(o => {
+          const date = new Date(o.created_at).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+          return `
+          <div class="ov-row">
+            <div class="ov-row-main">
+              <strong>${escapeHtml(o.customer_name || tA('no_name'))}</strong>
+              <span class="muted">${date} · <span class="ref">${escapeHtml(o.id || "")}</span></span>
+            </div>
+            <span class="status-pill status-${escapeHtml(o.status || "")}">${STATUS[o.status] || escapeHtml(o.status || "")}</span>
+            <strong class="ov-row-amt">${fmtPrice(o.total || 0)}</strong>
+          </div>`;
+        }).join("") : `<p class="ov-empty">${tA('ov_none')}</p>`;
+      }
+
+      const attnEl = document.getElementById("ov-attention");
+      if (attnEl) {
+        const attn = [
+          { n: pendOrd, key: "ov_pending_orders",  tab: "orders" },
+          { n: newMsgs, key: "ov_new_messages",    tab: "messages" },
+          { n: pendRev, key: "ov_pending_reviews", tab: "reviews" },
+          { n: newApps, key: "ov_new_apps",        tab: "applications" },
+          { n: out,     key: "ov_out_of_stock",    tab: "products" },
+        ].filter(a => a.n > 0);
+        attnEl.innerHTML = attn.length ? attn.map(a => `
+          <button type="button" class="ov-row ov-row--btn" data-goto="${a.tab}">
+            <span class="ov-dot"></span>
+            <span class="ov-row-main"><strong>${a.n}</strong> ${tA(a.key).toLowerCase()}</span>
+            <span class="ov-arrow">→</span>
+          </button>`).join("") : `<p class="ov-empty ov-clear">${tA('ov_all_clear')}</p>`;
+      }
+    }
+
+    // Tiles, "view all" and the attention rows jump to their panel; quick actions do their thing
+    document.querySelector('[data-panel="overview"]')?.addEventListener("click", (e) => {
+      const go = e.target.closest("[data-goto]");
+      if (go) { activateTab(go.dataset.goto); return; }
+      const act = e.target.closest("[data-ov-act]")?.dataset.ovAct;
+      if (act === "add") {
+        activateTab("products");
+        clearForm();
+        form.elements.name_es?.focus({ preventScroll: true });
+      }
+      if (act === "publish") pubBtn?.click();
+    });
+
+    /* ============================================================
+       GLOBAL SEARCH (top bar) — products, orders, messages, applications.
+       Picking a result opens the record in its panel.
+       ============================================================ */
+    const gsInput = document.getElementById("admin-global-search");
+    const gsBox   = document.getElementById("admin-gsearch-results");
+    const GS_MAX  = 5;
+
+    function gsHide() {
+      if (gsBox) { gsBox.hidden = true; gsBox.innerHTML = ""; }
+      gsInput?.setAttribute("aria-expanded", "false");
+    }
+
+    function gsRender(term) {
+      if (!gsBox) return;
+      const q = term.trim().toLowerCase();
+      gsInput?.setAttribute("aria-expanded", "true");
+      if (!q) { gsBox.innerHTML = `<p class="gs-hint">${tA('global_search_hint')}</p>`; gsBox.hidden = false; return; }
+      const has = (...xs) => xs.join(" ").toLowerCase().includes(q);
+      const groups = [];
+      const prods = VJ_CATALOG.list().filter(p => has(p.name?.es || "", p.name?.en || "", p.name?.va || "", p.id)).slice(0, GS_MAX);
+      if (prods.length) groups.push({ label: tA('tab_products'), items: prods.map(p => ({
+        type: "product", id: p.id, title: p.name.es, meta: `${p.id} · ${fmtPrice(p.price)}` })) });
+      const ords = ordersCache.filter(o => has(o.customer_name || "", o.customer_email || "", o.customer_phone || "", o.id || "")).slice(0, GS_MAX);
+      if (ords.length) groups.push({ label: tA('tab_orders'), items: ords.map(o => ({
+        type: "order", id: o.id, title: o.customer_name || tA('no_name'), meta: `${o.id} · ${fmtPrice(o.total || 0)}` })) });
+      const msgs = messagesCache.filter(m => has(m.name || "", m.email || "", m.message || "", m.id || "")).slice(0, GS_MAX);
+      if (msgs.length) groups.push({ label: tA('tab_messages'), items: msgs.map(m => ({
+        type: "message", id: m.id, title: m.name || tA('no_name'), meta: m.email || "" })) });
+      const apps = appsCache.filter(a => has(a.name || "", a.email || "", a.position || "", a.id || "")).slice(0, GS_MAX);
+      if (apps.length) groups.push({ label: tA('tab_applications'), items: apps.map(a => ({
+        type: "application", id: a.id, title: a.name || tA('no_name'), meta: a.position || a.email || "" })) });
+
+      gsBox.innerHTML = groups.length ? groups.map(g => `
+        <div class="gs-group">
+          <div class="gs-group-label">${escapeHtml(g.label)}</div>
+          ${g.items.map(it => `
+            <button type="button" class="gs-item" data-type="${it.type}" data-id="${escapeHtml(String(it.id))}">
+              <span class="gs-title">${escapeHtml(it.title)}</span>
+              <span class="gs-meta">${escapeHtml(it.meta)}</span>
+            </button>`).join("")}
+        </div>`).join("") : `<p class="gs-hint">${tA('no_results')}</p>`;
+      gsBox.hidden = false;
+    }
+
+    function flashCard(selector) {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("is-flash");
+      setTimeout(() => el.classList.remove("is-flash"), 1800);
+    }
+    const cssId = id => (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, "\\$&");
+
+    function gsOpen(type, id) {
+      gsHide();
+      if (gsInput) gsInput.value = "";
+      if (type === "product") {
+        activateTab("products");
+        loadForEdit(id);
+        flashCard(`.admin-row[data-id="${cssId(id)}"]`);
+      }
+      if (type === "order") {
+        activateTab("orders");
+        ordersFilterEl.querySelector('[data-status="all"]')?.click();   // drop any status filter
+        if (ordersSearchEl) { ordersSearchEl.value = id; renderOrders(); }
+      }
+      if (type === "message") {
+        messagesFilterEl.querySelector('[data-status="all"]')?.click();   // drop any status filter
+        activateTab("messages").then(() => flashCard(`[data-panel="messages"] .app-card[data-id="${cssId(id)}"]`));
+      }
+      if (type === "application") {
+        appsFilter.querySelector('[data-status="all"]')?.click();          // drop any status filter
+        activateTab("applications").then(() => flashCard(`[data-panel="applications"] .app-card[data-id="${cssId(id)}"]`));
+      }
+    }
+
+    if (gsInput && gsBox) {
+      gsInput.addEventListener("input", () => gsRender(gsInput.value));
+      gsInput.addEventListener("focus", () => gsRender(gsInput.value));
+      gsInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") { gsHide(); gsInput.blur(); }
+        if (e.key === "Enter")  { gsBox.querySelector(".gs-item")?.click(); }
+      });
+      gsBox.addEventListener("click", (e) => {
+        const item = e.target.closest(".gs-item");
+        if (item) gsOpen(item.dataset.type, item.dataset.id);
+      });
+      gsBox.addEventListener("keydown", (e) => { if (e.key === "Escape") { gsHide(); gsInput.focus(); } });
+      document.addEventListener("click", (e) => { if (!e.target.closest("#admin-gsearch")) gsHide(); });
+      // "/" focuses the search from anywhere, like most admin dashboards
+      document.addEventListener("keydown", (e) => {
+        const tag = document.activeElement?.tagName || "";
+        if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(tag)) { e.preventDefault(); gsInput.focus(); }
+      });
+    }
+
+    // First paint of the home panel
+    setPageTitle();
+    renderOverview();
 
   })();
   }; /* end window.__adminBoot */

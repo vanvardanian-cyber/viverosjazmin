@@ -3110,8 +3110,11 @@ body.nav-locked .cookie-banner { display: none; }
   .hero-grid { gap: 24px; }
 }
 
-/* --- Prevent horizontal scroll on every page --- */
-html, body { overflow-x: hidden; }
+/* --- Prevent horizontal scroll on every page ---
+   Only on <body>: its overflow propagates to the viewport. Setting it on <html>
+   as well turned <body> into its own scroll container, which silently killed
+   every position: sticky on the site (header, admin sidebar/form). */
+body { overflow-x: hidden; }
 img, svg, video { max-width: 100%; height: auto; }
 
 /* --- Better focus rings for keyboard users (accessibility) --- */
@@ -3410,7 +3413,7 @@ select:focus-visible { outline-offset: 0; }
 }
 @media (max-width: 980px) {
   .story-editorial { grid-template-columns: 1fr; min-height: 0; }
-  .story-editorial-photo { min-height: 380px; aspect-ratio: 4/3; }
+  .story-editorial-photo { height: 380px; min-height: 0; aspect-ratio: auto; }
   .story-editorial-text { padding: 56px 24px; max-width: 720px; margin: 0 auto; }
 }
 
