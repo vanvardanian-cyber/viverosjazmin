@@ -222,27 +222,61 @@ body.admin-locked .admin-page {
 .ov-empty { margin: 0; padding: 18px; font-size: .86rem; color: var(--ink-soft); }
 .ov-clear { color: #466A2E; }
 
-/* ---------- Existing panels inside the shell ---------- */
-/* The sticky product form used to hang below the public header (--header-h);
-   the admin top bar is the only thing above it now. */
+/* ---------- Catalogue: list view / form view ---------- */
+.admin-layout { display: block; }
+#products-list-view[hidden], #products-form-view[hidden] { display: none !important; }
+/* The form is its own page now (no more sticky side column) */
 .admin-form-wrap {
-  top: calc(var(--admin-topbar-h) + 20px);
-  max-height: calc(100vh - var(--admin-topbar-h) - 40px);
+  position: static; max-height: none; overflow: visible;
+  max-width: 860px; margin: 0 auto; padding: 24px 32px 28px;
 }
+.form-back {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px -4px; padding: 6px 8px;
+  border: 0; border-radius: 6px; background: transparent; cursor: pointer;
+  font: inherit; font-size: .82rem; font-weight: 600; color: var(--blue-ink);
+}
+.form-back:hover { background: rgba(255,255,255,.7); }
+
+/* ES | VAL tabs on name/description */
+.lang-tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid rgba(31,42,46,.12); }
+.lang-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent;
+  background: transparent; cursor: pointer; font: inherit; font-size: .84rem; font-weight: 500; color: var(--ink-soft);
+}
+.lang-tab:hover { color: var(--ink); }
+.lang-tab.is-active { color: var(--ink); font-weight: 600; border-bottom-color: var(--blue-ink); }
+.lang-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-tag); }
+.lang-dot[hidden] { display: none; }
+.lang-pane { display: none; }
+.lang-pane.is-active { display: block; }
+
+/* Internal ID: system-assigned, visibly locked */
+.locked-field { position: relative; }
+.locked-field input:disabled {
+  background: #ECEFF1; color: var(--ink-soft); cursor: not-allowed; padding-right: 38px;
+  border-color: var(--line); -webkit-text-fill-color: var(--ink-soft); opacity: 1;
+}
+.locked-field .lock-ico {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--ink-soft); pointer-events: none;
+}
+
+/* Product rows: readable on a bright tablet, thumbnails never cropped */
+.admin-row .meta { font-size: .84rem; color: #44535A; margin-top: 3px; }
+.admin-row .thumb { background: #fff; }
+.admin-row .thumb img { object-fit: contain; }
 @media (min-width: 721px) { .admin-form-wrap .img-list { grid-template-columns: repeat(4, 1fr); } }
 .form-savebar .unsaved-dot[hidden] { display: none; }
 /* A record opened from the global search gets a short highlight ring */
 .app-card.is-flash, .admin-row.is-flash { box-shadow: 0 0 0 3px var(--blue); transition: box-shadow .3s; }
 
 /* The list/form split loses 236px to the sidebar, so it stacks earlier than before (1080px) */
-@media (max-width: 1320px) {
-  .admin-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  .admin-form-wrap { position: static; max-height: none; overflow: visible; }
-}
 @media (max-width: 1100px) { .ov-grid { grid-template-columns: 1fr; } }
 
 /* ---------- Mobile: sidebar becomes an off-canvas drawer ---------- */
 @media (max-width: 900px) {
+  .admin-form-wrap { padding: 18px 16px 22px; }
   .admin-shell { grid-template-columns: minmax(0, 1fr); }
   .admin-side {
     position: fixed; top: 0; left: 0; bottom: 0; height: 100dvh; z-index: 60;
@@ -266,6 +300,8 @@ body.admin-locked .admin-page {
 .admin-side-logout { display: none; border: 0; background: transparent; padding: 0; cursor: pointer; font: inherit; font-size: .8rem; font-weight: 600; color: var(--ink-soft); }
 @media (max-width: 600px) {
   #admin-panel-actions { display: none; }
+  .form-savebar { flex-wrap: wrap; }
+  .form-savebar .unsaved-dot { flex: 1 0 100%; margin-right: 0; }
   .admin-side-logout { display: inline; }
   .admin-lang-btn { padding: 7px 9px; }
 }

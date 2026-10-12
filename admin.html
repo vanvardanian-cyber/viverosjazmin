@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=bdb399f6">
-  <link rel="stylesheet" href="css/admin.css?v=809cdf9c">
+  <link rel="stylesheet" href="css/admin.css?v=5af3cd56">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
 </head>
 <body class="admin-body admin-locked">
@@ -165,13 +165,14 @@
 
     <div class="admin-layout">
 
-      <!-- LEFT: product list -->
-      <div>
+      <!-- LIST VIEW (default) -->
+      <div id="products-list-view">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:10px; flex-wrap:wrap;">
           <h4 style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin:0;">
             <span data-t="catalog_label">Catálogo</span> · <span id="count-total">0</span> <span data-t="catalog_products_word">productos</span>
           </h4>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button type="button" id="btn-new-product" class="btn btn-primary" style="padding:8px 14px; font-size:.7rem; white-space:nowrap;" data-t="btn_new_product">+ Añadir producto</button>
             <button type="button" id="publish-catalog-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Genera el archivo que leen los visitantes, para que la web pública no consulte la base de datos en cada visita" data-t="publish_catalog" data-t-attr="title:publish_catalog_title">⬆️ Publicar catálogo</button>
             <button type="button" id="optimize-imgs-btn" class="btn btn-light" style="padding:7px 12px; font-size:.7rem; white-space:nowrap;" title="Reduce el peso de las fotos guardadas para que la web cargue más ligera" data-t="optimize_images" data-t-attr="title:optimize_images_title">⚡ Optimizar imágenes</button>
             <input type="search" id="admin-search" class="search-box" placeholder="Buscar…" data-t-attr="placeholder:search_placeholder" style="max-width:200px; padding-top:8px; padding-bottom:8px;">
@@ -185,9 +186,10 @@
         <div class="admin-list" id="admin-list"></div>
       </div>
 
-      <!-- RIGHT: form -->
-      <aside class="admin-form-wrap">
-        <h3 id="form-title" data-t="btn_add_product">Añadir producto</h3>
+      <!-- FORM VIEW (opened by "Add product" / edit / duplicate) -->
+      <aside class="admin-form-wrap" id="products-form-view" hidden>
+        <button type="button" class="form-back" id="btn-form-back">← <span data-t="btn_back_catalog">Volver al catálogo</span></button>
+        <h3 id="form-title">Añadir producto</h3>
         <form id="product-form" autocomplete="off">
           <input type="hidden" name="id">
           <input type="hidden" name="originalId">
@@ -201,27 +203,42 @@
             </div>
             <div class="form-field">
               <label data-t="f_internal_id">ID interno</label>
-              <input type="text" name="idDisplay" id="f-idDisplay" disabled placeholder="se genera al guardar" data-t-attr="placeholder:f_internal_id_ph">
+              <div class="locked-field" title="Lo asigna el sistema" data-t-attr="title:f_internal_id_title">
+                <input type="text" name="idDisplay" id="f-idDisplay" disabled placeholder="Se genera automáticamente" data-t-attr="placeholder:f_internal_id_ph">
+                <svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </div>
             </div>
 
             <div class="form-field full">
-              <label data-t-html="f_name_es">Nombre <span class="lang-tag">ES</span></label>
-              <input type="text" name="name_es" required maxlength="80">
-            </div>
-            <div class="form-field full">
-              <label data-t-html="f_name_va">Nombre <span class="lang-tag">VAL</span> <span class="opt-tag" data-t="opt_tag">opcional</span></label>
-              <input type="text" name="name_va" maxlength="80">
-              <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_va_help">Si lo dejas vacío, se muestra el texto en español.</small>
-            </div>
-
-            <div class="form-field full">
-              <label data-t-html="f_desc_es">Descripción <span class="lang-tag">ES</span></label>
-              <textarea name="desc_es" required maxlength="280"></textarea>
-            </div>
-            <div class="form-field full">
-              <label data-t-html="f_desc_va">Descripción <span class="lang-tag">VAL</span> <span class="opt-tag" data-t="opt_tag">opcional</span></label>
-              <textarea name="desc_va" maxlength="280"></textarea>
-              <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_va_help">Si lo dejas vacío, se muestra el texto en español.</small>
+              <div class="lang-tabs" role="tablist">
+                <button type="button" class="lang-tab is-active" data-lang="es" role="tab" aria-selected="true" data-t="lang_tab_es">Castellano</button>
+                <button type="button" class="lang-tab" data-lang="va" role="tab" aria-selected="false"><span data-t="lang_tab_va">Valencià</span> <span class="lang-dot" id="va-dot" hidden></span></button>
+              </div>
+              <div class="lang-pane is-active" data-lang="es">
+                <div class="form-grid">
+                  <div class="form-field full">
+                    <label data-t="f_name">Nombre</label>
+                    <input type="text" name="name_es" required maxlength="80">
+                  </div>
+                  <div class="form-field full">
+                    <label data-t="f_desc">Descripción</label>
+                    <textarea name="desc_es" required maxlength="280"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="lang-pane" data-lang="va">
+                <div class="form-grid">
+                  <div class="form-field full">
+                    <label data-t-html="f_name_opt">Nombre <span class="opt-tag">opcional</span></label>
+                    <input type="text" name="name_va" maxlength="80">
+                  </div>
+                  <div class="form-field full">
+                    <label data-t-html="f_desc_opt">Descripción <span class="opt-tag">opcional</span></label>
+                    <textarea name="desc_va" maxlength="280"></textarea>
+                    <small style="color:var(--ink-soft);font-size:.72rem;" data-t="f_va_help">Si lo dejas vacío, se muestra el texto en español.</small>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           </div>
@@ -332,8 +349,8 @@
 
           <div class="actions form-savebar">
             <span class="unsaved-dot" id="unsaved-indicator" hidden><span class="dot"></span><span data-t="unsaved_changes">Cambios sin guardar</span></span>
-            <button type="button" class="btn btn-light" id="btn-cancel" style="display:none;" data-t="btn_cancel">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit" data-t="btn_add_product">Añadir producto</button>
+            <button type="button" class="btn btn-light" id="btn-cancel" data-t="btn_cancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-arrow" id="btn-submit">Añadir producto</button>
           </div>
         </form>
       </aside>
@@ -547,7 +564,17 @@
       // product form
       f_category: "Categoría",
       f_internal_id: "ID interno",
-      f_internal_id_ph: "se genera al guardar",
+      f_internal_id_ph: "Se genera automáticamente",
+      f_internal_id_title: "Lo asigna el sistema al guardar — no se puede editar",
+      f_name: "Nombre",
+      f_desc: "Descripción",
+      f_name_opt: "Nombre <span class=\"opt-tag\">opcional</span>",
+      f_desc_opt: "Descripción <span class=\"opt-tag\">opcional</span>",
+      lang_tab_es: "Castellano",
+      lang_tab_va: "Valencià",
+      btn_new_product: "+ Añadir producto",
+      btn_back_catalog: "Volver al catálogo",
+      confirm_discard: "Tienes cambios sin guardar. ¿Descartarlos?",
       f_name_es: "Nombre <span class=\"lang-tag\">ES</span>",
       f_name_va: "Nombre <span class=\"lang-tag\">VAL</span> <span class=\"opt-tag\">opcional</span>",
       f_desc_es: "Descripción <span class=\"lang-tag\">ES</span>",
@@ -772,7 +799,17 @@
       // product form
       f_category: "Category",
       f_internal_id: "Internal ID",
-      f_internal_id_ph: "generated on save",
+      f_internal_id_ph: "Generated automatically",
+      f_internal_id_title: "Assigned by the system on save — not editable",
+      f_name: "Name",
+      f_desc: "Description",
+      f_name_opt: "Name <span class=\"opt-tag\">optional</span>",
+      f_desc_opt: "Description <span class=\"opt-tag\">optional</span>",
+      lang_tab_es: "Spanish",
+      lang_tab_va: "Valencian",
+      btn_new_product: "+ Add product",
+      btn_back_catalog: "Back to catalogue",
+      confirm_discard: "You have unsaved changes. Discard them?",
       f_name_es: "Name <span class=\"lang-tag\">ES</span>",
       f_name_va: "Name <span class=\"lang-tag\">VAL</span> <span class=\"opt-tag\">optional</span>",
       f_desc_es: "Description <span class=\"lang-tag\">ES</span>",
@@ -1448,15 +1485,65 @@
       return `<span class="stock-badge ok">${n}</span>`;
     }
 
-    // Below 1320px the form stacks under the list (css/admin.css), so "top of page" is the wrong target
-    function revealForm() {
-      const wrap = form.closest(".admin-form-wrap");
-      if (wrap && getComputedStyle(wrap).position === "static") {
-        wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+    /* The catalogue is a list; the form is a separate view that opens on
+       "Add product" / edit / duplicate and closes on save, cancel or back. */
+    const listView = document.getElementById("products-list-view");
+    const formView = document.getElementById("products-form-view");
+    function openFormView() {
+      listView.hidden = true; formView.hidden = false;
+      updateVaDot();
+      window.scrollTo({ top: 0 });
+    }
+    function closeFormView() {
+      formView.hidden = true; listView.hidden = false;
+      window.scrollTo({ top: 0 });
+    }
+    function isDirty() { return !!(unsavedEl && !unsavedEl.hidden); }
+    // Title + submit label follow the form mode, so the language toggle can redraw them
+    let formMode = "add";   // add | edit | dup
+    function applyFormChrome() {
+      if (formMode === "edit" && editingId) {
+        const p = VJ_CATALOG.list().find(x => x.id === editingId);
+        titleEl.innerHTML = `<em>${tA('form_title_edit')}</em> · ${escapeHtml(p?.name.es || editingId)}`;
+        submitBtn.textContent = tA('btn_save_changes');
+      } else if (formMode === "dup") {
+        titleEl.innerHTML = tA('form_title_copy');
+        submitBtn.textContent = tA('btn_add_product');
       } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        titleEl.innerHTML = tA('btn_add_product');
+        submitBtn.textContent = tA('btn_add_product');
       }
     }
+    function leaveForm() {
+      if (isDirty() && !confirm(tA('confirm_discard'))) return;
+      clearForm();
+      closeFormView();
+    }
+
+    // ES | VAL tabs on name/description
+    const langTabs = form.querySelectorAll(".lang-tab");
+    function setLangTab(l) {
+      langTabs.forEach(b => {
+        const on = b.dataset.lang === l;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", String(on));
+      });
+      form.querySelectorAll(".lang-pane").forEach(p => p.classList.toggle("is-active", p.dataset.lang === l));
+    }
+    langTabs.forEach(b => b.addEventListener("click", () => setLangTab(b.dataset.lang)));
+    // Green dot on the VAL tab when it has its own text
+    function updateVaDot() {
+      const dot = document.getElementById("va-dot");
+      if (dot) dot.hidden = !(form.elements.name_va.value.trim() || form.elements.desc_va.value.trim());
+    }
+    form.elements.name_va.addEventListener("input", updateVaDot);
+    form.elements.desc_va.addEventListener("input", updateVaDot);
+    // Native validation can't focus a required field inside a hidden pane — switch to its tab first
+    submitBtn.addEventListener("click", () => {
+      if (form.checkValidity()) return;
+      const pane = form.querySelector(":invalid")?.closest(".lang-pane");
+      if (pane) setLangTab(pane.dataset.lang);
+    });
 
     function clearForm() {
       form.reset();
@@ -1464,9 +1551,9 @@
       form.elements.id.value = "";
       form.elements.originalId.value = "";
       document.getElementById("f-idDisplay").value = "";
-      titleEl.innerHTML = tA('btn_add_product');
-      submitBtn.textContent = tA('btn_add_product');
-      cancelBtn.style.display = "none";
+      formMode = "add";
+      applyFormChrome();
+      setLangTab("es");
       setSeedVal("0");
       seedSlider.value = 0;
       imgFile.value = "";
@@ -1474,7 +1561,6 @@
       currentImages = [];
       renderImageList();
       markClean();
-      revealForm();
     }
 
     function loadForEdit(id) {
@@ -1508,11 +1594,11 @@
       const seed = Number(p.imgSeed) || 0;
       form.elements.imgSeed.value = seed;
       setSeedVal(seed);
-      titleEl.innerHTML = `<em>${tA('form_title_edit')}</em> · ${escapeHtml(p.name.es)}`;
-      submitBtn.textContent = tA('btn_save_changes');
-      cancelBtn.style.display = "";
+      formMode = "edit";
+      applyFormChrome();
+      setLangTab("es");
       markClean();
-      revealForm();
+      openFormView();
     }
 
     list.addEventListener("click", async (e) => {
@@ -1546,9 +1632,8 @@
         document.getElementById("f-idDisplay").value = "";
         form.elements.name_es.value = p.name.es + " (copia)";
         if (p.name.va) form.elements.name_va.value = p.name.va + " (còpia)";
-        titleEl.innerHTML = tA('form_title_copy');
-        submitBtn.textContent = tA('btn_add_product');
-        cancelBtn.style.display = "";
+        formMode = "dup";
+        applyFormChrome();
         markDirty();
       }
       if (btn.dataset.act === "del") {
@@ -1556,7 +1641,7 @@
         try {
           await VJ_CATALOG.removeOne(id);
           renderList();
-          if (editingId === id) clearForm();
+          if (editingId === id) { clearForm(); closeFormView(); }
           showToast(tA('toast_deleted'));
         } catch (err) {
           alert("No se pudo eliminar: " + (err.message || err));
@@ -1564,7 +1649,13 @@
       }
     });
 
-    cancelBtn.addEventListener("click", clearForm);
+    cancelBtn.addEventListener("click", leaveForm);
+    document.getElementById("btn-form-back").addEventListener("click", leaveForm);
+    document.getElementById("btn-new-product").addEventListener("click", () => {
+      clearForm();
+      openFormView();
+      form.elements.name_es.focus({ preventScroll: true });
+    });
     search.addEventListener("input", renderList);
     seedSlider.addEventListener("input", e => setSeedVal(e.target.value));
 
@@ -1608,11 +1699,11 @@
       try {
         await VJ_CATALOG.saveOne(product);
         renderList();
-        clearForm();
-        submitBtn.textContent = "✓ Guardado";
+        clearForm();            // also resets the submit label
+        closeFormView();
+        submitBtn.disabled = false;
         showToast(tA('toast_saved'));
         markClean();
-        setTimeout(() => { submitBtn.textContent = original; submitBtn.disabled = false; }, 1200);
       } catch (err) {
         submitBtn.disabled = false; submitBtn.textContent = original;
         alert("No se pudo guardar: " + (err.message || err));
@@ -1640,6 +1731,7 @@
       renderList();
       setPageTitle();
       setSeedVal(seedSlider.value);
+      applyFormChrome();
       const active = document.querySelector(".admin-tab.is-active")?.dataset.tab;
       if (active === "overview")     renderOverview();
       if (active === "orders")       renderOrders();
@@ -2464,9 +2556,11 @@
       if (go) { activateTab(go.dataset.goto); return; }
       const act = e.target.closest("[data-ov-act]")?.dataset.ovAct;
       if (act === "add") {
+        if (isDirty() && !confirm(tA('confirm_discard'))) return;
         activateTab("products");
         clearForm();
-        form.elements.name_es?.focus({ preventScroll: true });
+        openFormView();
+        form.elements.name_es.focus({ preventScroll: true });
       }
       if (act === "publish") pubBtn?.click();
     });
@@ -2529,9 +2623,9 @@
       gsHide();
       if (gsInput) gsInput.value = "";
       if (type === "product") {
+        if (isDirty() && !confirm(tA('confirm_discard'))) return;
         activateTab("products");
         loadForEdit(id);
-        flashCard(`.admin-row[data-id="${cssId(id)}"]`);
       }
       if (type === "order") {
         activateTab("orders");
