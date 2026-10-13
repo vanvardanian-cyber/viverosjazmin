@@ -1440,7 +1440,8 @@
               <h4 data-i18n="footer.find"></h4>
               <ul>
                 <li>Calle Río Anna 135<br>12006 Castelló de la Plana</li>
-                <li><a href="tel:+34${SITE_INFO.phone.replace(/\\s+/g,'')}">${SITE_INFO.phone}</a></li>
+                <li><a href="tel:${SITE_INFO.phoneIntl}">${SITE_INFO.phone}</a></li>
+                <li><a href="tel:${SITE_INFO.phone2Intl}">${SITE_INFO.phone2}</a></li>
                 <li><a href="mailto:${SITE_INFO.email}">${SITE_INFO.email}</a></li>
                 <li class="mt-16" style="font-size:.82rem;line-height:1.6;opacity:.75;">${hours}</li>
               </ul>

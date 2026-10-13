@@ -10,6 +10,8 @@ const SITE_INFO = {
   address: "Calle Río Anna 135, 12006 Castelló de la Plana",
   phone: "636 54 35 66",
   phoneIntl: "+34636543566",
+  phone2: "653 68 98 49",
+  phone2Intl: "+34653689849",
   email: "jazminfloristeria@hotmail.com",
   hours: {
     es: "Lunes a sábado: 8:30–13:30 y 16:00–20:00 · Domingo y festivos: 9:00–13:00",
