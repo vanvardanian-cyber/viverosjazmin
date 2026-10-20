@@ -2707,6 +2707,23 @@ body.vj-no-scroll { overflow: hidden; }
   .job-card-foot .btn { width: 100%; justify-content: center; }
 }
 
+/* Jobs: "form under maintenance" dialog */
+.jobs-paused {
+  width: min(440px, calc(100vw - 32px)); padding: 32px 28px 26px;
+  border: 0; border-radius: 16px; background: var(--paper); color: var(--ink);
+  box-shadow: var(--shadow-lg); text-align: center;
+}
+.jobs-paused::backdrop { background: rgba(31,42,46,.45); }
+.jobs-paused-icon {
+  width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--blue-2); color: var(--blue-ink);
+}
+.jobs-paused h2 { font-style: italic; font-size: 1.6rem; margin: 0 0 10px; }
+.jobs-paused p { margin: 0 0 10px; line-height: 1.6; }
+.jobs-paused .muted { font-size: .9rem; }
+.jobs-paused form { margin-top: 18px; }
+
 /* ---------- Stepper (Jobs form) ---------- */
 .stepper {
   display: flex; align-items: center; justify-content: center; gap: 12px;
