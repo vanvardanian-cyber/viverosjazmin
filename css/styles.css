@@ -2707,6 +2707,22 @@ body.vj-no-scroll { overflow: hidden; }
   .job-card-foot .btn { width: 100%; justify-content: center; }
 }
 
+/* Jobs: data protection first layer */
+.jobs-privacy-note { flex-basis: 100%; margin: 4px 0 0; font-size: .8rem; line-height: 1.55; color: var(--ink-soft); }
+.jobs-privacy { margin-top: 22px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--blue-3); }
+.jobs-privacy h3 { margin: 0 0 10px; font-family: 'Inter', sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--blue-deep); }
+.jobs-privacy-list { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0 0 10px; font-size: .82rem; line-height: 1.5; }
+.jobs-privacy-list dt { font-weight: 600; color: var(--ink); }
+.jobs-privacy-list dd { margin: 0; color: var(--ink-soft); }
+.jobs-privacy-more { margin: 0 0 12px; font-size: .8rem; color: var(--ink-soft); }
+.jobs-privacy-check { font-size: .86rem; align-items: flex-start; }
+.jobs-privacy-check input { margin-top: 4px; flex-shrink: 0; }
+.jobs-privacy-spont { margin: 2px 0 0 26px; font-size: .78rem; color: #9A6A0B; }
+@media (max-width: 600px) {
+  .jobs-privacy-list { grid-template-columns: 1fr; gap: 2px; }
+  .jobs-privacy-list dd { margin-bottom: 6px; }
+}
+
 /* Jobs: "form under maintenance" dialog */
 .jobs-paused {
   width: min(440px, calc(100vw - 32px)); padding: 32px 28px 26px;
@@ -4173,4 +4189,34 @@ select:focus-visible { outline-offset: 0; }
 @media (max-width: 560px) {
   .shopcat { padding: 44px 0 8px; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+
+/* ---------- Wishlist mode (SITE_INFO.onlineOrders = false) ---------- */
+.vj-wishlist-mode .cart-btn,
+.vj-wishlist-mode #add-detail,
+.vj-wishlist-mode .qty-row,
+.vj-wishlist-mode .account-menu a[hidden] { display: none !important; }
+.product-add.product-fav::after { content: none; }
+.product-add.product-fav.is-liked { color: #c93b58; }
+.detail-like--main.is-liked { background: #fff; color: #c93b58; border-color: #c93b58; }
+.detail-like--main:hover { color: #fff; }
+.detail-like--main.is-liked:hover { color: #c93b58; }
+.favs-shop {
+  display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: center; justify-content: space-between;
+  margin-bottom: 28px; padding: 22px 26px; border-radius: var(--r-md);
+  background: var(--blue-3); border: 1px solid var(--line);
+}
+.favs-shop-text { flex: 1 1 320px; }
+.favs-shop h2 { margin: 0 0 6px; font-style: italic; font-size: 1.5rem; }
+.favs-shop p { margin: 0 0 6px; color: var(--ink-soft); font-size: .92rem; }
+.favs-shop-meta { font-size: .82rem !important; }
+.favs-shop-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.favs-shop-total { display: flex; align-items: baseline; gap: 10px; }
+.favs-shop-total span { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+.favs-shop-total strong { font-size: 1.5rem; font-weight: 600; color: var(--blue-ink); }
+.favs-shop-side small { color: var(--ink-soft); font-size: .76rem; }
+@media (max-width: 600px) { .favs-shop-side { align-items: flex-start; } }
+@media print {
+  .promobar, .header, .footer, .cookie-banner, .like-btn, .product-add, .favs-print, .account-side { display: none !important; }
+  .favs-shop { border: 0; background: none; padding: 0; }
 }

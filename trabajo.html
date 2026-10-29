@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=acb30688">
+  <link rel="stylesheet" href="css/styles.css?v=c79ae5dc">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5D8E8'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Playfair Display, Georgia, serif' font-style='italic' font-size='56' font-weight='500' fill='%231F2A2E'%3EJ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -76,6 +76,7 @@
         <footer class="job-card-foot">
           <button type="button" id="job-apply-btn" class="btn btn-primary btn-arrow" data-i18n="jobs.apply.cta">Aplicar a esta plaza</button>
           <button type="button" id="job-apply-spont" class="btn btn-ghost btn-arrow" data-i18n="jobs.apply.spont">O envía una candidatura espontánea</button>
+          <p class="jobs-privacy-note" data-i18n-html="jobs.privacy.landing">Usamos tu candidatura solo para el proceso de selección y la eliminamos al terminar, salvo que nos pidas guardarla en la bolsa de empleo (máx. 12 meses). <a href="privacidad.html#candidaturas">Protección de datos</a></p>
         </footer>
       </article>
 
@@ -202,9 +203,20 @@
             <textarea name="message" data-i18n-attr="placeholder:jobs.step3.optionalPh" placeholder="Cualquier cosa que quieras compartir con nosotros…"></textarea>
           </div>
 
-          <p class="muted" style="font-size:.78rem; margin-top: 12px;" data-i18n-html="jobs.privacyLine">
-            Al enviar aceptas nuestra <a href="privacidad.html">Política de Privacidad</a>.
-          </p>
+          <!-- First-layer data protection information (RGPD art. 13), shown before sending -->
+          <section class="jobs-privacy" aria-labelledby="jobs-privacy-title">
+            <h3 id="jobs-privacy-title" data-i18n="jobs.privacy.title">Protección de datos · información básica</h3>
+            <div data-i18n-html="jobs.privacy.box"></div>
+            <label class="checkbox-line jobs-privacy-check">
+              <input type="checkbox" name="privacyAck" required>
+              <span data-i18n="jobs.privacy.ack">He leído la información sobre protección de datos.</span>
+            </label>
+            <label class="checkbox-line jobs-privacy-check">
+              <input type="checkbox" name="talentPool" id="talent-pool">
+              <span data-i18n="jobs.privacy.pool">Quiero que guardéis mi candidatura en la bolsa de empleo de Jazmín para futuras vacantes, durante un máximo de 12 meses. Puedo retirar este consentimiento cuando quiera.</span>
+            </label>
+            <p class="jobs-privacy-spont" id="talent-pool-spont" hidden data-i18n="jobs.privacy.poolSpont">Como no hay una plaza concreta abierta, para guardar una candidatura espontánea necesitamos tu consentimiento para la bolsa de empleo.</p>
+          </section>
         </fieldset>
 
         <div class="job-actions mt-24">
@@ -233,10 +245,10 @@
 </div>
 
 <div data-vj-footer></div>
-<script src="js/data.js?v=d223ecab"></script>
+<script src="js/data.js?v=9c07e782"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=e654d638"></script>
-<script src="js/app.js?v=683815e5"></script>
+<script src="js/app.js?v=70a149df"></script>
 <script>
   (function () {
     const landing     = document.getElementById("job-landing");
@@ -248,7 +260,7 @@
 
     // While applications are paused the form is never opened, so no CV or
     // personal data can be entered (see SITE_INFO.jobApplicationsOpen).
-    const appsOpen = !!(window.SITE_INFO && SITE_INFO.jobApplicationsOpen);
+    const appsOpen = typeof SITE_INFO !== "undefined" && SITE_INFO.jobApplicationsOpen === true;
     const pausedDlg = document.getElementById("jobs-paused");
     function showPaused() {
       if (pausedDlg && typeof pausedDlg.showModal === "function") pausedDlg.showModal();
@@ -256,8 +268,20 @@
     }
     if (pausedDlg) pausedDlg.addEventListener("click", (e) => { if (e.target === pausedDlg) pausedDlg.close(); });
 
+    // A spontaneous application has no open process behind it, so it can only
+    // be kept with the candidate's consent to the talent pool (AEPD guidance).
+    let isSpont = false;
+    function setSpont(v) {
+      isSpont = v;
+      const pool = document.getElementById("talent-pool");
+      if (pool) pool.required = v;
+      const hint = document.getElementById("talent-pool-spont");
+      if (hint) hint.hidden = !v;
+    }
+
     function showApplication(context) {
       if (!appsOpen) { showPaused(); return; }
+      setSpont(context === "Candidatura espontánea");
       landing.hidden = true;
       application.hidden = false;
       applyContext.textContent = context;
@@ -450,6 +474,19 @@
         cv: cvDataUrl ? { filename: cvFile.files[0]?.name, size: cvFile.files[0]?.size, dataUrl: cvDataUrl } : null,
         answers,
         message: (fd.get("message")||"").trim()
+      };
+      // Proof of the privacy information shown + the talent-pool choice (RGPD art. 7.1).
+      // Stored inside answers so no database change is needed; the admin hides "_" keys.
+      const now = new Date();
+      const pool = fd.get("talentPool") === "on";
+      const until = new Date(now); until.setMonth(until.getMonth() + 12);
+      app.answers._privacy = {
+        ack: fd.get("privacyAck") === "on",
+        talentPool: pool,
+        keepUntil: pool ? until.toISOString().slice(0, 10) : null,
+        spontaneous: isSpont,
+        at: now.toISOString(),
+        textVersion: "2026-10-29"
       };
 
       // Keep a local backup first — this also generates the reference code.

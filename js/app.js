@@ -421,6 +421,12 @@
     onChange: (cb) => document.addEventListener("vj:authchange", cb)
   };
 
+  /* Online orders switch (js/data.js → SITE_INFO.onlineOrders).
+     false = "wishlist mode": no cart or checkout; customers save products to
+     their list (favourites) and show it in the shop, where they pay. */
+  const ONLINE_ORDERS = !(typeof SITE_INFO !== "undefined" && SITE_INFO.onlineOrders === false);
+  if (!ONLINE_ORDERS) document.documentElement.classList.add("vj-wishlist-mode");
+
   /* ---------------- Wishlist / Favoritos ---------------- */
   const STORAGE_LIKES = "vj.likes";
   function _readLikes() {
@@ -1160,13 +1166,17 @@
           <p class="product-desc">${truncate(productDesc(p), 92)}</p>
           <div class="product-foot">
             <span class="product-price">${formatPrice(p.price)}</span>
-            <button class="product-add js-add" data-id="${p.id}" ${p.stock === 0 ? "disabled" : ""}>
-              ${t("common.addToCart")}
-            </button>
+            ${ONLINE_ORDERS
+              ? `<button class="product-add js-add" data-id="${p.id}" ${p.stock === 0 ? "disabled" : ""}>${t("common.addToCart")}</button>`
+              : `<button class="product-add product-fav js-like-cta ${liked ? "is-liked" : ""}" data-id="${p.id}" aria-pressed="${liked}">${liked ? t("fav.inList") : t("fav.add")}</button>`}
           </div>
         </div>
       </article>
     `;
+  }
+  function likeLabel(on) {
+    if (ONLINE_ORDERS) return on ? t("product.liked") : t("product.like");
+    return on ? t("fav.inList") : t("fav.add");
   }
   function truncate(s, n) { return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s; }
 
@@ -1205,7 +1215,29 @@
     });
     attachLikeButtons(scope);
   }
+  // Keep every heart and "add to my list" button on the page in sync
+  function syncLikeUI() {
+    document.querySelectorAll(".js-like, .js-like-cta").forEach(btn => {
+      const on = likeHas(btn.dataset.id);
+      btn.classList.toggle("is-liked", on);
+      btn.setAttribute("aria-pressed", String(on));
+      const svg = btn.querySelector("svg");
+      if (svg) svg.setAttribute("fill", on ? "currentColor" : "none");
+      if (btn.classList.contains("js-like-cta")) btn.textContent = on ? t("fav.inList") : t("fav.add");
+    });
+  }
+  document.addEventListener("vj:likeschange", syncLikeUI);
+
   function attachLikeButtons(scope = document) {
+    scope.querySelectorAll(".js-like-cta").forEach(btn => {
+      if (btn._wired) return;
+      btn._wired = true;
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const nowLiked = likeToggle(btn.dataset.id);
+        if (nowLiked && !currentUser()) maybeShowRegisterToast();
+      });
+    });
     scope.querySelectorAll(".js-like").forEach(btn => {
       if (btn._wired) return;
       btn._wired = true;
@@ -1330,7 +1362,7 @@
                 </span>
                 <span class="icon-btn-label" data-i18n="header.favorites">Favoritos</span>
               </a>
-              <a href="carrito.html" class="icon-btn cart-btn" aria-label="Carrito">
+              <a href="carrito.html" class="icon-btn cart-btn" aria-label="Carrito"${ONLINE_ORDERS ? "" : " hidden"}>
                 <span class="icon-btn-ic">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 11a2 2 0 0 1-2 1.7H9.5a2 2 0 0 1-2-1.7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
                   <span class="cart-count is-empty">0</span>
@@ -1432,7 +1464,7 @@
               <ul>
                 <li><a href="sobre.html" data-i18n="nav.about"></a></li>
                 <li><a href="contacto.html" data-i18n="nav.contact"></a></li>
-                <li><a href="carrito.html" data-i18n="nav.cart"></a></li>
+                ${ONLINE_ORDERS ? `<li><a href="carrito.html" data-i18n="nav.cart"></a></li>` : ""}
                 <li><a href="trabajo.html" data-i18n="footer.jobs">Trabaja con nosotros</a></li>
               </ul>
             </div>
@@ -2452,7 +2484,7 @@
                 </button>`).join("")}
               </div>
             </div>` : ""}
-            <div class="qty-row">
+            <div class="qty-row"${ONLINE_ORDERS ? "" : " hidden"}>
               <div class="qty-stepper">
                 <button class="js-dec" aria-label="-">−</button>
                 <input type="number" id="qty" value="1" min="1" max="${Math.max(1, p.stock)}">
@@ -2460,12 +2492,12 @@
               </div>
             </div>
             <div class="detail-actions">
-              <button class="btn btn-primary" id="add-detail" ${inStock ? "" : "disabled"}>
+              <button class="btn btn-primary" id="add-detail" ${inStock ? "" : "disabled"}${ONLINE_ORDERS ? "" : " hidden"}>
                 ${t("common.addToCart")}
               </button>
-              <button class="btn btn-outline detail-like ${likeHas(p.id) ? "is-liked" : ""}" id="detail-like" type="button" aria-pressed="${likeHas(p.id)}" aria-label="${t("common.favorite")}">
+              <button class="btn ${ONLINE_ORDERS ? "btn-outline" : "btn-primary detail-like--main"} detail-like ${likeHas(p.id) ? "is-liked" : ""}" id="detail-like" type="button" aria-pressed="${likeHas(p.id)}" aria-label="${t("common.favorite")}">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="${likeHas(p.id) ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                <span class="detail-like-label">${likeHas(p.id) ? t("product.liked") : t("product.like")}</span>
+                <span class="detail-like-label">${likeLabel(likeHas(p.id))}</span>
               </button>
             </div>
             <ul class="detail-reassure">
@@ -2519,18 +2551,20 @@
       });
       refreshDetailPrice();
       root.querySelector("#add-detail").addEventListener("click", () => {
-        addToCart(p.id, parseInt(qty.value) || 1, selectedPlanter);
+        if (ONLINE_ORDERS) addToCart(p.id, parseInt(qty.value) || 1, selectedPlanter);
       });
       wireProductGallery(root);
       const likeBtn = root.querySelector("#detail-like");
       if (likeBtn) likeBtn.addEventListener("click", () => {
         const nowLiked = likeToggle(p.id);
+        // Wishlist mode: saving a plant with a pot selected saves the pot too
+        if (!ONLINE_ORDERS && nowLiked && selectedPlanter && !likeHas(selectedPlanter)) likeToggle(selectedPlanter);
         likeBtn.classList.toggle("is-liked", nowLiked);
         likeBtn.setAttribute("aria-pressed", String(nowLiked));
         const svg = likeBtn.querySelector("svg");
         if (svg) svg.setAttribute("fill", nowLiked ? "currentColor" : "none");
         const lbl = likeBtn.querySelector(".detail-like-label");
-        if (lbl) lbl.textContent = nowLiked ? t("product.liked") : t("product.like");
+        if (lbl) lbl.textContent = likeLabel(nowLiked);
         if (nowLiked && !currentUser()) maybeShowRegisterToast();
       });
 
@@ -2573,7 +2607,22 @@
           </div>`;
         return;
       }
-      root.innerHTML = `
+      const total = items.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+      const lang = getLang();
+      const shopPanel = ONLINE_ORDERS ? "" : `
+        <div class="favs-shop">
+          <div class="favs-shop-text">
+            <h2>${t("favs.shop.title")}</h2>
+            <p>${t("favs.shop.text")}</p>
+            <p class="favs-shop-meta">${SITE_INFO.address} · ${(SITE_INFO.hours[lang] || SITE_INFO.hours.es)}</p>
+          </div>
+          <div class="favs-shop-side">
+            <div class="favs-shop-total"><span>${t("favs.shop.total")}</span><strong>${formatPrice(total)}</strong></div>
+            <small>${t("favs.shop.note")}</small>
+            <button type="button" class="btn btn-light favs-print" onclick="window.print()">${t("favs.shop.print")}</button>
+          </div>
+        </div>`;
+      root.innerHTML = `${shopPanel}
         <div class="product-grid">
           ${items.map(productCardHTML).join("")}
         </div>`;
@@ -2589,6 +2638,7 @@
   function renderCartPage() {
     const root = document.getElementById("cart-root");
     if (!root) return;
+    if (!ONLINE_ORDERS) { location.replace("favoritos.html"); return; }
 
     function render() {
       // Wrap with account sidebar if user is logged in
@@ -2674,6 +2724,7 @@
   }
 
   function renderCheckoutPage() {
+    if (!ONLINE_ORDERS && document.getElementById("checkout-root")) { location.replace("favoritos.html"); return; }
     const root = document.getElementById("checkout-root");
     if (!root) return;
 
@@ -2958,7 +3009,7 @@
             <span class="acct-menu-lbl">${t("account.menu.orders")}</span>
             <span class="acct-menu-ct" id="orders-count">${ordersCount}</span>
           </a>
-          <a ${itemAttrs("cart", "carrito.html")}>
+          <a ${itemAttrs("cart", "carrito.html")}${ONLINE_ORDERS ? "" : " hidden"}>
             <span class="acct-menu-ico">${ICON_BAG}</span>
             <span class="acct-menu-lbl">${t("account.menu.cart")}</span>
             <span class="acct-menu-ct">${cartCt}</span>
